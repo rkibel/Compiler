@@ -39,4 +39,9 @@ struct KleenStar : RegularExpression {
 	std::pair<Node*, Node*> ConvertToNFA(); //then define different version
 };
 
+struct Plus : RegularExpression {
+	RegularExpression inner;
+	std::pair<Node*, Node*> ConvertToNFA(); //then define different version
+};
+
 #endif // RE_HPP

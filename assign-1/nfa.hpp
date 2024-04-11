@@ -11,6 +11,8 @@ struct Node
 {
     std::vector<std::pair<std::optional<CharRange>, Node*>> transitions;
     bool isTerminalNode;
+
+    //Would be nice to have overloaded print operator to easily print the full NFA from that node (since there's no "NFA" struct now)
 };
 
 struct State
