@@ -39,7 +39,7 @@ std::pair<Node*, Node*> Union::ConvertToNFA() {
     return std::make_pair(startNode, endNode);
 }
 
-std::pair<Node*, Node*> KleenStar::ConvertToNFA() {
+std::pair<Node*, Node*> KleeneStar::ConvertToNFA() {
     std::pair innerNodePair = inner.ConvertToNFA();
 
     Node* startNode = new Node;
@@ -57,7 +57,7 @@ std::pair<Node*, Node*> KleenStar::ConvertToNFA() {
 }
 
 std::pair<Node*, Node*> Plus::ConvertToNFA() {
-    KleenStar kleeneStarRE;
+    KleeneStar kleeneStarRE;
     kleeneStarRE.inner = inner;
     Cat catRE;
     catRE.R1 = inner;
