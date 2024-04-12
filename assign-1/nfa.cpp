@@ -79,7 +79,7 @@ std::vector<std::pair<RegularExpression, std::string> initTokensRE() {
             { "OpenBracket"  , "[" },
             { "CloseBracket" , "]" },
             { "OpenBrace"    , "{" },
-            { "CloseBrae"    , "}" },
+            { "CloseBrace"    , "}" },
         }; 
     for (std::string keywordPair: keywords) {
          tokens.push_back( createStringRE(keywordPair.second), keywordPair.first );
