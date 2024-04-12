@@ -32,23 +32,23 @@ int main(int argc, char *argv[]) {
 
     return 0;
 
-    // // // Initialize Regex for every token 
-    // tokens = initTokensRE(); 
+    // // Initialize Regex for every token 
+    tokens = initTokensRE(); 
 
-    // // Convert to NFA data structure with converter function
-    // // We only care about the start node
+    // Convert to NFA data structure with converter function
+    // We only care about the start node
 
-    // //...
-    // Node* startNode = combineTokensRE(tokens);
-    // std::string inputCopy;
-    // while (!str.empty()) {
-    //     Token token( RunNFA(startNode, input, inputCopy) ) ;  
-    //     std::cout << token.name;
-    //     if (token == "Id" | token == "Num")  {
-    //         std::cout << "(" << inputCopy.substr(token.index, token.length) << ")";
-    //     }
-    //     std::cout << "\n";
-    // }
+    //...
+    Node* startNode = combineTokensRE(tokens);
+    std::string inputCopy;
+    while (!str.empty()) {
+        Token token( RunNFA(startNode, input, inputCopy) ) ;  
+        std::cout << token.name;
+        if (token == "Id" | token == "Num")  {
+            std::cout << "(" << inputCopy.substr(token.index, token.length) << ")";
+        }
+        std::cout << "\n";
+    }
     
 
     /*
