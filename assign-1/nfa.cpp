@@ -107,16 +107,14 @@ Token RunNFA(Node* startNode, std::string& input, std::string fullInput) {
     std::string token = "Error"; //default
     std::set<Node*> nodes;
     nodes.insert(startNode);
-    
+    GoAllEpsilon(nodes); 
+    //Checks if any terminal state after the first epsilon transition
+    for (Node* node: nodes) {
+        //If token is error, always overwrite, then if it's not error and not an id, overwrite
+        if (node->isTerminalNode && node->token != "Id" || token == "Error") token = node->token;
+    }
     for (int i = 0; i < input.size(); ++i) {
-        //More nodes left, so restart epsilon transitions
-        GoAllEpsilon(nodes); 
-        //Checks if any terminal state after the first epsilon transition
-        for (Node* node: nodes) {
-            //If token is error, always overwrite, then if it's not error and not an id, overwrite
-            if (node->isTerminalNode && node->token != "Id" || token == "Error") token = node->token;
-        }
-        //Read first input character
+        //Read next input character
         TransitionState(nodes, input[i]);
         for (Node* node: nodes) {
             if (node->isTerminalNode && (node->token != "Id" || token == "Error")) {
@@ -125,8 +123,15 @@ Token RunNFA(Node* startNode, std::string& input, std::string fullInput) {
             }
         }
         if (nodes.empty()) {
-            //No more nodes are left, no need to continue processing
+            //No more nodes are left after transitioning, no need to continue processing
             break;
+        }
+        //More nodes left, so restart epsilon transitions
+        GoAllEpsilon(nodes); 
+        //Checks if any terminal state after the first epsilon transition
+        for (Node* node: nodes) {
+            //If token is error, always overwrite, then if it's not error and not an id, overwrite
+            if (node->isTerminalNode && node->token != "Id" || token == "Error") token = node->token;
         }
     }
     //Now we have finished processing the string, and we should have the correct token in token

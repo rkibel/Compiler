@@ -58,21 +58,13 @@ int main(int argc, char *argv[]) {
     Node* startNode = combineTokensRE(tokens);
     std::string inputCopy;
     while (!str.empty()) {
-        Token token( RunNFA(startNode, input, inputCopy) ) ;
+        Token token( RunNFA(startNode, input, inputCopy) ) ;  
+        std::cout << token.name;
         if (token == "Id" | token == "Num")  {
-            tokenStruct.index = 
-        }
-        
-        std::cout << token;
-        if (token == "Id" | token == "Num")  {
-            std::cout << "(" << input.substr(token.index, token.longest) << ")";
+            std::cout << "(" << inputCopy.substr(token.index, token.length) << ")";
         }
         std::cout << "\n";
     }
-
-
-    
-
     
 
     /*
