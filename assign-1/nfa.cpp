@@ -21,26 +21,27 @@ void TransitionState(std::set<Node*>& currNodes, char input) {
     */
     // std::string token = "Error";
     std::set<Node*> newNodes;
-    for (Node* node: nodes) {
+    for (Node* node: currNodes) {
         for (std::pair<std::optional<CharRange>, Node*> pair: node->transitions) {
             //If not an epsilon transition and character within range
             if (pair.first != std::nullopt && pair.first.value().lower <= input && pair.first.value().upper >= input) {
-                newNode.insert(pair.second);
+                newNodes.insert(pair.second);
             }
         }
     }
     currNodes = newNodes;
 }
 
-std::vector<std::pair<RegularExpression, std::string> initTokensRE() {
-    std::vector<std::pair<RegularExpression, std::string> tokens;
+std::vector<std::pair<RegularExpression, std::string>> initTokensRE() {
+    std::vector<std::pair<RegularExpression, std::string>> tokens;
 
     Literal a_to_z('a', 'z');
     Literal A_to_Z('A', 'Z');
     Literal Zero_to_9('0', '9');
 
-    tokens.push_back(Plus(Zero_to_9), "Num");
-    tokens.push_back( Cat( Union(a_to_z, A_to_Z), KleenStar( Union( Union(a_to_z,A_to_Z), Zero_to_9 ))));
+    tokens.push_back( std::make_pair(Plus(Zero_to_9), "Num") );
+    // [a-zA-Z][a-zA-Z0-9]*
+    tokens.push_back( std::make_pair (Cat( Union(a_to_z, A_to_Z), KleeneStar( Union( Union(a_to_z,A_to_Z), Zero_to_9 ))), "Id") );
     std::vector<std::pair<std::string, std::string>> keywords = 
         {
             { "Int"          , "int" }, 
@@ -81,13 +82,15 @@ std::vector<std::pair<RegularExpression, std::string> initTokensRE() {
             { "OpenBrace"    , "{" },
             { "CloseBrace"    , "}" },
         }; 
-    for (std::string keywordPair: keywords) {
-         tokens.push_back( createStringRE(keywordPair.second), keywordPair.first );
+    for (std::pair<std::string, std::string> keywordPair: keywords) {
+         tokens.push_back( std::make_pair(createStringRE(keywordPair.second), keywordPair.first) );
     }    
+
+    return tokens;
 }
 
 
-Node* combineTokensRE(std::vector<std::pair<RegularExpression, std::string> tokens) {
+Node* combineTokensRE(std::vector<std::pair<RegularExpression, std::string>> tokens) {
     //Takes in pairs of regular expressions for tokens and that token's name,
     //and joins them with lambda transitions from a starting state, but keeping their final states as terminal
     //Returns starting node, since there's no "end node"
@@ -111,13 +114,13 @@ Token RunNFA(Node* startNode, std::string& input, std::string fullInput) {
     //Checks if any terminal state after the first epsilon transition
     for (Node* node: nodes) {
         //If token is error, always overwrite, then if it's not error and not an id, overwrite
-        if (node->isTerminalNode && node->token != "Id" || token == "Error") token = node->token;
+        if ( (node->isTerminalNode && node->token != "Id") || token == "Error") token = node->token;
     }
     for (int i = 0; i < input.size(); ++i) {
         //Read next input character
         TransitionState(nodes, input[i]);
         for (Node* node: nodes) {
-            if (node->isTerminalNode && (node->token != "Id" || token == "Error")) {
+            if ( (node->isTerminalNode && node->token != "Id") || token == "Error") {
                 longest = i;
                 token = node->token;
             }
@@ -131,7 +134,7 @@ Token RunNFA(Node* startNode, std::string& input, std::string fullInput) {
         //Checks if any terminal state after the first epsilon transition
         for (Node* node: nodes) {
             //If token is error, always overwrite, then if it's not error and not an id, overwrite
-            if (node->isTerminalNode && node->token != "Id" || token == "Error") token = node->token;
+            if ( (node->isTerminalNode && node->token != "Id") || token == "Error") token = node->token;
         }
     }
     //Now we have finished processing the string, and we should have the correct token in token

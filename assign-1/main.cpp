@@ -3,8 +3,8 @@
 #include <sstream>
 #include <string>
 
-// #include "re.hpp"
-// #include "nfa.hpp"
+#include "re.hpp"
+#include "nfa.hpp"
 
 int main(int argc, char *argv[]) {
 
@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
     return 0;
 
     // // Initialize Regex for every token 
-    tokens = initTokensRE(); 
+    std::vector<std::pair<RegularExpression, std::string>> tokens = initTokensRE(); 
 
     // Convert to NFA data structure with converter function
     // We only care about the start node
@@ -41,10 +41,10 @@ int main(int argc, char *argv[]) {
     //...
     Node* startNode = combineTokensRE(tokens);
     std::string inputCopy;
-    while (!str.empty()) {
+    while (!input.empty()) {
         Token token( RunNFA(startNode, input, inputCopy) ) ;  
         std::cout << token.name;
-        if (token == "Id" | token == "Num")  {
+        if (token.name == "Id" | token.name == "Num")  {
             std::cout << "(" << inputCopy.substr(token.index, token.length) << ")";
         }
         std::cout << "\n";

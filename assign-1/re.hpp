@@ -5,6 +5,14 @@
 
 #include <utility>
 
+struct Node;
+
+struct CharRange {
+    char lower;
+    char upper;
+    CharRange(char lower, char upper) : lower(lower), upper(upper) {};
+};
+
 struct RegularExpression {
     std::pair<Node*, Node*> ConvertToNFA(); //a function which returns pair, pointer to first node, then finalNode (final/terminal state). Others will inherit.
     //Don’t define here, just call it virtual function
@@ -16,7 +24,7 @@ struct Literal : RegularExpression
 	std::pair<Node*, Node*> ConvertToNFA();
 	Literal(CharRange literal) : literal{literal} {};
 	Literal(char lower, char upper) : literal(lower, upper) {}
-	Literal(char single) : lower(single), upper(single) {};
+	Literal(char single) : literal(single, single) {};
 };
 
 struct Cat : RegularExpression {
@@ -36,7 +44,7 @@ struct Union : RegularExpression {
 struct KleeneStar : RegularExpression {
 	RegularExpression inner;
 	std::pair<Node*, Node*> ConvertToNFA(); //then define different version
-	KleenStar(RegularExpression inner) : inner(inner) {};
+	KleeneStar(RegularExpression inner) : inner(inner) {};
 };
 
 struct Plus : RegularExpression {

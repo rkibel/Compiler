@@ -9,11 +9,10 @@
 #include <iostream>
 #include <set>
 
-struct CharRange {
-    char lower;
-    char upper;
-    CharRange(char lower, char upper) : lower(lower), upper(upper) {};
-};
+#include "re.hpp"
+
+struct RegularExpression;
+struct CharRange;
 
 struct Node
 {
@@ -28,7 +27,7 @@ struct Token {
     int index; //for storing matched lexeme Id or Num
     int length; //for storing matched lexeme Id or Num
     Token(std::string name, int index = 0, int length = 0) : name(name), index(index), length(length) {};
-}
+};
 
 
 struct State //maybe don't need
@@ -51,11 +50,11 @@ void TransitionState(std::set<Node*>& currNodes, char input);
     // For character transition make sure to increment index, for epsilon transition make sure not to increment index
     // Return true if reaches terminal node and input is exhausted
 
-std::vector<std::pair<RegularExpression, std::string> initTokensRE();
+std::vector<std::pair<RegularExpression, std::string>> initTokensRE();
 
-Node* combineTokensRE(std::vector<std::pair<RegularExpression, std::string> tokens);
+Node* combineTokensRE(std::vector<std::pair<RegularExpression, std::string>> tokens);
 
-std::string RunNFA(Node* startNode, std::string& input);
+Token RunNFA(Node* startNode, std::string& input,  std::string fullInput);
     // Initialize nextStates queue with starting state
     // Pop off queue and run TransitionState on dequeued state
     // Continue until empty queue or TransitionState returns true

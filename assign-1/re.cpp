@@ -1,6 +1,10 @@
 #include "re.hpp"
 #include "nfa.hpp"
 
+std::pair<Node*, Node*> RegularExpression::ConvertToNFA() {
+    // Default implementation (could throw an error or return some default value)
+    return {nullptr, nullptr};
+}
 
 std::pair<Node*, Node*> Literal::ConvertToNFA () {
    Node* startNode = new Node(false);
@@ -41,7 +45,7 @@ std::pair<Node*, Node*> Union::ConvertToNFA() {
 }
 
 
-std::pair<Node*, Node*> KleenStar::ConvertToNFA() {
+std::pair<Node*, Node*> KleeneStar::ConvertToNFA() {
    std::pair innerNodePair = inner.ConvertToNFA();
 
 
@@ -63,7 +67,7 @@ std::pair<Node*, Node*> KleenStar::ConvertToNFA() {
 
 
 std::pair<Node*, Node*> Plus::ConvertToNFA() {
-   KleenStar kleeneStarRE(inner);
+   KleeneStar kleeneStarRE(inner);
    // kleeneStarRE.inner = inner;
    Cat catRE(inner, kleeneStarRE);
    // catRE.R1 = inner;
@@ -75,7 +79,7 @@ std::pair<Node*, Node*> Plus::ConvertToNFA() {
 RegularExpression createStringRE(std::string input) {
 	//Assumes length is 1 or greater
 	RegularExpression RE = Literal(input[0]); //Starts of RE with first char
-	for (int i = 1, i < input.length(), i++) {
+	for (int i = 1; i < input.length(); i++) {
 		RE = Cat(RE, Literal(input[i]));
 	}
     return RE;
