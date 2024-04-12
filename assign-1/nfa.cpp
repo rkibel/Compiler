@@ -5,12 +5,12 @@ void GoAllEpsilon(std::set<Node*>& currNodes) {
     for (Node* node: currNodes) q.push(node);
     while (!q.empty()) {
         Node* node = q.front();
+        q.pop();
         if (currNodes.find(node) != currNodes.end()) continue;
         currNodes.insert(node);
         for (std::pair<std::optional<CharRange>, Node*> pair: node->transitions) {
             if (pair.first == std::nullopt) q.push(pair.second);
         }
-        q.pop();
     }
 }
 
