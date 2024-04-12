@@ -19,7 +19,7 @@ struct Node
     std::vector<std::pair<std::optional<CharRange>, Node*>> transitions;
     bool isTerminalNode;
     std::string token;
-    Node(bool isTerminalNode) : isTerminalNode(isTerminalNode) {};
+    Node(bool isTerminalNode) : isTerminalNode(isTerminalNode) { token = "";};
 };
 
 struct Token {

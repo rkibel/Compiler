@@ -9,6 +9,7 @@ std::pair<Node*, Node*> RegularExpression::ConvertToNFA() {
 std::pair<Node*, Node*> Literal::ConvertToNFA () {
    Node* startNode = new Node(false);
    // startNode->isTerminalNode = false;
+   std::cout << "Start address: " << startNode << "\n";
    Node* endNode = new Node(true);
    // endNode->isTerminalNode = true;
    startNode->transitions.push_back(std::make_pair(std::optional<CharRange>{literal}, endNode));

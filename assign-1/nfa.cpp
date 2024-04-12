@@ -40,7 +40,6 @@ std::vector<std::pair<RegularExpression, std::string>> initTokensRE() {
     Literal Zero_to_9('0', '9');
 
     tokens.push_back( std::make_pair(Plus(Zero_to_9), "Num") );
-    // [a-zA-Z][a-zA-Z0-9]*
     tokens.push_back( std::make_pair (Cat( Union(a_to_z, A_to_Z), KleeneStar( Union( Union(a_to_z,A_to_Z), Zero_to_9 ))), "Id") );
     std::vector<std::pair<std::string, std::string>> keywords = 
         {
@@ -97,8 +96,9 @@ Node* combineTokensRE(std::vector<std::pair<RegularExpression, std::string>> tok
     Node* startNode = new Node(false);
     for (std::pair<RegularExpression, std::string> token: tokens) {
         std::pair<Node*, Node*> tokenREPair = token.first.ConvertToNFA();
-        tokenREPair.second->token = token.second; //assigning name to final state node
-        startNode->transitions.push_back(std::make_pair(std::nullopt, tokenREPair.first));
+        // std::cout << "Token name: " << token.second << "\n";
+        // tokenREPair.second->token = token.second; //assigning name to final state node
+        // startNode->transitions.push_back(std::make_pair(std::nullopt, tokenREPair.first));
     }
     return startNode;
 };
