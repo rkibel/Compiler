@@ -118,6 +118,7 @@ struct Struct {
 
 struct Exp {
     virtual void print(std::ostream& os) const {}
+    virtual ~Exp() {}
     friend std::ostream& operator<<(std::ostream& os, const Exp& exp) {
         exp.print(os);
         return os;
@@ -135,42 +136,50 @@ struct Nil : Exp {
     void print(std::ostream& os) const override { os << "Nil"; }
 };
 struct UnOp : Exp {
-    UnaryOp op;
-    Exp operand;
-    void print(std::ostream& os) const override { os << op << "(" << operand << ")"; }
+    UnaryOp* op;
+    Exp* operand;
+    void print(std::ostream& os) const override { os << *op << "(" << *operand << ")"; }
+    ~UnOp() { delete operand; }
 };
 struct BinOp : Exp {
-    BinaryOp op;
-    Exp left;
-    Exp right;
+    BinaryOp* op;
+    Exp* left;
+    Exp* right;
     void print(std::ostream& os) const override {
-        os << "BinOp(\nop = " << op << ",\nleft = " << left << ",\nright = " << right << "\n)"; 
+        os << "BinOp(\nop = " << *op << ",\nleft = " << *left << ",\nright = " << *right << "\n)"; 
     }
+    ~BinOp() { delete left; delete right; }
 };
 struct ExpArrayAccess : Exp {
-    Exp ptr;
-    Exp index;
+    Exp* ptr;
+    Exp* index;
     void print(std::ostream& os) const override {
-        os << "ArrayAccess(\nptr = " << ptr << ",\nindex = " << index << "\n)";
+        os << "ArrayAccess(\nptr = " << *ptr << ",\nindex = " << *index << "\n)";
     }
+    ~ExpArrayAccess() { delete ptr; delete index; }
 };
 struct ExpFieldAccess : Exp {
-    Exp ptr;
+    Exp* ptr;
     std::string field;
     void print(std::ostream& os) const override {
-        os << "FieldAccess(\nptr = " << ptr << ",\nfield = " << field << "\n)";
+        os << "FieldAccess(\nptr = " << *ptr << ",\nfield = " << field << "\n)";
     }
+    ~ExpFieldAccess() { delete ptr; }
 };
 struct ExpCall : Exp {
-    Exp callee;
-    std::vector<Exp> args;
+    Exp* callee;
+    std::vector<Exp*> args;
     void print(std::ostream& os) const override {
-        os << "Call(\ncallee = " << callee << ",\nargs = [";
+        os << "Call(\ncallee = " << *callee << ",\nargs = [";
         for (unsigned int i = 0; i < args.size(); i++) {
-            os << args[i];
+            os << *args[i];
             if (i != args.size() - 1) os << ",";
             os << "\n]\n)";
         }
+    }
+    ~ExpCall() {
+        delete callee;
+        for (Exp* exp: args) delete exp;
     }
 };
 
