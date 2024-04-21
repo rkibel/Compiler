@@ -4,6 +4,9 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include "grammar.cpp"
+
+std::vector<std::string> tokens;
 
 int main(int argc, char** argv) {
     if (argc < 2) {
@@ -22,16 +25,26 @@ int main(int argc, char** argv) {
         return 1;
     }
     std::stringstream ss(input);
-    std::vector<std::string> tokens;
     std::string s;
     while (std::getline(ss, s, '\n')) { 
         tokens.push_back(s);
     }
- 
-    for (unsigned int i = 0; i < tokens.size(); i++) {
-        std::cout << tokens[i] << std::endl;
+    
+    Grammar g;
+    g.tokens = tokens;
+    std::vector<Type*> types;
+    unsigned int i = 0;
+    while (i < tokens.size()) {
+        try {
+            auto [t, itemp] = g.type(i);
+            std::cout << *t << "\n";
+            types.push_back(t);
+            i = itemp;
+        } catch(fail& f) {
+            std::cout << "fail happened at i = " << i << "\n";
+            i++;
+        }
     }
-
 
     return 0;
 }

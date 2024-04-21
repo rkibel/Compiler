@@ -8,7 +8,7 @@ CFLAGS = -std=c++17 -Wall
 SRCS = main.cpp
 
 # Executable name
-EXEC = assign-2
+EXEC = parse
 
 # Default target
 all: $(EXEC)
