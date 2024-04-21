@@ -1,0 +1,42 @@
+/*fn main() -> int {
+    return 42;
+}
+
+
+fn nam() {
+    let x: int = 3;
+    let y: int = 21;
+    let z: int = x+y;
+}
+
+
+this is a test input
+
+
+fn main() -> int {
+    return 42;
+}
+
+_*/
+
+/*
+let x: (int, int, (int)) -> _;
+fn main() -> int { return 52; }*/
+
+
+fn main() -> int {
+    let x : int = 5;
+    let y: int = 6;
+    let z: int = x + y == y;
+    let y: int = -x;
+    let d: demo;
+    let another: int = test(x, y);
+
+    v = w[5];
+
+    return 0;
+}
+
+fn test(x:int, y:int) -> int {
+    return x + y;
+}

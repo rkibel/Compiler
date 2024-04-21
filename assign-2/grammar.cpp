@@ -138,120 +138,43 @@ std::pair<Type*, unsigned int> rettyp(unsigned int i) noexcept(false) {
     throw fail();
 }
 
-/*
-int program(int i) {
-    
+// unop ::= `*`
+//        | `-`
+std::pair<UnaryOp*, unsigned int> unop(unsigned int i) noexcept(false) {
+    if (i >= tokens.size()) throw fail();
+    if (tokens[i] == "Star") return std::make_pair(new UnaryDeref(), i+1);
+    if (tokens[i] == "Dash") return std::make_pair(new Neg(), i+1);
+    throw fail();
 }
 
-int toplevel(int i) {
-    
+// binop_p1 ::= `*` | `/`
+std::pair<BinaryOp*, unsigned int> binop_p1(unsigned int i) noexcept(false) {
+    if (i >= tokens.size()) throw fail();
+    if (tokens[i] == "Star") return std::make_pair(new Mul(), i+1);
+    if (tokens[i] == "Slash") return std::make_pair(new Div(), i+1);
+    throw fail();
 }
 
-int glob(int i) {
-    
+// binop_p2 ::= `+` | `-`
+std::pair<BinaryOp*, unsigned int> binop_p2(unsigned int i) noexcept(false) {
+    if (i >= tokens.size()) throw fail();
+    if (tokens[i] == "Plus") return std::make_pair(new Add(), i+1);
+    if (tokens[i] == "Dash") return std::make_pair(new Sub(), i+1);
+    throw fail();
 }
 
-int Typedef(int i) {
-    
+// binop_p3 ::= `==` | `!=` | `<` | `<=` | `>` | `>=`
+std::pair<BinaryOp*, unsigned int> binop_p3(unsigned int i) noexcept(false) {
+    if (i >= tokens.size()) throw fail();
+    if (tokens[i] == "Equal") return std::make_pair(new Equal(), i+1);
+    if (tokens[i] == "NotEq") return std::make_pair(new NotEq(), i+1);
+    if (tokens[i] == "Lt") return std::make_pair(new Lt(), i+1);
+    if (tokens[i] == "Lte") return std::make_pair(new Lte(), i+1);
+    if (tokens[i] == "Gt") return std::make_pair(new Gt(), i+1);
+    if (tokens[i] == "Gte") return std::make_pair(new Gte(), i+1);
+    throw fail();
 }
 
-int decl(int i) {
-    
-}
+// TODO: implement exp, exp_p4, exp_p3, exp_p2, exp_p1, and exp_ac
 
-int decls(int i) {
-    
-}
-
-int Extern(int i) {
-    
-}
-
-int fundef(int i) {
-    
-}
-
-int let(int i) {
-    
-}
-
-int stmt(int i) {
-    
-}
-
-int cond(int i) {
-    
-}
-
-int loop(int i) {
-    
-}
-
-int block(int i) {
-    
-}
-
-int assign_or_call(int i) {
-    
-}
-
-int gets_or_args(int i) {
-    
-}
-
-int rhs(int i) {
-    
-}
-
-int lval(int i) {
-    
-}
-
-int access(int i) {
-    
-}
-
-int args(int i) {
-    
-}
-
-int exp(int i) {
-    
-}
-
-int exp_p4(int i) {
-    
-}
-
-int exp_p3(int i) {
-    
-}
-
-int exp_p2(int i) {
-    
-}
-
-int exp_p1(int i) {
-    
-}
-
-int exp_ac(int i) {
-    
-}
-
-int unop(int i) {
-    
-}
-
-int binop_p1(int i) {
-    
-}
-
-int binop_p2(int i) {
-    
-}
-
-int binop_p3(int i) {
-    
-}*/
 };

@@ -4,10 +4,12 @@
 #include <iostream>
 
 struct Type {
-    virtual void print(std::ostream& os) const {
-        os << "Hello";
-    }
+    virtual void print(std::ostream& os) const {}
     virtual ~Type() {}
+    friend std::ostream& operator<<(std::ostream& os, const Type& obj) {
+        obj.print(os);
+        return os;
+    }
 };
 struct Int : Type {
     void print(std::ostream& os) const override {
@@ -26,12 +28,10 @@ struct Fn : Type {
     void print(std::ostream& os) const override { 
         os << "Fn(prms = [";
         for (unsigned int i = 0; i < prms.size(); i++) {
-            prms[i]->print(os);
+            os << *prms[i];
             if (i != prms.size() - 1) os << ", ";
         }
-        os << "], ret = ";
-        ret->print(os);
-        os << ")";
+        os << "], ret = " << *ret << ")";
     }
     ~Fn() {
         for (Type* t: prms) delete t;
@@ -42,9 +42,7 @@ struct Fn : Type {
 struct Ptr : Type {
     Type* ref;
     void print(std::ostream& os) const override { 
-        os << "Ptr(";
-        ref->print(os);
-        os << ")";
+        os << "Ptr(" << *ref << ")";
     }
     ~Ptr() { delete ref; }
 };
@@ -53,82 +51,153 @@ struct Any : Type {
         os << "_";
     }
 };
-std::ostream& operator<<(std::ostream& os, const Type& obj) {
-    obj.print(os);
-    return os;
-}
 
-/*
-struct UnaryOp {};
-struct Neg : UnaryOp {};
-struct Deref : UnaryOp {};
+struct UnaryOp {
+    virtual void print(std::ostream& os) const {}
+    friend std::ostream& operator<<(std::ostream& os, const UnaryOp& uo) {
+        uo.print(os);
+        return os;
+    }
+};
+struct Neg : UnaryOp {
+    void print(std::ostream& os) const override { os << "Neg"; }
+};
+struct UnaryDeref : UnaryOp {
+    void print(std::ostream& os) const override { os << "Deref"; }
+};
 
-struct BinaryOp{};
-struct Add : BinaryOp{};
-struct Sub : BinaryOp{};
-struct Mul : BinaryOp{};
-struct Div : BinaryOp{};
-struct Equal : BinaryOp{};
-struct NotEq : BinaryOp{};
-struct Lt : BinaryOp{};
-struct Lte : BinaryOp{};
-struct Gt : BinaryOp{};
-struct Gte : BinaryOp{};
+struct BinaryOp{
+    virtual void print(std::ostream& os) const {}
+    friend std::ostream& operator<<(std::ostream& os, const BinaryOp& bo) {
+        bo.print(os);
+        return os;
+    }
+};
+struct Add : BinaryOp{
+    void print(std::ostream& os) const override { os << "Add"; }
+};
+struct Sub : BinaryOp{
+    void print(std::ostream& os) const override { os << "Sub"; }
+};
+struct Mul : BinaryOp{
+    void print(std::ostream& os) const override { os << "Mul"; }
+};
+struct Div : BinaryOp{
+    void print(std::ostream& os) const override { os << "Div"; }
+};
+struct Equal : BinaryOp{
+    void print(std::ostream& os) const override { os << "Equal"; }
+};
+struct NotEq : BinaryOp{
+    void print(std::ostream& os) const override { os << "NotEq"; }
+};
+struct Lt : BinaryOp{
+    void print(std::ostream& os) const override { os << "Lt"; }
+};
+struct Lte : BinaryOp{
+    void print(std::ostream& os) const override { os << "Lte"; }
+};
+struct Gt : BinaryOp{
+    void print(std::ostream& os) const override { os << "Gt"; }
+};
+struct Gte : BinaryOp{
+    void print(std::ostream& os) const override { os << "Gte"; }
+};
 
+// TODO
 struct Decl {
     std::string name;
     Type type;
 };
 
+// TODO
 struct Struct {
     std::string name;
     std::vector<Decl> fields;
 };
 
-struct Exp {};
+struct Exp {
+    virtual void print(std::ostream& os) const {}
+    friend std::ostream& operator<<(std::ostream& os, const Exp& exp) {
+        exp.print(os);
+        return os;
+    }
+};
 struct Num : Exp {
     int32_t n;
+    void print(std::ostream& os) const override { os << "Num(" << n << ")"; }
 };
 struct ExpId : Exp {
     std::string name;
+    void print(std::ostream& os) const override { os << "Id(" << name << ")"; }
 };
-struct Nil : Exp {};
+struct Nil : Exp {
+    void print(std::ostream& os) const override { os << "Nil"; }
+};
 struct UnOp : Exp {
     UnaryOp op;
     Exp operand;
+    void print(std::ostream& os) const override { os << op << "(" << operand << ")"; }
 };
 struct BinOp : Exp {
     BinaryOp op;
     Exp left;
     Exp right;
+    void print(std::ostream& os) const override {
+        os << "BinOp(\nop = " << op << ",\nleft = " << left << ",\nright = " << right << "\n)"; 
+    }
 };
-struct ArrayAccess : Exp {
+struct ExpArrayAccess : Exp {
     Exp ptr;
     Exp index;
+    void print(std::ostream& os) const override {
+        os << "ArrayAccess(\nptr = " << ptr << ",\nindex = " << index << "\n)";
+    }
 };
-struct FieldAccess : Exp {
+struct ExpFieldAccess : Exp {
     Exp ptr;
     std::string field;
+    void print(std::ostream& os) const override {
+        os << "FieldAccess(\nptr = " << ptr << ",\nfield = " << field << "\n)";
+    }
 };
-struct Call : Exp {
+struct ExpCall : Exp {
     Exp callee;
     std::vector<Exp> args;
+    void print(std::ostream& os) const override {
+        os << "Call(\ncallee = " << callee << ",\nargs = [";
+        for (unsigned int i = 0; i < args.size(); i++) {
+            os << args[i];
+            if (i != args.size() - 1) os << ",";
+            os << "\n]\n)";
+        }
+    }
 };
 
+// TODO EVERYTHING BELOW THIS
 struct Lval {};
 struct LvalId : Lval {
     std::string name;
 };
-struct Deref : Lval {
+struct LvalDeref : Lval {
     Lval lval;
 };
-struct ArrayAccess : Lval {
+struct LvalArrayAccess : Lval {
     Lval ptr;
     Exp index;
 };
-struct FieldAccess : Lval {
+struct LvalFieldAccess : Lval {
     Lval ptr;
     std::string field;
+};
+
+struct Rhs {};
+struct RhsExp : Rhs {
+    Exp exp;
+};
+struct New : Rhs {
+    Type type;
+    Exp amount;
 };
 
 struct Stmt {};
@@ -141,7 +210,7 @@ struct Assign : Stmt {
     Lval lhs;
     Rhs rhs;
 };
-struct Call : Stmt {
+struct StmtCall : Stmt {
     Lval callee;
     std::vector<Exp> args;
 };
@@ -163,19 +232,9 @@ struct Function {
     std::vector<Stmt> stmts;
 };
 
-struct Rhs {};
-struct RhsExp : Rhs {
-    Exp exp;
-};
-struct New : Rhs {
-    Type type;
-    Exp amount;
-};
-
-
 struct Program {
     std::vector<Decl> globals;
     std::vector<Struct> structs;
     std::vector<Decl> externs;
     std::vector<Function> functions;
-};*/
+};
