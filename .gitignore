@@ -43,7 +43,7 @@ ehthumbs.db
 Thumbs.db
 
 # assign-2
-lexer-output.txt
-lexer
-parse
-test-in.txt
+assign-2/lexer-output.txt
+assign-2/lexer
+assign-2/parse
+assign-2/test-in.txt
