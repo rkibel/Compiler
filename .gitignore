@@ -41,3 +41,9 @@ Icon
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# assign-2
+lexer-output.txt
+lexer
+parse
+test-in.txt
