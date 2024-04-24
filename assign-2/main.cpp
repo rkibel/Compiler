@@ -32,13 +32,11 @@ int main(int argc, char** argv) {
     
     Grammar g;
     g.tokens = tokens;
-    std::vector<Type*> types;
     unsigned int i = 0;
     while (i < tokens.size()) {
         try {
-            auto [t, itemp] = g.type(i);
-            std::cout << *t << "\n";
-            types.push_back(t);
+            auto [args, itemp] = g.args(i);
+            for (auto arg: args) std::cout << *arg << "\n";
             i = itemp;
         } catch(fail& f) {
             std::cout << "fail happened at i = " << i << "\n";
