@@ -184,7 +184,6 @@ std::pair<BinaryOp*, unsigned int> binop_p3(unsigned int i) noexcept(false) {
 
 // exp ::= exp_p4 (binop_p3 exp_p4)*
 std::pair<Exp*, unsigned int> exp(unsigned int i) noexcept(false) {
-    std::cout << "exp\n";
     if (i >= tokens.size()) throw fail();
     auto [lref, inext] = exp_p4(i);
     BinOp* binop = nullptr;
@@ -195,7 +194,6 @@ std::pair<Exp*, unsigned int> exp(unsigned int i) noexcept(false) {
             inext = another_itemp;
 
             if (!binop) {
-                std::cout << "no binop found\n";
                 binop = new BinOp();
                 binop->op = opref;
                 binop->left = lref;
@@ -216,7 +214,6 @@ std::pair<Exp*, unsigned int> exp(unsigned int i) noexcept(false) {
 
 // exp_p4 ::= exp_p3 (binop_p2 exp_p3)*
 std::pair<Exp*, unsigned int> exp_p4(unsigned int i) noexcept(false) {
-    std::cout << "exp_p4\n";
     if (i >= tokens.size()) throw fail();
     auto [lref, inext] = exp_p3(i);
     BinOp* binop = nullptr;
@@ -247,7 +244,6 @@ std::pair<Exp*, unsigned int> exp_p4(unsigned int i) noexcept(false) {
 
 // exp_p3 ::= exp_p2 (binop_p1 exp_p2)*
 std::pair<Exp*, unsigned int> exp_p3(unsigned int i) noexcept(false) {
-    std::cout << "exp_p3\n";
     if (i >= tokens.size()) throw fail();
     auto [lref, inext] = exp_p2(i);
     BinOp* binop = nullptr;
@@ -278,7 +274,6 @@ std::pair<Exp*, unsigned int> exp_p3(unsigned int i) noexcept(false) {
 
 // exp_p2 ::= unop* exp_p1
 std::pair<Exp*, unsigned int> exp_p2(unsigned int i) noexcept(false) {
-    std::cout << "exp_p2\n";
     if (i >= tokens.size()) throw fail();
     try {
         auto [op, itemp] = unop(i);
@@ -296,7 +291,6 @@ std::pair<Exp*, unsigned int> exp_p2(unsigned int i) noexcept(false) {
 //          | `(` exp `)`
 //          | id exp_ac*
 std::pair<Exp*, unsigned int> exp_p1(unsigned int i) noexcept(false) {
-    std::cout << "exp_p1\n";
     if (i >= tokens.size()) throw fail();
     if (tokens[i].substr(0, 3) == "Num") {
         Num* num = new Num();
@@ -336,7 +330,6 @@ std::pair<Exp*, unsigned int> exp_p1(unsigned int i) noexcept(false) {
 //          | `.` id
 //          | `(` args? `)`
 std::pair<Exp*, unsigned int> exp_ac(unsigned int i, Exp* e) noexcept(false) {
-    std::cout << "exp_ac" << i << "\n";
     if (i >= tokens.size()) throw fail();
     if (tokens[i] == "OpenBracket") {
         auto [another_e, itemp] = exp(i+1);
@@ -372,7 +365,6 @@ std::pair<Exp*, unsigned int> exp_ac(unsigned int i, Exp* e) noexcept(false) {
 
 // args ::= exp (`,` exp)*
 std::pair<std::vector<Exp*>, unsigned int> args(unsigned int i) noexcept(false) {
-    std::cout << "args\n";
     std::vector<Exp*> vec;
     auto [e, itemp] = exp(i);
     vec.push_back(e);
