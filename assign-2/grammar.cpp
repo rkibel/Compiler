@@ -344,7 +344,7 @@ std::pair<Exp*, unsigned int> exp_ac(unsigned int i, Exp* e) noexcept(false) {
         if (tokens[i+1].substr(0, 2) == "Id") {
             ExpFieldAccess* efa = new ExpFieldAccess();
             efa->ptr = e;
-            efa->field = tokens[i+1].substr(4, tokens[i+1].size()-4);
+            efa->field = tokens[i+1].substr(3, tokens[i+1].size()-4);
             return std::make_pair(efa, i+2);
         }
     }
