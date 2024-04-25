@@ -83,7 +83,7 @@ std::pair<Type*, unsigned int> type_fp(unsigned int i, Type* ti) noexcept(false)
                 else throw fail();
             }
         } catch (fail& f) {}
-        if (tokens[itemp] == "CloseParen") { //If type comes back not as int, id, or func (type_ad)
+        if (itemp < tokens.size() && tokens[itemp] == "CloseParen") { //If type comes back not as int, id, or func (type_ad)
             return type_ar(itemp+1, fn);    
         }
     }
@@ -121,7 +121,7 @@ std::pair<Type*, unsigned int> funtype(unsigned int i) noexcept(false) {
                 else throw fail(); //No more arguments
             }
         } catch(fail& f) {} //No more arguments, close paren then arrow
-        if (tokens[i+1] == "CloseParen" && tokens[i+2] == "Arrow") {
+        if (i+2 < tokens.size() && tokens[i+1] == "CloseParen" && tokens[i+2] == "Arrow") {
             auto [t, itemp] = rettyp(i+3);
             fn->ret = t;
             return std::make_pair(fn, itemp);
@@ -305,7 +305,7 @@ std::pair<Exp*, unsigned int> exp_p1(unsigned int i) noexcept(false) {
     else if (tokens[i] == "Nil") { return std::make_pair(new Nil(), i+1); }
     else if (tokens[i] == "OpenParen") {
         auto [e, itemp] = exp(i+1);
-        if (tokens[itemp] == "CloseParen") { return std::make_pair(e, itemp+1); }
+        if (itemp < tokens.size() && tokens[itemp] == "CloseParen") { return std::make_pair(e, itemp+1); }
         throw fail();
     }
     else if (tokens[i].substr(0, 2) == "Id") {
@@ -333,7 +333,7 @@ std::pair<Exp*, unsigned int> exp_ac(unsigned int i, Exp* e) noexcept(false) {
     if (i >= tokens.size()) throw fail();
     if (tokens[i] == "OpenBracket") {
         auto [another_e, itemp] = exp(i+1);
-        if (tokens[itemp] == "CloseBracket") {
+        if (itemp < tokens.size() && tokens[itemp] == "CloseBracket") {
             ExpArrayAccess* eaa = new ExpArrayAccess();
             eaa->ptr = e;
             eaa->index = another_e;
@@ -341,7 +341,7 @@ std::pair<Exp*, unsigned int> exp_ac(unsigned int i, Exp* e) noexcept(false) {
         }
     }
     else if (tokens[i] == "Dot") {
-        if (tokens[i+1].substr(0, 2) == "Id") {
+        if (i+1 < tokens.size() && tokens[i+1].substr(0, 2) == "Id") {
             ExpFieldAccess* efa = new ExpFieldAccess();
             efa->ptr = e;
             efa->field = tokens[i+1].substr(3, tokens[i+1].size()-4);
@@ -351,20 +351,21 @@ std::pair<Exp*, unsigned int> exp_ac(unsigned int i, Exp* e) noexcept(false) {
     else if (tokens[i] == "OpenParen") {
         try {
             auto [list_e, itemp] = args(i+1);
-            if (tokens[itemp] == "CloseParen") {
+            if (itemp < tokens.size() && tokens[itemp] == "CloseParen") {
                 ExpCall* ec = new ExpCall();
                 ec->callee = e;
                 ec->args = list_e;
                 return std::make_pair(ec, itemp+1);
             }
         } catch (fail& f){}
-        if (tokens[i+1] == "CloseParen") return std::make_pair(e, i+2);
+        if (i+1 < tokens.size() && tokens[i+1] == "CloseParen") return std::make_pair(e, i+2);
     }
     throw fail();
 }
 
 // args ::= exp (`,` exp)*
 std::pair<std::vector<Exp*>, unsigned int> args(unsigned int i) noexcept(false) {
+    if (i >= tokens.size()) throw fail();
     std::vector<Exp*> vec;
     auto [e, itemp] = exp(i);
     vec.push_back(e);
@@ -379,6 +380,118 @@ std::pair<std::vector<Exp*>, unsigned int> args(unsigned int i) noexcept(false) 
         }
     } catch (fail& f) {}
     return std::make_pair(vec, itemp);
+}
+
+// lval ::= `*`* id access*
+std::pair<Lval*, unsigned int> lval(unsigned int i) noexcept(false) {
+    if (i >= tokens.size()) throw fail();
+    if (tokens[i] == "Star") {
+        auto [lval1, itemp] = lval(i+1);
+        LvalDeref* lvd = new LvalDeref();
+        lvd->lval = lval1;
+        return std::make_pair(lvd, itemp);
+    }
+    if (tokens[i].substr(0, 2) == "Id") {
+        LvalId* lvalid = new LvalId();
+        lvalid->name = tokens[i].substr(3, tokens[i].size() - 4);
+        Lval* ret = lvalid;
+        unsigned int itemp = i+1;
+        try {
+            while (itemp < tokens.size()) {
+                auto [lv, inext] = access(itemp, ret);
+                ret = lv;
+                itemp = inext;
+            }
+        } catch (fail& f) {}
+        return std::make_pair(ret, itemp);
+    }
+    throw fail();
+}
+
+// access ::= `[` exp `]` 
+//          | `.` id
+std::pair<Lval*, unsigned int> access(unsigned int i, Lval* lv) noexcept(false) {
+    if (i >= tokens.size()) throw fail();
+    if (tokens[i] == "OpenBracket") {
+        auto [e, itemp] = exp(i+1);
+        if (itemp < tokens.size() && tokens[itemp] == "CloseBracket") {
+            LvalArrayAccess* laa = new LvalArrayAccess();
+            laa->ptr = lv;
+            laa->index = e;
+            return std::make_pair(laa, itemp+1);
+        }
+    }
+    else if (tokens[i] == "Dot") {
+        if (i+1 < tokens.size() && tokens[i+1].substr(0, 2) == "Id") {
+            LvalFieldAccess* lfa = new LvalFieldAccess();
+            lfa->ptr = lv;
+            lfa->field = tokens[i+1].substr(3, tokens[i+1].size()-4);
+            return std::make_pair(lfa, i+2);
+        }
+    }
+    throw fail();
+}
+
+// assign_or_call ::= lval gets_or_args
+std::pair<Stmt*, unsigned int> assign_or_call(unsigned int i) noexcept(false) {
+    if (i >= tokens.size()) throw fail();
+    auto [lv, itemp] = lval(i);
+    return gets_or_args(itemp, lv);
+}
+
+// gets_or_args ::= `=` rhs
+//                | `(` args? `)`
+std::pair<Stmt*, unsigned int> gets_or_args(unsigned int i, Lval* lv) noexcept(false) {
+    if (i >= tokens.size()) throw fail();
+    if (tokens[i] == "Gets") {
+        auto [r, itemp] = rhs(i+1);
+        Assign* assign = new Assign();
+        assign->lhs = lv;
+        assign->rhs = r;
+        return std::make_pair(assign, itemp);
+    }
+    else if (tokens[i] == "OpenParen") {
+        StmtCall* stmtcall = new StmtCall();
+        stmtcall->callee = lv;
+        try {
+            auto [exps, itemp] = args(i+1);
+            if (itemp < tokens.size() && tokens[itemp] == "CloseParen") {
+                stmtcall->args = exps;
+                return std::make_pair(stmtcall, itemp+1);
+            }
+        } catch (fail& f) {}
+        if (i + 1 < tokens.size() && tokens[i+1] == "CloseParen") return std::make_pair(stmtcall, i+2);
+    }
+    throw fail();
+}
+
+// rhs ::= exp 
+//       | `new` type exp?
+std::pair<Rhs*, unsigned int> rhs(unsigned int i) noexcept(false) {
+    if (i >= tokens.size()) throw fail();
+    try {
+        auto [e, itemp] = exp(i);
+        RhsExp* rhse = new RhsExp();
+        rhse->exp = e;
+        return std::make_pair(rhse, itemp);
+    } catch (fail& f) {}
+    if (tokens[i] == "New") {
+        auto [t, itemp1] = type(i+1);
+        // too many news
+        New* n = new New();
+        n->type = t;
+        try {
+            auto [e, itemp2] = exp(itemp1);
+            n->amount = e;
+            return std::make_pair(n, itemp2);
+        } catch (fail& f) {}
+        // if no exp is in place for new, create Num(1) as exp
+        Num* num = new Num();
+        num->n = 1;
+        n->amount = num;
+        return std::make_pair(n, itemp1);
+    }
+    throw fail();
 }
 
 };

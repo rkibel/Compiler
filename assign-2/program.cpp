@@ -104,18 +104,6 @@ struct Gte : BinaryOp{
     void print(std::ostream& os) const override { os << "Gte"; }
 };
 
-// TODO
-struct Decl {
-    std::string name;
-    Type type;
-};
-
-// TODO
-struct Struct {
-    std::string name;
-    std::vector<Decl> fields;
-};
-
 struct Exp {
     virtual void print(std::ostream& os) const {}
     virtual ~Exp() {}
@@ -183,54 +171,149 @@ struct ExpCall : Exp {
     }
 };
 
-// TODO EVERYTHING BELOW THIS
-struct Lval {};
+struct Lval {
+    virtual void print(std::ostream& os) const {}
+    virtual ~Lval() {}
+    friend std::ostream& operator<<(std::ostream& os, const Lval& lval) {
+        lval.print(os);
+        return os;
+    }
+};
 struct LvalId : Lval {
     std::string name;
+    void print(std::ostream& os) const override { os << "Id(" << name << ")"; }
 };
 struct LvalDeref : Lval {
-    Lval lval;
+    Lval* lval;
+    void print(std::ostream& os) const override { os << "Deref(" << *lval << ")"; }
+    ~LvalDeref() { delete lval; }
 };
 struct LvalArrayAccess : Lval {
-    Lval ptr;
-    Exp index;
+    Lval* ptr;
+    Exp* index;
+    void print(std::ostream& os) const override {
+        os << "ArrayAccess(\nptr = " << *ptr << ",\nindex = " << *index << "\n)";
+    }
+    ~LvalArrayAccess() { delete ptr; delete index; }
 };
 struct LvalFieldAccess : Lval {
-    Lval ptr;
+    Lval* ptr;
     std::string field;
+    void print(std::ostream& os) const override {
+        os << "FieldAccess(\nptr = " << *ptr << ",\nfield = " << field << "\n)";
+    }
+    ~LvalFieldAccess() { delete ptr; }
 };
 
-struct Rhs {};
+
+struct Rhs {
+    virtual void print(std::ostream& os) const {}
+    virtual ~Rhs() {}
+    friend std::ostream& operator<<(std::ostream& os, const Rhs& rhs) {
+        rhs.print(os);
+        return os;
+    }
+};
 struct RhsExp : Rhs {
-    Exp exp;
+    Exp* exp;
+    void print(std::ostream& os) const override { os << *exp; }
+    ~RhsExp() { delete exp; }
 };
 struct New : Rhs {
-    Type type;
-    Exp amount;
+    Type* type;
+    Exp* amount;
+    void print(std::ostream& os) const override { os << "New(" << *type << ", " << *amount << ")"; }
+    ~New() { delete type; delete amount; }
 };
 
-struct Stmt {};
-struct Break : Stmt {};
-struct Continue : Stmt {};
+struct Stmt {
+    virtual void print(std::ostream& os) const {}
+    virtual ~Stmt() {}
+    friend std::ostream& operator<<(std::ostream& os, const Stmt& stmt) {
+        stmt.print(os);
+        return os;
+    }
+};
+struct Break : Stmt {
+    void print(std::ostream& os) const override { os << "Break"; }
+};
+struct Continue : Stmt {
+    void print(std::ostream& os) const override { os << "Continue"; }
+};
 struct Return : Stmt {
-    std::optional<Exp> exp;
+    std::optional<Exp*> exp;
+    void print(std::ostream& os) const override {
+        os << "Return("; 
+        if (exp.has_value()) os << *exp;
+        else os << "_";
+        os << ")";
+    }
+    ~Return() { if (exp.has_value()) delete exp.value(); exp.reset(); }
 };
 struct Assign : Stmt {
-    Lval lhs;
-    Rhs rhs;
+    Lval* lhs;
+    Rhs* rhs;
+    void print(std::ostream& os) const override {
+        os << "Assign(\nlhs = " << *lhs << ",\nrhs = " << *rhs << "\n)";
+    }
+    ~Assign() { delete lhs; delete rhs; }
 };
 struct StmtCall : Stmt {
-    Lval callee;
-    std::vector<Exp> args;
+    Lval* callee;
+    std::vector<Exp*> args;
+    void print(std::ostream& os) const override {
+        os << "Call(\ncallee = " << *callee << ",\nargs = [";
+        for (unsigned int i = 0; i < args.size(); i++) {
+            os << *(args[i]);
+            if (i != args.size() - 1) os << ", ";
+        }
+        os << "]\n)";
+    }
+    ~StmtCall() { delete callee; for (Exp* exp: args) delete exp; }
 };
 struct If : Stmt {
-    Exp guard;
-    std::vector<Stmt> tt;
-    std::vector<Stmt> ff;
+    Exp* guard;
+    std::vector<Stmt*> tt;
+    std::vector<Stmt*> ff;
+    void print(std::ostream& os) const override {
+        os << "If(\nguard = " << *guard << ",\ntt = [";
+        for (unsigned int i = 0; i < tt.size(); i++) {
+            os << *(tt[i]);
+            if (i != tt.size() - 1) os << ", ";
+        }
+        os << "],\nff = [";
+        for (unsigned int i = 0; i < ff.size(); i++) {
+            os << *(ff[i]);
+            if (i != ff.size() - 1) os << ", ";
+        }
+        os << "]\n)";
+    }
+    ~If() { delete guard; for (Stmt* stmt: tt) delete stmt; for (Stmt* stmt: ff) delete stmt; }
 };
 struct While : Stmt {
-    Exp guard;
-    std::vector<Stmt> body;
+    Exp* guard;
+    std::vector<Stmt*> body;
+    void print(std::ostream& os) const override {
+        os << "While(\nguard = " << *guard << ",\nbody = [";
+        for (unsigned int i = 0; i < body.size(); i++) {
+            os << *(body[i]);
+            if (i != body.size() - 1) os << ", ";
+        }
+        os << "]\n)";
+    }
+    ~While() { delete guard; for (Stmt* stmt: body) delete stmt; }
+};
+
+
+// TODO EVERYTHING BELOW THIS
+struct Decl {
+    std::string name;
+    Type* type;
+};
+
+struct Struct {
+    std::string name;
+    std::vector<Decl> fields;
 };
 
 struct Function {

@@ -35,8 +35,8 @@ int main(int argc, char** argv) {
     unsigned int i = 0;
     while (i < tokens.size()) {
         try {
-            auto [args, itemp] = g.args(i);
-            for (auto arg: args) std::cout << *arg << "\n";
+            auto [arg, itemp] = g.assign_or_call(i);
+            std::cout << *arg << "\n";
             i = itemp;
         } catch(fail& f) {
             std::cout << "fail happened at i = " << i << "\n";
