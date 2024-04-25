@@ -24,6 +24,7 @@ struct StructType : Type {
 };
 struct Fn : Type {
     std::vector<Type*> prms;
+    // WARNING: if there is no return for Fn, ret is Any (look at struct Any : Type)
     Type* ret;
     void print(std::ostream& os) const override { 
         os << "Fn(prms = [";
@@ -170,6 +171,11 @@ struct ExpCall : Exp {
         for (Exp* exp: args) delete exp;
     }
 };
+struct AnyExp : Exp {
+    void print(std::ostream& os) const override { 
+        os << "_";
+    }
+};
 
 struct Lval {
     virtual void print(std::ostream& os) const {}
@@ -241,14 +247,12 @@ struct Continue : Stmt {
     void print(std::ostream& os) const override { os << "Continue"; }
 };
 struct Return : Stmt {
-    std::optional<Exp*> exp;
+    // WARNING: if there is no return, exp is AnyExp : Exp
+    Exp* exp;
     void print(std::ostream& os) const override {
-        os << "Return("; 
-        if (exp.has_value()) os << *exp;
-        else os << "_";
-        os << ")";
+        os << "Return(" << *exp << ")";
     }
-    ~Return() { if (exp.has_value()) delete exp.value(); exp.reset(); }
+    ~Return() { delete exp; }
 };
 struct Assign : Stmt {
     Lval* lhs;
@@ -304,29 +308,99 @@ struct While : Stmt {
     ~While() { delete guard; for (Stmt* stmt: body) delete stmt; }
 };
 
-
-// TODO EVERYTHING BELOW THIS
 struct Decl {
     std::string name;
     Type* type;
+    ~Decl() { delete type; }
+    friend std::ostream& operator<<(std::ostream& os, const Decl& decl) {
+        os << "Decl(" << decl.name << ", " << *(decl.type) << ")";
+        return os;
+    }
 };
 
 struct Struct {
     std::string name;
-    std::vector<Decl> fields;
+    std::vector<Decl*> fields;
+    ~Struct() { for (Decl* decl: fields) delete decl; }
+    friend std::ostream& operator<<(std::ostream& os, const Struct& str) {
+        os << "Struct(\nname = " << str.name << ",\nfields = [";
+        for (unsigned int i = 0; i < str.fields.size(); i++) {
+            os << *(str.fields[i]);
+            if (i != str.fields.size() - 1) os << ", ";
+        }
+        os << "]\n)";
+        return os;
+    }
 };
 
 struct Function {
     std::string name;
-    std::vector<Decl> params;
-    std::optional<Type> rettyp;
-    std::vector<std::pair<Decl, std::optional<Exp>>> locals;
-    std::vector<Stmt> stmts;
+    std::vector<Decl*> params;
+    // WARNING: if function has no return type, rettyp is Any : Type
+    Type* rettyp;
+    // WARNING: for each local, if there is no value after declaration, Exp is AnyExp : Exp
+    std::vector<std::pair<Decl*, Exp*>> locals;
+    std::vector<Stmt*> stmts;
+    ~Function() { 
+        for (Decl* decl: params) delete decl;
+        delete rettyp;
+        for (auto [decl, exp]: locals) { delete decl; delete exp; }
+        for (Stmt* stmt: stmts) delete stmt;
+    }
+    friend std::ostream& operator<<(std::ostream& os, const Function& func) {
+        os << "Function(\nname = " << func.name << ",\nparams = [";
+        for (unsigned int i = 0; i < func.params.size(); i++) {
+            os << *(func.params[i]);
+            if (i != func.params.size() - 1) os << ", ";
+        }
+        os << "],\nrettyp = " << *(func.rettyp) << ",\nlocals = [";
+        for (unsigned int i = 0; i < func.locals.size(); i++) {
+            os << "(" << *(func.locals[i].first) << ", " << *(func.locals[i].second) << ")";
+            if (i != func.locals.size() - 1) os << ", ";
+        }
+        os << "],\nstmts = [";
+        for (unsigned int i = 0; i < func.stmts.size(); i++) {
+            os << *(func.stmts[i]);
+            if (i != func.locals.size() - 1) os << ", ";
+        }
+        os << "]\n)";
+        return os;
+    }
 };
 
 struct Program {
-    std::vector<Decl> globals;
-    std::vector<Struct> structs;
-    std::vector<Decl> externs;
-    std::vector<Function> functions;
+    std::vector<Decl*> globals;
+    std::vector<Struct*> structs;
+    std::vector<Decl*> externs;
+    std::vector<Function*> functions;
+    ~Program() { 
+        for (Decl* decl: globals) delete decl;
+        for (Struct* str: structs) delete str;
+        for (Decl* decl: externs) delete decl;
+        for (Function* function: functions) delete function;
+    }
+    friend std::ostream& operator<<(std::ostream& os, const Program& prog) {
+        os << "Program(\nglobals = [";
+        for (unsigned int i = 0; i < prog.globals.size(); i++) {
+            os << *(prog.globals[i]);
+            if (i != prog.globals.size() - 1) os << ", ";
+        }
+        os << "],\nstructs = [";
+        for (unsigned int i = 0; i < prog.structs.size(); i++) {
+            os << *(prog.structs[i]);
+            if (i != prog.structs.size() - 1) os << ", ";
+        }
+        os << "],\nexterns = [";
+        for (unsigned int i = 0; i < prog.externs.size(); i++) {
+            os << *(prog.externs[i]);
+            if (i != prog.externs.size() - 1) os << ", ";
+        }
+        os << "],\nfunctions = [";
+        for (unsigned int i = 0; i < prog.functions.size(); i++) {
+            os << *(prog.functions[i]);
+            if (i != prog.functions.size() - 1) os << ", ";
+        }
+        os << "]\n)";
+        return os;
+    }
 };
