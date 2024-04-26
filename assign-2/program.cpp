@@ -361,7 +361,7 @@ struct Function {
         os << "],\nstmts = [";
         for (unsigned int i = 0; i < func.stmts.size(); i++) {
             os << *(func.stmts[i]);
-            if (i != func.locals.size() - 1) os << ", ";
+            if (i != func.stmts.size() - 1) os << ", ";
         }
         os << "]\n)";
         return os;

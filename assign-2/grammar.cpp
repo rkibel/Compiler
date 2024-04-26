@@ -509,7 +509,6 @@ std::pair<Decl*, unsigned int> decl(unsigned int i) noexcept(false) {
 
 // decls ::= decl (`,` decl)*
 std::pair<std::vector<Decl*>, unsigned int> decls(unsigned int i) noexcept(false) {
-    std::cout << "decls\n";
     if (i >= tokens.size()) throw fail();
     std::vector<Decl*> vec;
     auto [d, itemp] = decl(i);
@@ -529,7 +528,6 @@ std::pair<std::vector<Decl*>, unsigned int> decls(unsigned int i) noexcept(false
 
 // extern ::= `extern` id `:` funtype `;`
 std::pair<Decl*, unsigned int> exter(unsigned int i) noexcept(false) {
-    std::cout << "extern\n";
     if (i >= tokens.size()) throw fail();
     if (i + 2 < tokens.size() && tokens[i] == "Extern" && tokens[i+1].substr(0, 2) == "Id" && tokens[i+2] == "Colon") {
         auto [t, itemp] = funtype(i+3);
@@ -548,6 +546,7 @@ std::pair<Function*, unsigned int> fundef(unsigned int i) noexcept(false) {
     if (i >= tokens.size()) throw fail();
     if (i + 2 < tokens.size() && tokens[i] == "Fn" && tokens[i+1].substr(0, 2) == "Id" && tokens[i+2] == "OpenParen") {
         Function* func = new Function();
+        func->name = tokens[i+1].substr(3, tokens[i+1].size()-4);
         unsigned int itemp = i+3;
         try {
             auto [dec, itemp1] = decls(itemp);
@@ -720,11 +719,10 @@ std::pair<std::vector<Stmt*>, unsigned int> block(unsigned int i) noexcept(false
 //  program ::= toplevel+
 Program* program(unsigned int i) noexcept(false) {
     if (i >= tokens.size()) throw fail();
-    std::cout << "entering program\n";
     Program* prog = new Program();
     unsigned int itemp = toplevel(i, prog);
     try {
-        while (itemp < tokens[i].size()) {
+        while (itemp < tokens.size()) {
             itemp = toplevel(itemp, prog);
         }
     } catch (fail& f) {}
@@ -738,7 +736,6 @@ Program* program(unsigned int i) noexcept(false) {
 //            | fundef    # function definition
 unsigned int toplevel(unsigned int i, Program* prog) noexcept(false) {
     if (i >= tokens.size()) throw fail();
-    std::cout << "toplevel\n";
     try {
         auto [vec_globals, itemp] = glob(i);
         for (auto global: vec_globals) prog->globals.push_back(global);
@@ -762,7 +759,6 @@ unsigned int toplevel(unsigned int i, Program* prog) noexcept(false) {
 // # global variable declaration.
 // glob ::= `let` decls `;`
 std::pair<std::vector<Decl*>, unsigned int> glob(unsigned int i) {
-    std::cout << "glob\n";
     if (i >= tokens.size()) throw fail();
     if (tokens[i] == "Let") {
         auto [vec, itemp] = decls(i+1);

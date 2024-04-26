@@ -36,7 +36,7 @@ int main(int argc, char** argv) {
         Program* prog = g.program(0);
         std::cout << *prog;
     } catch (fail& f) {
-        std::cout << "There was a fail :(";
+        std::cout << "parse error at token _\n";
     }
 
     return 0;
