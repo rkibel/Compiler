@@ -494,4 +494,297 @@ std::pair<Rhs*, unsigned int> rhs(unsigned int i) noexcept(false) {
     throw fail();
 }
 
+// decl ::= id `:` type
+std::pair<Decl*, unsigned int> decl(unsigned int i) noexcept(false) {
+    if (i >= tokens.size()) throw fail();
+    if (i+1 < tokens.size() && tokens[i].substr(0, 2) == "Id" && tokens[i+1] == "Colon") {
+        auto [t, itemp] = type(i+2);
+        Decl* d = new Decl();
+        d->name = tokens[i].substr(3, tokens[i].size()-4);
+        d->type = t;
+        return std::make_pair(d, itemp);
+    }
+    throw fail();
+}
+
+// decls ::= decl (`,` decl)*
+std::pair<std::vector<Decl*>, unsigned int> decls(unsigned int i) noexcept(false) {
+    std::cout << "decls\n";
+    if (i >= tokens.size()) throw fail();
+    std::vector<Decl*> vec;
+    auto [d, itemp] = decl(i);
+    vec.push_back(d);
+    try {
+        while (itemp < tokens.size()) {
+            if (tokens[itemp] == "Comma") {
+                auto [another_d, inext] = decl(itemp+1);
+                vec.push_back(another_d);
+                itemp = inext;
+            }
+            else throw fail();
+        }
+    } catch (fail& f) {}
+    return std::make_pair(vec, itemp);
+}
+
+// extern ::= `extern` id `:` funtype `;`
+std::pair<Decl*, unsigned int> exter(unsigned int i) noexcept(false) {
+    std::cout << "extern\n";
+    if (i >= tokens.size()) throw fail();
+    if (i + 2 < tokens.size() && tokens[i] == "Extern" && tokens[i+1].substr(0, 2) == "Id" && tokens[i+2] == "Colon") {
+        auto [t, itemp] = funtype(i+3);
+        if (itemp < tokens.size() && tokens[itemp] == "Semicolon") {
+            Decl* dec = new Decl();
+            dec->name = tokens[i+1].substr(3, tokens[i+1].size() - 4);
+            dec->type = t;
+            return std::make_pair(dec, itemp+1);
+        }
+    }
+    throw fail();
+}
+
+// fundef ::= `fn` id `(` decls? `)` `->` rettyp `{` let* stmt+ `}`
+std::pair<Function*, unsigned int> fundef(unsigned int i) noexcept(false) {
+    if (i >= tokens.size()) throw fail();
+    if (i + 2 < tokens.size() && tokens[i] == "Fn" && tokens[i+1].substr(0, 2) == "Id" && tokens[i+2] == "OpenParen") {
+        Function* func = new Function();
+        unsigned int itemp = i+3;
+        try {
+            auto [dec, itemp1] = decls(itemp);
+            func->params = dec;
+            itemp = itemp1;
+        } catch (fail& f) {}
+        if (itemp + 1 < tokens.size() && tokens[itemp] == "CloseParen" && tokens[itemp+1] == "Arrow") {
+            auto [ret, itemp1] = rettyp(itemp+2);
+            func->rettyp = ret;
+            if (itemp1 < tokens.size() && tokens[itemp1] == "OpenBrace") {
+                itemp1++;
+                try {
+                    while (itemp1 < tokens.size()) {
+                        auto [vec, inext] = let(itemp1);
+                        for (auto pair: vec) func->locals.push_back(pair);
+                        itemp1 = inext;
+                    }
+                } catch (fail& f) {}
+                auto [s, itemp2] = stmt(itemp1);
+                itemp1 = itemp2;
+                func->stmts.push_back(s);
+                try {
+                    while (itemp1 < tokens.size()) {
+                        auto [another_s, inext] = stmt(itemp1);
+                        func->stmts.push_back(another_s);
+                        itemp1 = inext;
+                    }
+                } catch (fail& f) {}
+                if (itemp1 < tokens.size() && tokens[itemp1] == "CloseBrace") return std::make_pair(func, itemp1+1);
+            }
+        }
+    }
+    throw fail();
+}
+
+// let ::= `let` decl (`=` exp)? (`,` decl (`=` exp)?)* `;`
+
+// rewriting this to the following:
+// let ::= `let` intermediate_let (`,` intermediate_let)* `;`
+std::pair<std::vector<std::pair<Decl*, Exp*>>, unsigned int> let(unsigned int i) noexcept(false) {
+    if (i >= tokens.size()) throw fail();
+    if (tokens[i] == "Let") {
+        std::vector<std::pair<Decl*, Exp*>> vec;
+        auto [pair, itemp] = intermediate_let(i+1);
+        vec.push_back(pair);
+        try {
+            while (itemp < tokens.size()) {
+                if (tokens[itemp] == "Comma") {
+                    auto [another_pair, inext] = intermediate_let(itemp+1);
+                    vec.push_back(another_pair);
+                    itemp = inext;
+                }
+                else throw fail();
+            }
+        } catch (fail& f) {}
+        if (itemp < tokens.size() && tokens[itemp] == "Semicolon") return std::make_pair(vec, itemp+1);
+    }
+    throw fail();
+}
+
+// intermediate_let ::= decl (`=` exp)?
+std::pair<std::pair<Decl*, Exp*>, unsigned int> intermediate_let(unsigned int i) noexcept(false) {
+    if (i >= tokens.size()) throw fail();
+    auto [d, itemp] = decl(i);
+    try {
+        if (itemp < tokens.size() && tokens[itemp] == "Gets") {
+            auto [e, itemp1] = exp(itemp+1);
+            std::pair<Decl*, Exp*> p = std::make_pair(d, e);
+            return std::make_pair(p, itemp1);
+        }
+    } catch (fail& f) {}
+    std::pair<Decl*, Exp*> p = std::make_pair(d, new AnyExp());
+    return std::make_pair(p, itemp);
+}
+
+// stmt ::= cond               # conditional
+//        | loop               # loop
+//        | assign_or_call `;` # assignment or function call
+//        | `break` `;`        # break out of a loop
+//        | `continue` `;`     # continue to next iteration of loop
+//        | `return` exp? `;`  # return from function
+std::pair<Stmt*, unsigned int> stmt(unsigned int i) noexcept(false) {
+    if (i >= tokens.size()) throw fail();
+    try {
+        return cond(i);
+    } catch (fail& f) {}
+    try {
+        return loop(i);
+    } catch (fail& f) {}
+    try {
+        auto [res, itemp] = assign_or_call(i);
+        if (itemp < tokens.size() && tokens[itemp] == "Semicolon") return std::make_pair(res, itemp+1);
+        else throw fail();
+    } catch (fail& f) {}
+    if (i + 1 < tokens.size() && tokens[i] == "Break" && tokens[i+1] == "Semicolon") return std::make_pair(new Break(), i+2);
+    if (i + 1 < tokens.size() && tokens[i] == "Continue" && tokens[i+1] == "Semicolon") return std::make_pair(new Continue(), i+2);
+    if (tokens[i] == "Return") {
+        try {
+            auto [e, itemp] = exp(i+1);
+            if (itemp < tokens.size() && tokens[itemp] == "Semicolon") {
+                Return* ret = new Return();
+                ret->exp = e;
+                return std::make_pair(ret, itemp+1);
+            }
+        } catch (fail& f) {}
+        if (i+1 < tokens.size() && tokens[i+1] == "Semicolon") {
+            Return* ret = new Return();
+            AnyExp* any = new AnyExp();
+            ret->exp = any;
+            return std::make_pair(ret, i+2);
+        }
+    }
+    throw fail();
+}
+
+
+// cond ::= `if` exp block (`else` block)?
+std::pair<Stmt*, unsigned int> cond(unsigned int i) noexcept(false) {
+    if (i >= tokens.size()) throw fail();
+    if (tokens[i] == "If") {
+        auto [e, itemp] = exp(i+1);
+        auto [vec, itemp1] = block(itemp);
+        If* ifs = new If();
+        ifs->guard = e;
+        ifs->tt = vec;
+        try {
+            if (itemp1 < tokens.size() && tokens[itemp1] == "Else") {
+                auto [another_vec, itemp2] = block(itemp1+1);
+                ifs->ff = another_vec;
+                itemp1 = itemp2;
+            }
+        } catch (fail& f) {}
+        return std::make_pair(ifs, itemp1);
+    }
+    throw fail();
+}
+
+// loop ::= `while` exp block 
+std::pair<Stmt*, unsigned int> loop(unsigned int i) noexcept(false) {
+    if (i >= tokens.size()) throw fail();
+    if (tokens[i] == "While") {
+        auto [e, itemp] = exp(i+1);
+        auto [vec, itemp1] = block(itemp);
+        While* wh = new While();
+        wh->guard = e;
+        wh->body = vec;
+        return std::make_pair(wh, itemp1);
+    }
+    throw fail();
+}
+
+// block ::= `{` stmt* `}`
+std::pair<std::vector<Stmt*>, unsigned int> block(unsigned int i) noexcept(false) {
+    if (i >= tokens.size()) throw fail();
+    if (tokens[i] == "OpenBrace") {
+        std::vector<Stmt*> vec;
+        unsigned int itemp = i+1;
+        try {
+            while (itemp < tokens.size()) {
+                auto [s, inext] = stmt(itemp);
+                vec.push_back(s);
+                itemp = inext;
+            }
+        } catch (fail& f) {}
+        if (itemp < tokens.size() && tokens[itemp] == "CloseBrace") return std::make_pair(vec, itemp+1);
+    }
+    throw fail();
+}
+
+//  program ::= toplevel+
+Program* program(unsigned int i) noexcept(false) {
+    if (i >= tokens.size()) throw fail();
+    std::cout << "entering program\n";
+    Program* prog = new Program();
+    unsigned int itemp = toplevel(i, prog);
+    try {
+        while (itemp < tokens[i].size()) {
+            itemp = toplevel(itemp, prog);
+        }
+    } catch (fail& f) {}
+    if (itemp == tokens.size()) return prog;
+    throw fail();
+}
+
+// toplevel ::= glob      # global variable declaration
+//            | typedef   # struct type definition
+//            | extern    # external function declaration
+//            | fundef    # function definition
+unsigned int toplevel(unsigned int i, Program* prog) noexcept(false) {
+    if (i >= tokens.size()) throw fail();
+    std::cout << "toplevel\n";
+    try {
+        auto [vec_globals, itemp] = glob(i);
+        for (auto global: vec_globals) prog->globals.push_back(global);
+        return itemp;
+    } catch (fail& f) {}
+    try {
+        auto [str, itemp] = typedefn(i);
+        prog->structs.push_back(str);
+        return itemp;
+    } catch (fail& f) {}
+    try {
+        auto [dec, itemp] = exter(i);
+        prog->externs.push_back(dec);
+        return itemp;
+    } catch (fail& f) {}
+    auto [function, itemp] = fundef(i);
+    prog->functions.push_back(function);
+    return itemp;
+}
+
+// # global variable declaration.
+// glob ::= `let` decls `;`
+std::pair<std::vector<Decl*>, unsigned int> glob(unsigned int i) {
+    std::cout << "glob\n";
+    if (i >= tokens.size()) throw fail();
+    if (tokens[i] == "Let") {
+        auto [vec, itemp] = decls(i+1);
+        if (itemp < tokens.size() && tokens[itemp] == "Semicolon") return std::make_pair(vec, itemp+1);
+    }
+    throw fail();
+}
+
+// # struct type definition.
+// typdef ::= `struct` id `{` decls `}`
+std::pair<Struct*, unsigned int> typedefn(unsigned int i) {
+    if (i >= tokens.size()) throw fail();
+    if (i+2 < tokens.size() && tokens[i] == "Struct" && tokens[i+1].substr(0, 2) == "Id" && tokens[i+2] == "OpenBrace") {
+        auto [vec, itemp] = decls(i+3);
+        if (itemp < tokens.size() && tokens[itemp] == "CloseBrace") {
+            Struct* str = new Struct();
+            str->name = tokens[i+1].substr(3, tokens[i+1].size()-4);
+            str->fields = vec;
+            return std::make_pair(str, itemp+1);
+        }
+    }
+    throw fail();
+}
+
 };

@@ -32,16 +32,11 @@ int main(int argc, char** argv) {
     
     Grammar g;
     g.tokens = tokens;
-    unsigned int i = 0;
-    while (i < tokens.size()) {
-        try {
-            auto [arg, itemp] = g.assign_or_call(i);
-            std::cout << *arg << "\n";
-            i = itemp;
-        } catch(fail& f) {
-            std::cout << "fail happened at i = " << i << "\n";
-            i++;
-        }
+    try {
+        Program* prog = g.program(0);
+        std::cout << *prog;
+    } catch (fail& f) {
+        std::cout << "There was a fail :(";
     }
 
     return 0;

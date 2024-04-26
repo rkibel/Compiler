@@ -222,7 +222,7 @@ struct Rhs {
 };
 struct RhsExp : Rhs {
     Exp* exp;
-    void print(std::ostream& os) const override { os << *exp; }
+    void print(std::ostream& os) const override { os << "RhsExp(" << *exp << ")"; }
     ~RhsExp() { delete exp; }
 };
 struct New : Rhs {
@@ -341,7 +341,7 @@ struct Function {
     // WARNING: for each local, if there is no value after declaration, Exp is AnyExp : Exp
     std::vector<std::pair<Decl*, Exp*>> locals;
     std::vector<Stmt*> stmts;
-    ~Function() { 
+    ~Function() {
         for (Decl* decl: params) delete decl;
         delete rettyp;
         for (auto [decl, exp]: locals) { delete decl; delete exp; }
