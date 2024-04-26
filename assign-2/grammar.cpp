@@ -349,16 +349,16 @@ std::pair<Exp*, unsigned int> exp_ac(unsigned int i, Exp* e) noexcept(false) {
         }
     }
     else if (tokens[i] == "OpenParen") {
+        ExpCall* ec = new ExpCall();
+        ec -> callee = e;
         try {
             auto [list_e, itemp] = args(i+1);
             if (itemp < tokens.size() && tokens[itemp] == "CloseParen") {
-                ExpCall* ec = new ExpCall();
-                ec->callee = e;
                 ec->args = list_e;
                 return std::make_pair(ec, itemp+1);
             }
         } catch (fail& f){}
-        if (i+1 < tokens.size() && tokens[i+1] == "CloseParen") return std::make_pair(e, i+2);
+        if (i+1 < tokens.size() && tokens[i+1] == "CloseParen") return std::make_pair(ec, i+2);
     }
     throw fail();
 }
