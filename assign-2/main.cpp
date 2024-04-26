@@ -28,8 +28,7 @@ int main(int argc, char** argv) {
     std::string s;
     while (std::getline(ss, s, '\n')) { 
         tokens.push_back(s);
-    }
-    
+    }    
     Grammar g;
     g.tokens = tokens;
     try {

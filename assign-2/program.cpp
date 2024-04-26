@@ -222,7 +222,7 @@ struct Rhs {
 };
 struct RhsExp : Rhs {
     Exp* exp;
-    void print(std::ostream& os) const override { os << "RhsExp(" << *exp << ")"; }
+    void print(std::ostream& os) const override { os << *exp; }
     ~RhsExp() { delete exp; }
 };
 struct New : Rhs {
