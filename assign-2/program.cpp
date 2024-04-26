@@ -163,8 +163,8 @@ struct ExpCall : Exp {
         for (unsigned int i = 0; i < args.size(); i++) {
             os << *args[i];
             if (i != args.size() - 1) os << ",";
-            os << "\n]\n)";
         }
+        os << "\n]\n)";
     }
     ~ExpCall() {
         delete callee;
