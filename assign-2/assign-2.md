@@ -234,4 +234,3 @@ The grading will consist of three test suites:
 - TS2: syntactically correct but invalid programs: 50 points
 
 - TS3: syntactically incorrect programs: 10 points
-
