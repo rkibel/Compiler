@@ -1,0 +1,114 @@
+Id:
+- Valid: Id(x)
+- Invalid: Id(2)--works but won't with type checking
+
+Num:
+- Valid: Num(3)
+- Invalid: Num(3.0), Num(a)-catches a check
+
+Unop:
+- Valid: Star Id(x),  Dash Id(x)
+- Invalid: Id(x) Dash, Star Num(2), -Struct (all fail)
+- Multiple: 
+    - Valid: Star Dash Id(x) (works)
+
+Binop
+- Valid: Id(x) Dash/Plus Id(y)
+- Id(x) Star Id(y)
+-  OpenParen Id(x) Plus Id(y) CloseParen Star Id(y)
+-Invalid: Id(x) Dash Plus Id(y) - correctly fails
+
+Binop and Unop
+- Valid
+- Id(x) Dash Star Id(y) - yes
+- Id(x) Dash Star Id(y) - yes
+- Star OpenParen Dash Id(x) Plus Id(x) OpenBracket Star Id(x) CloseBracket CloseParen OpenBracket Num(2) Dash Id(x) CloseBracket
+
+Access:
+- Valid: Id(x) OpenBracket Num(1) CloseBracket
+- Invalid: Num(a) no, Id(2) yes
+    - Id(x) OpenBracket Id(1) CloseBracket - passes, typez
+-Multiple: 
+1.  Id(x)   //Works
+    OpenBracket
+    Num(1)
+    CloseBracket
+    OpenBracket
+    Num(2)
+    CloseBracket
+    OpenBracket
+    Num(3)
+    CloseBracket
+2. Two Star's infront of 1. works
+
+
+Several:
+x+*y-(z[1]*2); //Success
+Id(x)
+Plus
+Star
+Id(y)
+Dash
+OpenParen
+Id(z)
+OpenBracket
+Num(1)
+CloseBracket
+Star
+Num(2)
+CloseParen
+Semicolon
+
+
+Duplicate names:
+#1
+let x:int, x:int, x:int;
+struct y{a:int, a:int}
+fn main() -> int {
+return 0;
+}
+
+This works. So we just store one but it's not an error.
+
+#2: Nil type errors in main and other function
+struct s{a:int, a:int}
+extern e:(int, int) -> int;
+fn f(fval:int) -> int { 
+    let x:int;
+    let y:int = 2;
+    return 3; 
+}
+fn g(gval:int) -> _ {
+    let a:int = 3 + nil;
+    return;
+}
+let a:int, b:int, c:int;
+fn main() -> int {
+let x:int;
+let y:int = 2;
+let z:int = x + nil;
+return 0;
+}
+
+
+#2: Function calling another function
+struct s{a:int, a:int}
+extern e:(int, int) -> int;
+fn f(fval:int) -> int { 
+    let x:int;
+    let y:int = 2;
+    g(x);
+    h(x);
+    return 3; 
+}
+fn g(gval:int) -> _ {
+    let a:int = 3 + 2;
+    return;
+}
+let a:int, b:int, c:int;
+fn main() -> int {
+let x:int;
+let y:int = 2;
+let z:int = x + y;
+return z;
+}
