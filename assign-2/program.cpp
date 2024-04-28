@@ -2,6 +2,11 @@
 #include <vector>
 #include <optional>
 #include <iostream>
+#include <unordered_map>
+
+class typeFail : std::exception {};
+using Gamma = std::unordered_map<std::string, TypeName>;
+using Delta = std::unordered_map<std::string, Gamma>;
 
 struct TypeName {
     std::string type_name;
@@ -153,6 +158,7 @@ struct Gte : BinaryOp{
 
 struct Exp {
     virtual void print(std::ostream& os) const {}
+    virtual TypeName typeCheck(Gamma& gamma, Delta& delta) const noexcept(false) {};
     virtual ~Exp() {}
     friend std::ostream& operator<<(std::ostream& os, const Exp& exp) {
         exp.print(os);
@@ -162,6 +168,9 @@ struct Exp {
 struct Num : Exp {
     int32_t n;
     void print(std::ostream& os) const override { os << "Num(" << n << ")"; }
+    TypeName typeCheck(Gamma& gamma, Delta& delta) const noexcept(false) override {
+        return TypeName("int");
+    };
 };
 struct ExpId : Exp {
     std::string name;

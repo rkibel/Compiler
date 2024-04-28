@@ -41,3 +41,12 @@ Icon
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+
+# assign-2
+assign-2/lexer
+assign-2/parse
+assign-2/*.txt
+=======
+.vscode
+

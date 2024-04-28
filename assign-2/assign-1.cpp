@@ -6,7 +6,7 @@
 #include <unordered_map>
 
 int main(int argc, char** argv) {
-    if (argc < 2) {
+    if (argc < 3) {
         std::cerr << "No argument provided\n"; 
         return 1; 
     }
@@ -21,6 +21,8 @@ int main(int argc, char** argv) {
         std::cerr << "Invalid file\n";
         return 1;
     }
+    std::ofstream outfile;
+    outfile.open(argv[2]);
 
     std::string::size_type i = 0;
     const std::string::size_type n = input.size();
@@ -117,9 +119,10 @@ int main(int argc, char** argv) {
             }
         }
         
-        if (token == "Id" || token == "Num")  std::cout << token << "(" << input.substr(i, length) << ")" << std::endl;
-        else if (token != "whitespace" && token != "c++-comment" && token != "c-comment" && token != "unclosed-c-comment") std::cout << token << std::endl;
+        if (token == "Id" || token == "Num")  outfile << token << "(" << input.substr(i, length) << ")\n";
+        else if (token != "whitespace" && token != "c++-comment" && token != "c-comment" && token != "unclosed-c-comment") outfile << token << "\n";
         i += length;
     }
+    outfile.close();
     return 0;
 }

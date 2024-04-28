@@ -4,17 +4,18 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <algorithm>
 #include "grammar.cpp"
 
 std::vector<std::string> tokens;
 //Declare type maps for prog
-std::unordered_map<std::string, TypeName> globals_map; //only use global map to create gamma maps
+std::unordered_map<std::string, TypeName> globals_map; //used for creating local maps and for main function
 std::unordered_map<std::string, std::unordered_map<std::string, TypeName>> delta;
-std::unordered_map<std::string, std::unordered_map<std::string, TypeName>> gamma; //keys for gamma are function names, whose value is that function's gamma
+std::unordered_map<std::string, std::unordered_map<std::string, TypeName>> locals_map; //keys for gamma are (non-main) function names, whose value is that function's gamma
 
-//Gamma keys index into the locals map
-TypeName NumRule(std::string gamma_key, int n);
-
+bool isWhitespace(unsigned char c) {
+    return (c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\v' || c == '\f');
+}
 
 int main(int argc, char** argv) {
     if (argc < 2) {
@@ -34,9 +35,11 @@ int main(int argc, char** argv) {
     }
     std::stringstream ss(input);
     std::string s;
+    std::vector<std::string> tokens;
     while (std::getline(ss, s, '\n')) { 
+        s.erase(std::remove_if(s.begin(), s.end(), isWhitespace), s.end());
         tokens.push_back(s);
-    }    
+    }
     Grammar g;
     g.tokens = tokens;
     Program* prog;
@@ -44,7 +47,7 @@ int main(int argc, char** argv) {
         prog = g.program(0);
         std::cout << *prog;
     } catch (fail& f) {
-        std::cout << "parse error at token _\n";
+        std::cout << "parse error at token " << f.get() << "\n";
     }
 
     if (prog != nullptr) {
@@ -71,7 +74,7 @@ int main(int argc, char** argv) {
                 }
                 for (Decl* p: f->params) { temp_map[p->name] = p->type_name(); }
                 for (auto l: f->locals){ temp_map[l.first->name] = l.first->type_name(); }
-                gamma[f->name] = temp_map;
+                locals_map[f->name] = temp_map;
             }
         }   
         
@@ -92,7 +95,7 @@ int main(int argc, char** argv) {
             }
         }
         std::cout << "\nLocals\n";
-        for (auto f : gamma){
+        for (auto f : locals_map){
             std::cout << f.first << ":\n";
             for (auto l: f.second) {
                 print_key_value(l.first, l.second);
