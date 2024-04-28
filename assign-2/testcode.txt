@@ -1,15 +1,9 @@
 struct t{a:int}
-fn f(fval:int) -> int { 
+fn f(fval:int) -> int {
+    let tex:&t, x:int;
     return;
 }
 fn main() -> int {
-    let tex:&t, qex:&q, x:int, y:int, z:int;
-    tex = new t;
-    qex = new q;
-    
-    y = qex.a;
-    x = tex.c;
-    x = tex.b;
-    z = x.a;
-    return 2;
+    let tex:&t, x:int;
+    return;
 }

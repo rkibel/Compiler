@@ -227,7 +227,7 @@ fn f(fval:int) -> int {
     return;
 }
 fn main() -> int {
-    let x:int = nil[1];
+    let x:int = nil[1]; (also x = nil.x doesn't work)
     return 1;
 }
 
@@ -257,7 +257,19 @@ fn main() -> int {
     return nil + s;
 }
 
-#2: his example:
+#2: Global var as struct
+struct s{a:int}
+let g:s;
+struct t{a:int}
+fn f(fval:int) -> int { 
+    return;
+}
+fn main() -> int {
+    g = 5;
+    return 2;
+}
+
+#3: his example:
 
 struct list {
   value: int,
@@ -281,6 +293,34 @@ fn aggregate(p: &list) -> int {
 m = m.next; }
 return i; }
 
+#4: Struct accesses must be from pointers
+struct t{a:int}
+fn f(fval:int) -> int { 
+    return;
+}
+fn main() -> int {
+    let tex:&t, qex:&q, x:int, y:int, z:int, st:t;
+    tex = new t;
+    qex = new q;
+    
+    y = qex.a;
+    x = tex.c;
+    x = tex.b;
+    z = x.a;
+    z = st.q;
+    return 2;
+}
+
+#5 Don't need to worry about nillet g:int;
+struct t{a:int}
+fn f(fval:int) -> int { 
+    return;
+}
+fn main() -> int {
+    let x:int;
+    x = nil.x
+    return 1;
+}
 
 Miscellaneous:
 #1: Main has to have local variable declaraions at top
@@ -295,5 +335,22 @@ fn main() -> int {
     let x:int = 2;
     n = new int;
     let x:int;
+    return 2;
+}
+
+#2: Errors sorted by alphabetical value for key and error list!
+struct t{a:int}
+fn f(fval:int) -> int { 
+    return;
+}
+fn main() -> int {
+    let tex:&t, qex:&q, x:int, y:int, z:int;
+    tex = new t;
+    qex = new q;
+    
+    y = qex.a;
+    x = tex.c;
+    x = tex.b;
+    z = x.a;
     return 2;
 }

@@ -195,7 +195,7 @@ struct ExpId : Exp {
     void print(std::ostream& os) const override { os << "Id(" << name << ")"; }
     TypeName typeCheck(Gamma& gamma, Delta& delta, Errors& errors, std::string function_name) const override {
         try {
-            TypeName* temp = gamma.at(name); //Returns TypeName struct
+            TypeName* temp = gamma.at(name); //Returns TypeName* struct
             return *temp;
         } catch (const std::out_of_range& e) {
             errors["[ID]"].push_back("[ID] in function " + function_name + ": variable " + name + " undefined");
@@ -454,6 +454,9 @@ struct Struct {
         os << "]\n)";
         return os;
     }
+    TypeName typeName() const {
+        return TypeName("struct_" + name);
+    }
 };
 
 struct Function {
@@ -587,18 +590,30 @@ TypeName ExpArrayAccess::typeCheck(Gamma& gamma, Delta& delta, Errors& errors, s
     TypeName ptr_type ( ptr->typeCheck(gamma, delta, errors, function_name) );
     TypeName index_type ( index->typeCheck(gamma, delta, errors, function_name) );
     if (index_type != TypeName("int")) {
-        errors["[BINOP-EQ]"].push_back("[ARRAY] in function " + function_name + ": array index is type " + index_type.get() + " instead of int");
+        errors["[BINOP-EQ]"].push_back("[BINOP-EQ] in function " + function_name + ": array index is type " + index_type.get() + " instead of int");
     }
     if (ptr_type.get() != "_" && ptr_type.get()[0] != '&') { //don't have to worry about dereferencing nil
-        errors["[BINOP-EQ]"].push_back("[ARRAY] in function " + function_name + ": dereferencing non-pointer type " + index_type.get());
+        errors["[BINOP-EQ]"].push_back("[BINOP-EQ] in function " + function_name + ": dereferencing non-pointer type " + index_type.get());
         return TypeName("_");
     }
     return TypeName( ptr_type.get().substr(1) );
 }
 
 TypeName ExpFieldAccess::typeCheck(Gamma& gamma, Delta& delta, Errors& errors, std::string function_name, Exp* ptr, std::string field) const {
-    TypeName ptr_type ( ptr->typeCheck(gamma, delta, errors, function_name) );
-    if ( ptr_type.get().substr(0,7) != "struct_") {
+    TypeName ptr_type ( ptr->typeCheck(gamma, delta, errors, function_name) ); //Can't be nil, parse error if nil
+    if (ptr_type.get() == "_") { return TypeName("_"); } //errors won't happpen given Any struct
+    if ( ptr_type.get().substr(0,8) != "&struct_") { //if accessing something other than a struct type
+        errors["[FIELD]"].push_back("[FIELD] in function " + function_name + ": accessing field of incorrect type " + ptr_type.get());
         return TypeName("_");
     }
+    std::string struct_name = ptr_type.get().substr(ptr_type.get().find('_') + 1); //At this point you must have a type which starts with &struct_
+    if (delta.find(struct_name) == delta.end() ) {  // If the iterator points to the end of the map, the key doesn't exist
+        errors["[FIELD]"].push_back("[FIELD] in function " + function_name + ": accessing field of non-existent struct type " + struct_name);
+        return TypeName("_"); 
+    }
+    if (delta[struct_name].find(field) == delta[struct_name].end()) {
+        errors["[FIELD]"].push_back("[FIELD] in function " + function_name + ": accessing non-existent field " + field + " of struct type " + struct_name);
+        return TypeName("_"); 
+    }
+    return *(delta[struct_name][field]);
 }
