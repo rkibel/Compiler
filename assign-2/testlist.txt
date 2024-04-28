@@ -148,3 +148,81 @@ return;
 //return f() causes an error: in function g: should return nothing but returning int, 
 //replacing f() with nil + z[1], or any addition, also gives the int error
 //nil gives &_, z gives _. Clearly, for non nil or variable, you should return what it intends to
+
+#4: Deref error returns Any
+struct s{a:int, a:int}
+let g:s;
+struct t{a:s}
+fn f(fval:int) -> int { 
+    let r:int;
+    return *r;
+}
+fn main() -> int {
+return;
+}
+
+#4: Dereferncing nil works as many times, becuase it becomes any. NOTE, actual grammar must return
+struct s{a:int, a:int}
+let g:s;
+struct t{a:s}
+fn e(eval:int) -> int { 
+    return eval;
+}
+fn f(fval:int) -> int { 
+    return ******nil;
+}
+fn main() -> int {
+    return;
+}
+
+
+Binop:
+#1: left error then right error
+struct s{a:int}
+let g:int;
+struct t{a:int}
+fn f(fval:int) -> int { 
+    return;
+}
+fn main() -> int {
+    let ex:s;
+    return nil + ex;
+}
+
+
+
+Structs:
+struct s{a:int}
+let g:int;
+struct t{a:int}
+fn f(fval:int) -> int { 
+    return;
+}
+fn main() -> int {
+    let ex:s;
+    return nil + s;
+}
+
+#2: his example:
+
+struct list {
+  value: int,
+next: &list }
+fn main() -> int {
+  let n:&list, m:&list, i:int = 3;
+  n = new list;
+  m = n;
+  while i > 0 {
+    n.next = new list;
+    n.value = i;
+    n = n.next;
+    i = i - 1;
+}
+  return aggregate(m);
+}
+fn aggregate(p: &list) -> int {
+  let m:&list, i:int = 0;
+  while m != nil {
+    i = 10 * i + m.value;
+m = m.next; }
+return i; }

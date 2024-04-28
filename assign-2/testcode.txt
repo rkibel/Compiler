@@ -1,10 +1,10 @@
-struct s{a:int, a:int}
-let g:s;
-struct t{a:s}
+struct s{a:int}
+let g:int;
+struct t{a:int}
 fn f(fval:int) -> int { 
-    let r:int;
-    return *r;
+    return;
 }
 fn main() -> int {
-return;
+    let ex:s;
+    return nil + ex;
 }

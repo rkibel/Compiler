@@ -15,28 +15,35 @@
 
 struct TypeName {
     std::string type_name;
-    TypeName( std::string type_name = "") : type_name(type_name) {};
+    TypeName( std::string type_name) : type_name(type_name) {}; //No default arg to ensure constructing correctly
+    TypeName(const TypeName& other) : type_name(other.type_name) {}
+    TypeName& operator=(const TypeName& other) {
+        if (this != &other) {
+            type_name = other.type_name;
+        }
+        return *this;
+    }
     bool operator==(const TypeName& other) const {
         try {
             //Checks for equality to Any
-            if (type_name == "_" || other.type_name == "_") { return true; }
-            //Checks for null pointer equality
+            if (type_name == "_" || other.type_name == "_") { return true; } //Any equal to others
+            if (type_name == other.type_name) { return true; } //If equal then return true
+            //Checks for null pointer equality to other pointers
             return type_name.at(0) == '&' && other.type_name.at(0) == '&' && (type_name.at(1) == '_' || other.type_name.at(1) == '_');
-        } catch (const std::out_of_range& e) {
-            return type_name == other.type_name;
-        } 
+        } catch (const std::out_of_range& e) {} 
+        return false;
     }
 };
 struct Exp;
 
-using Gamma = std::unordered_map<std::string, TypeName>;
+using Gamma = std::unordered_map<std::string, TypeName*>;
 using Delta = std::unordered_map<std::string, Gamma>;
 using Errors = std::map<std::string, std::vector<std::string>>;
 
 struct Type {
     virtual void print(std::ostream& os) const {}
     virtual ~Type() {}
-    virtual TypeName type_name(bool is_decl = false) const { return TypeName(); }
+    virtual TypeName typeName() const { return TypeName("_"); }
     friend std::ostream& operator<<(std::ostream& os, const Type& obj) {
         obj.print(os);
         return os;
@@ -46,7 +53,7 @@ struct Int : Type {
     void print(std::ostream& os) const override {
         os << "Int";
     }
-    TypeName type_name(bool is_decl = false) const override {
+    TypeName typeName() const override {
         return TypeName("int");
     }
 };
@@ -55,7 +62,7 @@ struct StructType : Type {
     void print(std::ostream& os) const override { 
         os << "Struct(" << name << ")"; 
     }
-    TypeName type_name(bool is_decl = false) const override {
+    TypeName typeName() const override {
         return TypeName("struct_" + name);
     }
 };
@@ -71,15 +78,13 @@ struct Fn : Type {
         }
         os << "], ret = " << *ret << ")";
     }
-    TypeName type_name(bool is_decl = false) const override {
+    TypeName typeName() const override {
         std::string prms_type_names;
         for (unsigned int i = 0; i < prms.size(); i++) {
-            prms_type_names += prms[i]->type_name().type_name;
+            prms_type_names += prms[i]->typeName().type_name;
             if (i != prms.size() - 1) prms_type_names += ", ";
         }
-        // Note that for a function inside externs the function name is mapped to its function type, while for a function inside functions the function name is mapped to a pointer to the function type.
-        std::string fun_pointer = (is_decl) ? "" : "&"; //Functions should return a pointer to a function
-        return TypeName(fun_pointer + "(" + prms_type_names + ") -> " + ret->type_name().type_name);
+        return TypeName("(" + prms_type_names + ") -> " + ret->typeName().type_name);
     }
     ~Fn() {
         for (Type* t: prms) delete t;
@@ -91,7 +96,7 @@ struct Ptr : Type {
     void print(std::ostream& os) const override { 
         os << "Ptr(" << *ref << ")";
     }
-    TypeName type_name(bool is_decl = false) const override {
+    TypeName typeName() const override {
         std::string ptr_type_names;
         const Type* temp = ref;
         while (temp) {
@@ -99,7 +104,7 @@ struct Ptr : Type {
             if (dynamic_cast<const Ptr*>(temp)) { // Checks if temp is a pointer type
                 temp = static_cast<const Ptr*>(temp)->ref;
             } else {
-                ptr_type_names += temp->type_name().type_name;
+                ptr_type_names += temp->typeName().type_name;
                 break;
             }
         }
@@ -111,7 +116,7 @@ struct Any : Type {
     void print(std::ostream& os) const override { 
         os << "_";
     }
-    TypeName type_name(bool is_decl = false) const override {
+    TypeName typeName() const override {
         return TypeName("_");
     }
 };
@@ -135,7 +140,7 @@ struct UnaryDeref : UnaryOp {
 
 struct BinaryOp{
     virtual void print(std::ostream& os) const {}
-    virtual TypeName typeCheck(Gamma& gamma, Delta& delta, Errors& errors, std::string function_name, Exp* left, Exp* right) const { return TypeName("_"); };
+    virtual TypeName typeCheck(Gamma& gamma, Delta& delta, Errors& errors, std::string function_name, Exp* left, Exp* right) const; //define for rest, overload for eq/not eq (defined below)
     friend std::ostream& operator<<(std::ostream& os, const BinaryOp& bo) {
         bo.print(os);
         return os;
@@ -191,17 +196,18 @@ struct ExpId : Exp {
     void print(std::ostream& os) const override { os << "Id(" << name << ")"; }
     TypeName typeCheck(Gamma& gamma, Delta& delta, Errors& errors, std::string function_name) const override {
         try {
-            return gamma.at(name); 
+            TypeName* temp = gamma.at(name); //Returns TypeName struct
+            return *temp;
         } catch (const std::out_of_range& e) {
             errors["[ID]"].push_back("[ID] in function " + function_name + ": variable " + name + " undefined");
-            gamma[name] = TypeName("_"); //this should fix the types for expression
+            gamma[name] = new TypeName("_"); //this should fix the types for expression
             return TypeName("_");
         }
     };
 };
 struct Nil : Exp {
     void print(std::ostream& os) const override { os << "Nil"; }
-    TypeName type_name(bool is_decl = false) const {
+    TypeName typeName() const {
         return TypeName("&_");
     }
     TypeName typeCheck(Gamma& gamma, Delta& delta, Errors& errors, std::string function_name) const override {
@@ -265,7 +271,7 @@ struct AnyExp : Exp {
     void print(std::ostream& os) const override { 
         os << "_";
     }
-    TypeName type_name(bool is_decl = false) const {
+    TypeName typeName() const {
         return TypeName("_");
     }
 };
@@ -350,14 +356,14 @@ struct Return : Stmt {
         os << "Return(" << *exp << ")";
     }
     bool typeCheck(Gamma& gamma, Delta& delta, TypeName return_type, bool loop, Errors& errors, std::string function_name) const override {
-        TypeName exp_type = exp->typeCheck(gamma, delta, errors, function_name); //store typename given, typeCheck will replace undefined variables with Any
-        if ( !(exp_type == return_type) ) { //If not equal, then at least one of the types not _ and they are different
+        TypeName exp_type ( exp->typeCheck(gamma, delta, errors, function_name) ); //store typename given, typeCheck will replace undefined variables with Any
+        if ( !(exp_type == return_type)) { //If not equal, then at least one of the types not _ and they are different
             if ( return_type.type_name == "_") {
                 errors["[RETURN-1]"].push_back("[RETURN-1] in function " + function_name + ": should return nothing but returning " + exp_type.type_name);
             } else if ( exp_type.type_name == "_") {
-                errors["[RETURN-2]"].push_back("[RETURN-2] in function " + function_name + ": should return " + return_type.type_name + "but returning nothing");
+                errors["[RETURN-2]"].push_back("[RETURN-2] in function " + function_name + ": should return " + return_type.type_name + " but returning nothing");
             } else {
-                errors["[RETURN-2]"].push_back("[RETURN-2] in function " + function_name + ": should return " + return_type.type_name + "but returning" + exp_type.type_name);
+                errors["[RETURN-2]"].push_back("[RETURN-2] in function " + function_name + ": should return " + return_type.type_name + " but returning " + exp_type.type_name);
             }
             return false;
         }
@@ -429,8 +435,8 @@ struct Decl {
         os << "Decl(" << decl.name << ", " << *(decl.type) << ")";
         return os;
     }
-    TypeName type_name(bool is_decl = true) const { //Now is_decl is true
-        return TypeName(type->type_name(is_decl));
+    TypeName typeName() const { 
+        return type->typeName();
     }
 };
 
@@ -482,13 +488,13 @@ struct Function {
         os << "]\n)";
         return os;
     }
-    TypeName type_name() const {
-        Fn* temp = new Fn();
-        for (Decl* d: params) {
-            temp->prms.push_back(d->type);
+    TypeName typeName() const {
+        std::string prms_type_names;
+        for (unsigned int i = 0; i < params.size(); i++) {
+            prms_type_names += params[i]->typeName().type_name;
+            if (i != params.size() - 1) prms_type_names += ", ";
         }
-        temp->ret = rettyp;
-        return temp->type_name();
+        return TypeName("&(" + prms_type_names + ") -> " + rettyp->typeName().type_name); //Functions should return a pointer to a function
     }
 };
 
@@ -532,7 +538,7 @@ struct Program {
 //Definitions of typeCheck which rely on types defined later on
 
 TypeName Neg::typeCheck(Gamma& gamma, Delta& delta, Errors& errors, std::string function_name, Exp* operand) const {
-    TypeName exp_type = operand->typeCheck(gamma, delta, errors, function_name);
+    TypeName exp_type ( operand->typeCheck(gamma, delta, errors, function_name) );
     if (exp_type.type_name != "int") {
         errors["[NEG]"].push_back("[NEG] in function " + function_name + ": negating type " + exp_type.type_name + " instead of int");
     }
@@ -540,10 +546,24 @@ TypeName Neg::typeCheck(Gamma& gamma, Delta& delta, Errors& errors, std::string 
 };
 
 TypeName UnaryDeref::typeCheck(Gamma& gamma, Delta& delta, Errors& errors, std::string function_name, Exp* operand) const {
-    TypeName exp_type = operand->typeCheck(gamma, delta, errors, function_name);
-    if (exp_type.type_name[0] != '&') {
-        errors["[NEG]"].push_back("[NEG] in function " + function_name + ": negating type " + exp_type.type_name + " instead of int");
+    TypeName exp_type ( operand->typeCheck(gamma, delta, errors, function_name) );
+    if (exp_type.type_name == "_") { return exp_type; }
+    if (exp_type.type_name != "&_" && exp_type.type_name != "_" && exp_type.type_name[0] != '&') {
+        errors["[NEG]"].push_back("[NEG] in function " + function_name + ": dereferencing type " + exp_type.type_name + " instead of pointer");
         return TypeName("_");
     }
     return TypeName( exp_type.type_name.substr(1) );
+}
+
+TypeName BinaryOp::typeCheck(Gamma& gamma, Delta& delta, Errors& errors, std::string function_name, Exp* left, Exp* right) const {
+    TypeName left_type ( left->typeCheck(gamma, delta, errors, function_name) );
+    TypeName right_type ( right->typeCheck(gamma, delta, errors, function_name) );
+    if (left_type.type_name != "_" && left_type.type_name != "int") {
+        errors["[BINOP-REST]"].push_back("[BINOP-REST] in function " + function_name + ": operand has type " + left_type.type_name + " instead of int");
+    }
+    if (right_type.type_name != "_" && right_type.type_name != "int") {
+        errors["[BINOP-REST]"].push_back("[BINOP-REST] in function " + function_name + ": operand has type " + right_type.type_name + " instead of int");
+    }
+    return TypeName("int");
+
 }

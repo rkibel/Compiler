@@ -8,14 +8,14 @@
 #include <algorithm>
 #include "grammar.cpp"
 
-using Gamma = std::unordered_map<std::string, TypeName>;
+using Gamma = std::unordered_map<std::string, TypeName*>;
 using Delta = std::unordered_map<std::string, Gamma>;
 using Errors = std::map<std::string, std::vector<std::string>>;
 std::vector<std::string> tokens;
 //Declare type maps for prog
-std::unordered_map<std::string, TypeName> globals_map; //used for creating local maps and for main function
-std::unordered_map<std::string, std::unordered_map<std::string, TypeName>> delta;
-std::unordered_map<std::string, std::unordered_map<std::string, TypeName>> locals_map; //keys for gamma are (non-main) function names, whose value is that function's gamma
+std::unordered_map<std::string, TypeName*> globals_map; //used for creating local maps and for main function
+std::unordered_map<std::string, std::unordered_map<std::string, TypeName*>> delta;
+std::unordered_map<std::string, std::unordered_map<std::string, TypeName*>> locals_map; //keys for gamma are (non-main) function names, whose value is that function's gamma
 
 std::map<std::string, std::vector<std::string>> errors_map = {
         {"[BINOP-REST]", {}},
@@ -76,35 +76,33 @@ int main(int argc, char** argv) {
     Program* prog;
     try {
         prog = g.program(0);
-        std::cout << *prog;
+        std::cout << *prog << "\n\n";
     } catch (fail& f) {
         std::cout << "parse error at token " << f.get() << "\n";
     }
 
     if (prog != nullptr) {
-        //Note! Decl should only call it's own type_name
-        for (Decl* g: prog->globals) { globals_map[g->name] = g->type_name(); }
+        //Note! Decl should only call it's own typeName
+        for (Decl* g: prog->globals) { globals_map[g->name] = new TypeName(g->typeName()); }
         for (Struct* s: prog->structs) { 
-            std::unordered_map<std::string, TypeName> temp_map;
+            std::unordered_map<std::string, TypeName*> temp_map;
             for (Decl* f: s->fields) {
-                temp_map[f->name] = f->type_name();
+                temp_map[f->name] = new TypeName(f->typeName());
             }
             delta[s->name] = temp_map;
         }
-        for (Decl* e: prog->externs) { globals_map[e->name] = e->type_name(); }
+        for (Decl* e: prog->externs) { globals_map[e->name] = new TypeName(e->typeName()); }
         for (Function* f: prog->functions) { //Adds type for function }
-            if (f->name != "main") {
-                globals_map[f->name] = f->type_name(); 
-            }
+            if (f->name != "main") { globals_map[f->name] = new TypeName(f->typeName()); }
         }
         for (Function* f: prog->functions) { //Creating locals map
             if (f->name != "main") {
-                std::unordered_map<std::string, TypeName> temp_map;
-                for (const auto& pair : globals_map) {
-                    temp_map.insert(std::make_pair(std::move(pair.first), std::move(pair.second))); //Inserts all globals into function
+                std::unordered_map<std::string, TypeName*> temp_map;
+                for (const auto& [name, type_name_pointer] : globals_map) {
+                    temp_map.insert(std::make_pair(std::move(name), new TypeName(*type_name_pointer))); //Inserts all globals into function
                 }
-                for (Decl* p: f->params) { temp_map[p->name] = p->type_name(); }
-                for (auto l: f->locals){ temp_map[l.first->name] = l.first->type_name(); }
+                for (Decl* p: f->params) { temp_map[p->name] = new TypeName(p->typeName()); }
+                for (auto l: f->locals){ temp_map[l.first->name] = new TypeName(l.first->typeName()); }
                 locals_map[f->name] = temp_map;
             }
         }   
@@ -137,11 +135,15 @@ int main(int argc, char** argv) {
         for (Function* f: prog->functions) { //Creating locals map
             std::string function_name = f->name;
             for (Stmt* s: f->stmts) {
-                s->typeCheck(locals_map[function_name], delta, f->rettyp->type_name(), false, errors_map, function_name); //defaults to not a loop
+                s->typeCheck(locals_map[function_name], delta, f->rettyp->typeName(), false, errors_map, function_name); //defaults to not a loop
             }
-        }   
+        } 
 
-
+        for (const auto& [error_type, errors] : errors_map) {
+            for (const auto& error : errors) {
+                std::cout << error << "\n";
+            }
+        }
         
     }
 

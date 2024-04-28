@@ -7,6 +7,7 @@ CFLAGS = -std=c++17 -Wall
 # Source files
 SRCS_PARSER = main.cpp
 SRCS_LEXER = assign-1.cpp
+SRCS_PROGRAM = program.cpp
 
 # Intermediate files
 LEX_OUTPUT = lexer-output.txt
@@ -23,7 +24,7 @@ $(EXEC_LEXER): $(SRCS_LEXER)
 	$(CC) $(CFLAGS) $(SRCS_LEXER) -o $(EXEC_LEXER)
 
 # Build the parser executable
-$(EXEC_PARSER): $(SRCS_PARSER)
+$(EXEC_PARSER): $(SRCS_PARSER) $(SRCS_PROGRAM) 
 	$(CC) $(CFLAGS) $(SRCS_PARSER) -o $(EXEC_PARSER)
 
 # IMPORTANT! execute "make run {original unlexed file name here} and this will lex, then run assign-2
