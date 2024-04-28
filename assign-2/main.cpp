@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <map>
 #include <algorithm>
 #include "grammar.cpp"
 
@@ -12,6 +13,32 @@ std::vector<std::string> tokens;
 std::unordered_map<std::string, TypeName> globals_map; //used for creating local maps and for main function
 std::unordered_map<std::string, std::unordered_map<std::string, TypeName>> delta;
 std::unordered_map<std::string, std::unordered_map<std::string, TypeName>> locals_map; //keys for gamma are (non-main) function names, whose value is that function's gamma
+const std::map<std::string, std::vector<std::string>> errors_map = {
+        {"[BINOP-REST]", {}},
+        {"[BINOP-EQ]", {}},
+        {"[ID]", {}},
+        {"[NEG]", {}},
+        {"[DEREF]", {}},
+        {"[ARRAY]", {}},
+        {"[FIELD]", {}},
+        {"[ECALL-INTERNAL]", {}},
+        {"[ECALL-EXTERN]", {}},
+        {"[ECALL-*]", {}},
+        {"[BREAK]", {}},
+        {"[CONTINUE]", {}},
+        {"[RETURN-1]", {}},
+        {"[RETURN-2]", {}},
+        {"[ASSIGN-EXP]", {}},
+        {"[ASSIGN-NEW]", {}},
+        {"[SCALL-INTERNAL]", {}},
+        {"[SCALL-EXTERN]", {}},
+        {"[SCALL-*]", {}},
+        {"[IF]", {}},
+        {"[WHILE]", {}},
+        {"[GLOBAL]", {}},
+        {"[STRUCT]", {}},
+        {"[FUNCTION]", {}}
+    };
 
 bool isWhitespace(unsigned char c) {
     return (c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\v' || c == '\f');
@@ -101,6 +128,13 @@ int main(int argc, char** argv) {
                 print_key_value(l.first, l.second);
             }
         }*/
+
+        //Actual type checking, going through statements
+        for (Function* f: prog->functions) { //Creating locals map
+            for (Stmt* s: f->stmts) {
+                // if () Checking
+            }
+        }   
         
     }
 

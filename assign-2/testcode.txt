@@ -1,20 +1,13 @@
 struct s{a:int, a:int}
-extern e:(int, int) -> int;
+let g:s;
+struct t{a:s}
 fn f(fval:int) -> int { 
-    let x:int;
-    let y:int = 2;
-    g(x);
-    h(x);
-    return 3; 
+    return r;
 }
 fn g(gval:int) -> _ {
-    let a:int = 3 + 2;
-    return;
+    let a:int = 3 + y;
+    return nil + z[1];
 }
-let a:int, b:int, c:int;
 fn main() -> int {
-let x:int;
-let y:int = 2;
-let z:int = x + y;
-return z;
+return 0;
 }

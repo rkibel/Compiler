@@ -112,3 +112,18 @@ let y:int = 2;
 let z:int = x + y;
 return z;
 }
+
+#3: Type errors are ordered alphabetically
+struct s{a:int, a:int}
+let g:s;
+struct t{a:s}
+fn f(fval:int) -> int { 
+    return r;
+}
+fn g(gval:int) -> _ {
+    let a:int = 3 + y;
+    return nil + z[1];
+}
+fn main() -> int {
+return 0;
+}

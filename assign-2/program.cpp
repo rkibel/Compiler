@@ -3,16 +3,26 @@
 #include <optional>
 #include <iostream>
 #include <unordered_map>
+#include <map>
 
-class typeFail : std::exception {};
+// class typeFail : std::exception {
+//     private: 
+//     std::string error_message;
+//     public:
+//     typeFail(std::string message) : error_message(message) {}
+//     std::string get() const { return error_message; }
+// };
 using Gamma = std::unordered_map<std::string, TypeName>;
 using Delta = std::unordered_map<std::string, Gamma>;
+using Errors = std::map<std::string, std::vector<std::string>>;
 
 struct TypeName {
     std::string type_name;
     TypeName( std::string type_name = "") : type_name(type_name) {};
     bool operator==(const TypeName& other) const {
         try {
+            //Checks for equality to Any
+            if (type_name == "_" || other.type_name == "_") { return true; }
             //Checks for null pointer equality
             return type_name.at(0) == '&' && other.type_name.at(0) == '&' && (type_name.at(1) == '_' || other.type_name.at(1) == '_');
         } catch (const std::out_of_range& e) {
@@ -158,7 +168,7 @@ struct Gte : BinaryOp{
 
 struct Exp {
     virtual void print(std::ostream& os) const {}
-    virtual TypeName typeCheck(Gamma& gamma, Delta& delta) const noexcept(false) {};
+    virtual TypeName typeCheck(Gamma& gamma, Delta& delta, Errors& errors) const noexcept(false) {};
     virtual ~Exp() {}
     friend std::ostream& operator<<(std::ostream& os, const Exp& exp) {
         exp.print(os);
@@ -168,13 +178,21 @@ struct Exp {
 struct Num : Exp {
     int32_t n;
     void print(std::ostream& os) const override { os << "Num(" << n << ")"; }
-    TypeName typeCheck(Gamma& gamma, Delta& delta) const noexcept(false) override {
+    TypeName typeCheck(Gamma& gamma, Delta& delt, Errors& errors) const noexcept(false) override {
         return TypeName("int");
     };
 };
 struct ExpId : Exp {
     std::string name;
     void print(std::ostream& os) const override { os << "Id(" << name << ")"; }
+    TypeName typeCheck(Gamma& gamma, Delta& delta, Errors& errors) const override {
+        try {
+            std::string type_name = gamma.at(name);
+        } catch (std::out_of_range) {
+            errors["[ID]"].push_back("variable " + name + " undefined");
+            gamma[name] = TypeName("_");
+        }
+    };
 };
 struct Nil : Exp {
     void print(std::ostream& os) const override { os << "Nil"; }
@@ -232,6 +250,9 @@ struct ExpCall : Exp {
 struct AnyExp : Exp {
     void print(std::ostream& os) const override { 
         os << "_";
+    }
+    TypeName type_name(bool is_decl = false) const {
+        return TypeName("_");
     }
 };
 
@@ -292,6 +313,7 @@ struct New : Rhs {
 
 struct Stmt {
     virtual void print(std::ostream& os) const {}
+    virtual bool typeCheck(Gamma& gamma, Delta& delta, TypeName type, bool loop, Errors& errors) const noexcept(false) {};
     virtual ~Stmt() {}
     friend std::ostream& operator<<(std::ostream& os, const Stmt& stmt) {
         stmt.print(os);
@@ -310,6 +332,12 @@ struct Return : Stmt {
     void print(std::ostream& os) const override {
         os << "Return(" << *exp << ")";
     }
+    bool typeCheck(Gamma& gamma, Delta& delta, TypeName type, bool loop, Errors& errors) const noexcept(false) override {
+        if ( exp->typeCheck(gamma, delta, errors) != type ) { //If typeCheck gives an error, it will replace it with Any in gamma!
+            //...
+        }
+        return true;
+    };
     ~Return() { delete exp; }
 };
 struct Assign : Stmt {
