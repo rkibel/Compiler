@@ -8,12 +8,16 @@
 #include <algorithm>
 #include "grammar.cpp"
 
+using Gamma = std::unordered_map<std::string, TypeName>;
+using Delta = std::unordered_map<std::string, Gamma>;
+using Errors = std::map<std::string, std::vector<std::string>>;
 std::vector<std::string> tokens;
 //Declare type maps for prog
 std::unordered_map<std::string, TypeName> globals_map; //used for creating local maps and for main function
 std::unordered_map<std::string, std::unordered_map<std::string, TypeName>> delta;
 std::unordered_map<std::string, std::unordered_map<std::string, TypeName>> locals_map; //keys for gamma are (non-main) function names, whose value is that function's gamma
-const std::map<std::string, std::vector<std::string>> errors_map = {
+
+std::map<std::string, std::vector<std::string>> errors_map = {
         {"[BINOP-REST]", {}},
         {"[BINOP-EQ]", {}},
         {"[ID]", {}},
@@ -131,10 +135,13 @@ int main(int argc, char** argv) {
 
         //Actual type checking, going through statements
         for (Function* f: prog->functions) { //Creating locals map
+            std::string function_name = f->name;
             for (Stmt* s: f->stmts) {
-                // if () Checking
+                s->typeCheck(locals_map[function_name], delta, f->rettyp->type_name(), false, errors_map, function_name); //defaults to not a loop
             }
         }   
+
+
         
     }
 

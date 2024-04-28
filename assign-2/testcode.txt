@@ -2,12 +2,9 @@ struct s{a:int, a:int}
 let g:s;
 struct t{a:s}
 fn f(fval:int) -> int { 
-    return r;
-}
-fn g(gval:int) -> _ {
-    let a:int = 3 + y;
-    return nil + z[1];
+    let r:int;
+    return *r;
 }
 fn main() -> int {
-return 0;
+return;
 }

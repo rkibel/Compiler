@@ -127,3 +127,24 @@ fn g(gval:int) -> _ {
 fn main() -> int {
 return 0;
 }
+
+#Which type to return? Not always Any.
+
+struct s{a:int, a:int}
+let g:s;
+struct t{a:s}
+fn f(fval:int) -> int { 
+    return r;
+}
+fn g(gval:int) -> _ {
+    let a:int = 3 + y + z;
+    let b:int = z;
+    return f();
+}
+fn main() -> int {
+return;
+}
+
+//return f() causes an error: in function g: should return nothing but returning int, 
+//replacing f() with nil + z[1], or any addition, also gives the int error
+//nil gives &_, z gives _. Clearly, for non nil or variable, you should return what it intends to
