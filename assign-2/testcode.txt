@@ -5,6 +5,8 @@ fn f(fval:int) -> int {
     return;
 }
 fn main() -> int {
-    let ex:s;
-    return nil + ex;
+    let n:&int, x:int, y:int, ex:s;
+    n = new int;
+    x = y[ex];
+    return 2;
 }

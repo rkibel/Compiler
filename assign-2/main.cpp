@@ -79,6 +79,7 @@ int main(int argc, char** argv) {
         std::cout << *prog << "\n\n";
     } catch (fail& f) {
         std::cout << "parse error at token " << f.get() << "\n";
+        prog = nullptr;
     }
 
     if (prog != nullptr) {

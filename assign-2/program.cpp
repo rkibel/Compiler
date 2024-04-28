@@ -13,26 +13,32 @@
 //     std::string get() const { return error_message; }
 // };
 
-struct TypeName {
-    std::string type_name;
-    TypeName( std::string type_name) : type_name(type_name) {}; //No default arg to ensure constructing correctly
-    TypeName(const TypeName& other) : type_name(other.type_name) {}
-    TypeName& operator=(const TypeName& other) {
-        if (this != &other) {
-            type_name = other.type_name;
+class TypeName {
+    private:
+        std::string type_name;
+    public:
+        TypeName( std::string type_name) : type_name(type_name) {}; //No default arg to ensure constructing correctly
+        TypeName(const TypeName& other) : type_name(other.get()) {}
+        TypeName& operator=(const TypeName& other) {
+            if (this != &other) {
+                type_name = other.get();
+            }
+            return *this;
         }
-        return *this;
-    }
-    bool operator==(const TypeName& other) const {
-        try {
-            //Checks for equality to Any
-            if (type_name == "_" || other.type_name == "_") { return true; } //Any equal to others
-            if (type_name == other.type_name) { return true; } //If equal then return true
-            //Checks for null pointer equality to other pointers
-            return type_name.at(0) == '&' && other.type_name.at(0) == '&' && (type_name.at(1) == '_' || other.type_name.at(1) == '_');
-        } catch (const std::out_of_range& e) {} 
-        return false;
-    }
+        bool operator==(const TypeName& other) const {
+            try {
+                //Checks for equality to Any
+                if (type_name == "_" || other.get() == "_") { return true; } //Any equal to others
+                if (type_name == other.get()) { return true; } //If equal then return true
+                //Checks for null pointer equality to other pointers
+                return type_name.at(0) == '&' && other.get().at(0) == '&' && (type_name.at(1) == '_' || other.get().at(1) == '_');
+            } catch (const std::out_of_range& e) {} 
+            return false;
+        }
+        bool operator!=(const TypeName& other) const {
+            return !(*this == other);
+        }
+        std::string get() const { return type_name; }
 };
 struct Exp;
 
@@ -81,10 +87,10 @@ struct Fn : Type {
     TypeName typeName() const override {
         std::string prms_type_names;
         for (unsigned int i = 0; i < prms.size(); i++) {
-            prms_type_names += prms[i]->typeName().type_name;
+            prms_type_names += prms[i]->typeName().get();
             if (i != prms.size() - 1) prms_type_names += ", ";
         }
-        return TypeName("(" + prms_type_names + ") -> " + ret->typeName().type_name);
+        return TypeName("(" + prms_type_names + ") -> " + ret->typeName().get());
     }
     ~Fn() {
         for (Type* t: prms) delete t;
@@ -104,7 +110,7 @@ struct Ptr : Type {
             if (dynamic_cast<const Ptr*>(temp)) { // Checks if temp is a pointer type
                 temp = static_cast<const Ptr*>(temp)->ref;
             } else {
-                ptr_type_names += temp->typeName().type_name;
+                ptr_type_names += temp->typeName().get();
                 break;
             }
         }
@@ -160,8 +166,9 @@ struct Div : BinaryOp{
 };
 struct Equal : BinaryOp{
     void print(std::ostream& os) const override { os << "Equal"; }
+    TypeName typeCheck(Gamma& gamma, Delta& delta, Errors& errors, std::string function_name, Exp* left, Exp* right) const override;
 };
-struct NotEq : BinaryOp{
+struct NotEq : Equal{ //so the same typeCheck function is inherited
     void print(std::ostream& os) const override { os << "NotEq"; }
 };
 struct Lt : BinaryOp{
@@ -241,6 +248,7 @@ struct ExpArrayAccess : Exp {
     void print(std::ostream& os) const override {
         os << "ArrayAccess(\nptr = " << *ptr << ",\nindex = " << *index << "\n)";
     }
+    TypeName typeCheck(Gamma& gamma, Delta& delta, Errors& errors, std::string function_name, Exp* ptr, Exp* index) const;
     ~ExpArrayAccess() { delete ptr; delete index; }
 };
 struct ExpFieldAccess : Exp {
@@ -358,12 +366,12 @@ struct Return : Stmt {
     bool typeCheck(Gamma& gamma, Delta& delta, TypeName return_type, bool loop, Errors& errors, std::string function_name) const override {
         TypeName exp_type ( exp->typeCheck(gamma, delta, errors, function_name) ); //store typename given, typeCheck will replace undefined variables with Any
         if ( !(exp_type == return_type)) { //If not equal, then at least one of the types not _ and they are different
-            if ( return_type.type_name == "_") {
-                errors["[RETURN-1]"].push_back("[RETURN-1] in function " + function_name + ": should return nothing but returning " + exp_type.type_name);
-            } else if ( exp_type.type_name == "_") {
-                errors["[RETURN-2]"].push_back("[RETURN-2] in function " + function_name + ": should return " + return_type.type_name + " but returning nothing");
+            if ( return_type.get() == "_") {
+                errors["[RETURN-1]"].push_back("[RETURN-1] in function " + function_name + ": should return nothing but returning " + exp_type.get());
+            } else if ( exp_type.get() == "_") {
+                errors["[RETURN-2]"].push_back("[RETURN-2] in function " + function_name + ": should return " + return_type.get() + " but returning nothing");
             } else {
-                errors["[RETURN-2]"].push_back("[RETURN-2] in function " + function_name + ": should return " + return_type.type_name + " but returning " + exp_type.type_name);
+                errors["[RETURN-2]"].push_back("[RETURN-2] in function " + function_name + ": should return " + return_type.get() + " but returning " + exp_type.get());
             }
             return false;
         }
@@ -491,10 +499,10 @@ struct Function {
     TypeName typeName() const {
         std::string prms_type_names;
         for (unsigned int i = 0; i < params.size(); i++) {
-            prms_type_names += params[i]->typeName().type_name;
+            prms_type_names += params[i]->typeName().get();
             if (i != params.size() - 1) prms_type_names += ", ";
         }
-        return TypeName("&(" + prms_type_names + ") -> " + rettyp->typeName().type_name); //Functions should return a pointer to a function
+        return TypeName("&(" + prms_type_names + ") -> " + rettyp->typeName().get()); //Functions should return a pointer to a function
     }
 };
 
@@ -539,31 +547,61 @@ struct Program {
 
 TypeName Neg::typeCheck(Gamma& gamma, Delta& delta, Errors& errors, std::string function_name, Exp* operand) const {
     TypeName exp_type ( operand->typeCheck(gamma, delta, errors, function_name) );
-    if (exp_type.type_name != "int") {
-        errors["[NEG]"].push_back("[NEG] in function " + function_name + ": negating type " + exp_type.type_name + " instead of int");
+    if (exp_type != TypeName("int")) {
+        errors["[NEG]"].push_back("[NEG] in function " + function_name + ": negating type " + exp_type.get() + " instead of int");
     }
     return TypeName("int");
 };
 
 TypeName UnaryDeref::typeCheck(Gamma& gamma, Delta& delta, Errors& errors, std::string function_name, Exp* operand) const {
     TypeName exp_type ( operand->typeCheck(gamma, delta, errors, function_name) );
-    if (exp_type.type_name == "_") { return exp_type; }
-    if (exp_type.type_name != "&_" && exp_type.type_name != "_" && exp_type.type_name[0] != '&') {
-        errors["[NEG]"].push_back("[NEG] in function " + function_name + ": dereferencing type " + exp_type.type_name + " instead of pointer");
+    if (exp_type == TypeName("_")) { return exp_type; }
+    if ( exp_type != TypeName("&_") && exp_type.get()[0] != '&') {
+        errors["[NEG]"].push_back("[NEG] in function " + function_name + ": dereferencing type " + exp_type.get() + " instead of pointer");
         return TypeName("_");
     }
-    return TypeName( exp_type.type_name.substr(1) );
+    return TypeName( exp_type.get().substr(1) );
 }
 
 TypeName BinaryOp::typeCheck(Gamma& gamma, Delta& delta, Errors& errors, std::string function_name, Exp* left, Exp* right) const {
     TypeName left_type ( left->typeCheck(gamma, delta, errors, function_name) );
     TypeName right_type ( right->typeCheck(gamma, delta, errors, function_name) );
-    if (left_type.type_name != "_" && left_type.type_name != "int") {
-        errors["[BINOP-REST]"].push_back("[BINOP-REST] in function " + function_name + ": operand has type " + left_type.type_name + " instead of int");
+    if ( left_type != TypeName("int") ) {
+        errors["[BINOP-REST]"].push_back("[BINOP-REST] in function " + function_name + ": operand has type " + left_type.get() + " instead of int");
     }
-    if (right_type.type_name != "_" && right_type.type_name != "int") {
-        errors["[BINOP-REST]"].push_back("[BINOP-REST] in function " + function_name + ": operand has type " + right_type.type_name + " instead of int");
+    if ( right_type != TypeName("int") ) {
+        errors["[BINOP-REST]"].push_back("[BINOP-REST] in function " + function_name + ": operand has type " + right_type.get() + " instead of int");
     }
     return TypeName("int");
+}
 
+TypeName Equal::typeCheck(Gamma& gamma, Delta& delta, Errors& errors, std::string function_name, Exp* left, Exp* right) const {
+    TypeName left_type ( left->typeCheck(gamma, delta, errors, function_name) );
+    TypeName right_type ( right->typeCheck(gamma, delta, errors, function_name) );
+    if (left_type != TypeName("int") && left_type.get()[0] != '&') {
+        errors["[BINOP-EQ]"].push_back("[BINOP-EQ] in function " + function_name + ": operand has non-primitive type " + left_type.get());
+    }
+    if (right_type != TypeName("int") && right_type.get()[0] != '&') {
+        errors["[BINOP-EQ]"].push_back("[BINOP-EQ] in function " + function_name + ": operand has non-primitive type " + right_type.get());
+    }
+    if (left_type != right_type) {
+        errors["[BINOP-EQ]"].push_back("[BINOP-EQ] in function " + function_name + ": operands with different types: " + left_type.get() + " vs " + right_type.get());
+    }
+    return TypeName("int");
+}
+
+// - `[ARRAY] in function {}: array index is type {} instead of int`
+
+// - `[ARRAY] in function {}: dereferencing non-pointer type {}`
+TypeName ExpArrayAccess::typeCheck(Gamma& gamma, Delta& delta, Errors& errors, std::string function_name, Exp* ptr, Exp* index) const {
+    TypeName ptr_type ( ptr->typeCheck(gamma, delta, errors, function_name) );
+    TypeName index_type ( index->typeCheck(gamma, delta, errors, function_name) );
+    if (index_type != TypeName("int")) {
+        errors["[BINOP-EQ]"].push_back("[ARRAY] in function " + function_name + ": array index is type " + index_type.get() + " instead of int");
+    }
+    if (ptr_type.get() != "_" && ptr_type.get()[0] != '&') { //don't have to worry about dereferencing nil
+        errors["[BINOP-EQ]"].push_back("[ARRAY] in function " + function_name + ": dereferencing non-pointer type " + index_type.get());
+        return TypeName("_");
+    }
+    return TypeName( ptr_type.get().substr(1) );
 }
