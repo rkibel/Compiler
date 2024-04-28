@@ -1,12 +1,15 @@
-struct s{a:int}
-let g:int;
 struct t{a:int}
 fn f(fval:int) -> int { 
     return;
 }
 fn main() -> int {
-    let n:&int, x:int, y:int, ex:s;
-    n = new int;
-    x = y[ex];
+    let tex:&t, qex:&q, x:int, y:int, z:int;
+    tex = new t;
+    qex = new q;
+    
+    y = qex.a;
+    x = tex.c;
+    x = tex.b;
+    z = x.a;
     return 2;
 }

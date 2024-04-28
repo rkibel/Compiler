@@ -141,6 +141,7 @@ int main(int argc, char** argv) {
         } 
 
         for (const auto& [error_type, errors] : errors_map) {
+            std::sort(errors.begin(), errors.end());
             for (const auto& error : errors) {
                 std::cout << error << "\n";
             }

@@ -5,14 +5,6 @@
 #include <unordered_map>
 #include <map>
 
-// class typeFail : std::exception {
-//     private: 
-//     std::string error_message;
-//     public:
-//     typeFail(std::string message) : error_message(message) {}
-//     std::string get() const { return error_message; }
-// };
-
 class TypeName {
     private:
         std::string type_name;
@@ -257,6 +249,7 @@ struct ExpFieldAccess : Exp {
     void print(std::ostream& os) const override {
         os << "FieldAccess(\nptr = " << *ptr << ",\nfield = " << field << "\n)";
     }
+    TypeName typeCheck(Gamma& gamma, Delta& delta, Errors& errors, std::string function_name, Exp* ptr, std::string field) const;
     ~ExpFieldAccess() { delete ptr; }
 };
 struct ExpCall : Exp {
@@ -590,9 +583,6 @@ TypeName Equal::typeCheck(Gamma& gamma, Delta& delta, Errors& errors, std::strin
     return TypeName("int");
 }
 
-// - `[ARRAY] in function {}: array index is type {} instead of int`
-
-// - `[ARRAY] in function {}: dereferencing non-pointer type {}`
 TypeName ExpArrayAccess::typeCheck(Gamma& gamma, Delta& delta, Errors& errors, std::string function_name, Exp* ptr, Exp* index) const {
     TypeName ptr_type ( ptr->typeCheck(gamma, delta, errors, function_name) );
     TypeName index_type ( index->typeCheck(gamma, delta, errors, function_name) );
@@ -604,4 +594,11 @@ TypeName ExpArrayAccess::typeCheck(Gamma& gamma, Delta& delta, Errors& errors, s
         return TypeName("_");
     }
     return TypeName( ptr_type.get().substr(1) );
+}
+
+TypeName ExpFieldAccess::typeCheck(Gamma& gamma, Delta& delta, Errors& errors, std::string function_name, Exp* ptr, std::string field) const {
+    TypeName ptr_type ( ptr->typeCheck(gamma, delta, errors, function_name) );
+    if ( ptr_type.get().substr(0,7) != "struct_") {
+        return TypeName("_");
+    }
 }
