@@ -51,6 +51,10 @@ bool isWhitespace(unsigned char c) {
     return (c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\v' || c == '\f');
 }
 
+extern const bool isFunction(const std::string& type_name) {
+    return type_name[0] == '(' || type_name.substr(0,2) == "&(";
+}
+
 int main(int argc, char** argv) {
     if (argc < 2) {
         std::cerr << "No argument provided\n"; 
@@ -87,7 +91,10 @@ int main(int argc, char** argv) {
 
     if (prog != nullptr) {
         //Note! Decl should only call it's own typeName
-        for (Decl* g: prog->globals) { globals_map[g->name] = new TypeName(g->typeName()); }
+        for (Decl* g: prog->globals) { 
+            globals_map[g->name] = new TypeName(g->typeName());
+            if (isFunction(g->typeName().get())) { functions_map[g->name] = g->funcInfo(); } //decl could be function pointer
+        }
         for (Struct* s: prog->structs) { 
             Gamma temp_map;
             for (Decl* f: s->fields) {
@@ -97,7 +104,7 @@ int main(int argc, char** argv) {
         }
         for (Decl* e: prog->externs) { 
             globals_map[e->name] = new TypeName(e->typeName()); 
-            functions_map[e->name] = e->funcInfo(); 
+            if (e->name != "main") { functions_map[e->name] = e->funcInfo(); }
         }
         for (Function* f: prog->functions) { //Creating locals map
             globals_map[f->name] = new TypeName(f->typeName()); 
@@ -109,8 +116,14 @@ int main(int argc, char** argv) {
             for (Struct* s: prog->structs) {
                 temp_map[s->name] = new TypeName(s->typeName());
             }
-            for (Decl* p: f->params) { temp_map[p->name] = new TypeName(p->typeName()); }
-            for (auto l: f->locals){ temp_map[l.first->name] = new TypeName(l.first->typeName()); }
+            for (Decl* p: f->params) { 
+                temp_map[p->name] = new TypeName(p->typeName()); 
+                if (isFunction(p->typeName().get())) { functions_map[p->name] = p->funcInfo(); } 
+            }
+            for (auto [decl, exp]: f->locals){ 
+                temp_map[decl->name] = new TypeName(decl->typeName()); 
+                if (isFunction(decl->typeName().get())) { functions_map[decl->name] = decl->funcInfo(); } //decl could be function pointer
+            }
             locals_map[f->name] = temp_map;
         }   
         
@@ -140,13 +153,13 @@ int main(int argc, char** argv) {
         // }
         // std::cout << "\nFunctions\n";
 
-        // std::cout << "Functions map\n"; //Seems correct
-        // for (const auto& entry : functions_map) {
-        //     std::cout << entry.first << std::endl; // entry.first contains the key (function name)
-        //     std::cout << entry.second.rettyp->typeName().get() << std::endl;
-        // }
-        // std::cout << "Moving on to real type checking\n\n";
-        //Actual type checking, going through statements
+        std::cout << "Functions map\n"; //Seems correct
+        for (const auto& entry : functions_map) {
+            std::cout << entry.first << std::endl; // entry.first contains the key (function name)
+            std::cout << entry.second.rettyp->typeName().get() << std::endl;
+        }
+        std::cout << "Moving on to real type checking\n\n";
+        // Actual type checking, going through statements
 
         for (Function* f: prog->functions) { //Creating locals map
             std::string function_name = f->name;

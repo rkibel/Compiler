@@ -36,6 +36,7 @@ class TypeName {
 struct Exp;
 struct Type;
 struct Function;
+extern const bool isFunction(const std::string& type_name);
 
 struct ParamsReturnVal {
     std::vector<Type*> params;
@@ -687,16 +688,27 @@ std::pair<TypeName, bool> call_TC(Gamma& gamma, const Function* fun, Errors& err
     std::string callee_name = std::visit([&callee_type](auto* arg) { return arg->getName(); }, callee);
     bool success = true;
     // std::cout << "Before main" << std::endl;
-    if (callee_type.get() == "main") { //If so, can't be an extern call
-        errors["[ECALL-INTERNAL]"].push_back("[ECALL-INTERNAL] in function " + fun->name + ": calling main");
+    // if (callee_type.get() == "_") { return std::pair<TypeName, bool>(TypeName("_"), false); }
+    std::string expression_statement = std::holds_alternative<Exp*>(callee) ? "[ECALL" : "[SCALL";
+    if (callee_name == "main") { //If so, can't be an extern call
+        // std::cout << expression_statement+"-INTERNAL]" << "\n\n";
+        // std::cout << "Function name: " << fun->name << "\n";
+        errors[expression_statement+"-INTERNAL]"].push_back(expression_statement+"-INTERNAL] in function " + fun->name + ": calling main");
         success = false;
+        // std::cout << "Past error pushing, main is: " << (gamma.find("main") == gamma.end()) << "\n";
     }
     // std::cout << "In function " << fun->name << " callee type is " << callee_type.get() << "\n";
-    if (callee_type.get() == "_") { return std::pair<TypeName, bool>(TypeName("_"), false); } //callee is just any, just return undefined error which typeCheck already added (and possibly main error)
+    if (!isFunction(callee_type.get())) { //main can be a parameter, so should check if bad type
+        errors[expression_statement+"-*]"].push_back(expression_statement+"-*] in function " + fun->name + ": calling non-function type " + callee_type.get());
+        return std::pair<TypeName, bool>(TypeName("_"), false);
+    }
+    if (callee_name == "main" && functions_map.find("main") == functions_map.end()) { //if main not defined as a function, return
+            return std::pair<TypeName, bool>(TypeName("_"), false);
+    }
+    if (callee_type.get() == "_") { return std::pair<TypeName, bool>(TypeName("_"), success); } //callee is just any, just return undefined error which typeCheck already added (and possibly main error)
     // std::cout << "In call_TC, callee name: " << callee_name << std::endl;
     ParamsReturnVal prv = functions_map[callee_name]; //can assume it exists since we already returned for values not in gamma
     // std::cout << "Return type of prv: " << prv.rettyp->typeName().get() << std::endl;
-    std::string expression_statement = std::holds_alternative<Exp*>(callee) ? "[ECALL" : "[SCALL";
     std::string internal_external = ( callee_type.get()[0] == '&' ) ? "-INTERNAL]" : "-EXTERN]";
     std::string error_type = expression_statement + internal_external;
     // std::cout << "Before empty return type" << std::endl;
