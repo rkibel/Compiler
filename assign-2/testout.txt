@@ -62,12 +62,14 @@ Int
 Comma
 Id(y)
 Colon
-Id(t)
+Id(s)
 Semicolon
-Return
-Id(e)
+Id(g)
 OpenParen
 Id(y)
 CloseParen
+Semicolon
+Return
+Num(1)
 Semicolon
 CloseBrace

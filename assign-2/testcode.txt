@@ -8,6 +8,7 @@ fn g(x:s, y:int) -> int {
 }
 extern e:(int, t) -> _;
 fn main() -> int {
-    let x:int, y:t;
-    return e(y);
+    let x:int, y:s;
+    g(y);
+    return 1;
 }

@@ -330,6 +330,7 @@ struct LvalFieldAccess : Lval {
 
 struct Rhs {
     virtual void print(std::ostream& os) const {}
+    virtual TypeName typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const { return TypeName("_"); };
     virtual ~Rhs() {}
     friend std::ostream& operator<<(std::ostream& os, const Rhs& rhs) {
         rhs.print(os);
@@ -339,6 +340,7 @@ struct Rhs {
 struct RhsExp : Rhs {
     Exp* exp;
     void print(std::ostream& os) const override { os << *exp; }
+    TypeName typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const override;
     ~RhsExp() { delete exp; }
 };
 struct New : Rhs {
@@ -558,6 +560,10 @@ struct Program {
 //General functions (with _TC for type check) and others which depend on earlier definitions
 ParamsReturnVal Type::funcInfo () const {
     return ParamsReturnVal(std::vector<Type*>(), new Any());
+}
+
+TypeName RhsExp::typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const {
+    return exp->typeCheck(gamma, fun, errors);
 }
 
 TypeName const id_TC(Gamma& gamma, const Function* fun, Errors& errors, std::string name) {
