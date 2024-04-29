@@ -322,6 +322,210 @@ fn main() -> int {
     return 1;
 }
 
+#6 Shows the types of local structs and outer structs. If you print all structs and locals after making maps
+struct t{a:int}
+fn f(fval:int) -> int {
+    let tex:&t, x:int;
+    return;
+}
+fn main() -> int {
+    let tex:&t, x:int;
+    return;
+}
+Structs
+t:
+Key:[a] Value:[int]
+
+Locals
+f:
+Key:[x] Value:[int]
+Key:[tex] Value:[&struct_t]
+Key:[fval] Value:[int]
+Key:[f] Value:[&(int) -> int]
+
+
+#7 Nonexistent struct type:
+
+struct t{a:int}
+
+fn f(x:int) -> int {
+    return 1;
+}
+fn g(x:s, y:int) -> int {
+    return q;
+}
+fn h() -> _ {
+return;
+}
+extern e:(int) -> int;
+fn main() -> int {
+    let x:&q;
+    x = new q;
+    return x.a;
+}
+
+#9 Incorrect type
+struct t{a:int}
+
+fn f(x:int) -> int {
+    return 1;
+}
+fn g(x:s, y:int) -> int {
+    return q;
+}
+fn h() -> _ {
+return;
+}
+extern e:(int) -> int;
+fn main() -> int {
+    let x:s;
+    return x.a;
+}
+
+
+
+Functions:
+#1: Can call main (with error) and still get parameter number comparisons. Replacing with main() works. Main calls can't be external. Main overwrites.
+struct t{a:int}
+extern main:(int, int) -> int;
+fn f(fval:int) -> int {
+    let tex:&t, x:int;
+    return;
+}
+fn g() -> _ {
+    let x:int;
+    x = main(2, 3);
+}
+fn main() -> int {
+    let x:int;
+    x = main(2, 3);
+    g();
+    return *x + -nil;
+}
+
+#2 nil() is a parse error
+
+#3 can't have empty arguments f(2,)
+
+#4 Example using Functions: can't have function or struct types as argument (CAN HAVE FUNCTION POINTERS) Error that ext has struct or function type
+struct t{a:int}
+extern e:(int) -> int;
+fn f(fval:int, ext:(int)->int, in:&(int)->int) -> int {
+    let x:int = ext(2);
+    return 2;
+}
+fn g(r:int) -> int {
+    return 3;
+}
+fn main() -> int {
+    let x:int;
+    x = f(2, e, g);
+    return 1;
+}
+
+#5: CAN return an extern
+struct t{a:int}
+extern e:(int) -> int;
+fn f() -> _ {}
+fn f(fval:int, ext:(int)->int, in:&(int)->int) -> int {
+    let x:int = ext(2);
+    return 2;
+}
+fn temp(t:int) -> int {
+    return 1;
+}
+fn g(r:int) -> (int)->int {
+    return e;
+}
+fn main() -> int {
+    let x:int;
+    return 1;
+}
+
+#6 Functions take precedence over duplicate extern names
+
+struct t{a:int}
+
+fn e(x:int) -> int {
+    return 1;
+}
+extern e:(int) -> int;
+fn f() -> _ {}
+fn f(fval:int, ext:(int)->int, in:&(int)->int) -> int {
+    let x:int = ext(2);
+    return 2;
+}
+fn temp(t:int) -> int {
+    return 1;
+}
+fn g(r:int) -> (int)->int {
+    return e;
+}
+fn main() -> int {
+    let x:int;
+    return 1;
+}
+
+#7 Calling main gives callee with type Id(main)
+struct t{a:int}
+
+fn e(x:int) -> int {
+    return 1;
+}
+extern e:(int) -> int;
+fn main() -> int {
+    let x:int = main();
+    return 1;
+}
+
+#8 Number of parameters don't match and parameters types. This way, both a number error and type mismatching. If you swap x and y then parameters do match but not equal number.
+struct t{a:int}
+
+fn f(x:int) -> int {
+    return 1;
+}
+fn g(x:s, y:int) -> int {
+    return 2;
+}
+extern e:(int) -> int;
+fn main() -> int {
+    let x:int;
+    x = g(2);
+    return 1;
+}
+
+#9 Error messages for all incorrect types
+struct t{a:int}
+
+fn f(x:int) -> int {
+    return 1;
+}
+fn g(x:s, y:int) -> int {
+    return 2;
+}
+extern e:(int) -> int;
+fn main() -> int {
+    let x:int, y:t;
+    x = g(2, y, 3);
+    return 1;
+}
+
+#10 Confirming that expression type must equal parameter type
+struct t{a:int}
+
+fn f(x:int) -> int {
+    return 1;
+}
+fn g(x:int) -> int {
+    return 2;
+}
+extern e:(int) -> int;
+fn main() -> int {
+    let x:int, y:t, z:int;
+    x = g(x+z);
+    return 1;
+}
+
 Miscellaneous:
 #1: Main has to have local variable declaraions at top
 struct s{a:int}
