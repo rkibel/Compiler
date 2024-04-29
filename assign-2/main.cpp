@@ -116,32 +116,38 @@ int main(int argc, char** argv) {
             locals_map[f->name] = temp_map;
         }   
         
-        auto print_key_value = [](const auto& key, const auto& value)
-        {
-            std::cout << "Key:[" << key << "] Value:[" << value->get() << "]\n";
-        };
-        std::cout << "\nGlobals\n";
-        for (auto g : globals_map){
-            // std::cout << g.first << "\n";
-            print_key_value(g.first, g.second);
-        }
-        std::cout << "\nStructs\n";
-        for (auto s : delta){
-            std::cout << s.first << ":\n";
-            for (auto l: s.second) {
-                print_key_value(l.first, l.second);
-            }
-        }
-        std::cout << "\nLocals\n";
-        for (auto f : locals_map){
-            std::cout << f.first << ":\n";
-            for (auto l: f.second) {
-                print_key_value(l.first, l.second);
-            }
-        }
-        std::cout << "\nFunctions\n";
+        
+        // auto print_key_value = [](const auto& key, const auto& value)
+        // {
+        //     std::cout << "Key:[" << key << "] Value:[" << value->get() << "]\n";
+        // };
+        // std::cout << "\nGlobals\n";
+        // for (auto g : globals_map){
+        //     // std::cout << g.first << "\n";
+        //     print_key_value(g.first, g.second);
+        // }
+        // std::cout << "\nStructs\n";
+        // for (auto s : delta){
+        //     std::cout << s.first << ":\n";
+        //     for (auto l: s.second) {
+        //         print_key_value(l.first, l.second);
+        //     }
+        // }
+        // std::cout << "\nLocals\n";
+        // for (auto f : locals_map){
+        //     std::cout << f.first << ":\n";
+        //     for (auto l: f.second) {
+        //         print_key_value(l.first, l.second);
+        //     }
+        // }
+        // std::cout << "\nFunctions\n";
 
-
+        std::cout << "Functions map\n"; //Seems correct
+        for (const auto& entry : functions_map) {
+            std::cout << entry.first << std::endl; // entry.first contains the key (function name)
+            std::cout << entry.second.rettyp->typeName().get() << std::endl;
+        }
+        std::cout << "Moving on to real type checking\n\n";
         //Actual type checking, going through statements
 
         for (Function* f: prog->functions) { //Creating locals map
