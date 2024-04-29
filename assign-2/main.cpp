@@ -97,13 +97,11 @@ int main(int argc, char** argv) {
         }
         for (Decl* e: prog->externs) { 
             globals_map[e->name] = new TypeName(e->typeName()); 
-            if (e->name != "main") { functions_map[e->name] = e->funcInfo(); }
+            functions_map[e->name] = e->funcInfo(); 
         }
         for (Function* f: prog->functions) { //Creating locals map
-            if (f->name != "main") { 
-                globals_map[f->name] = new TypeName(f->typeName()); 
-                functions_map[f->name] = f->funcInfo();
-            }
+            globals_map[f->name] = new TypeName(f->typeName()); 
+            functions_map[f->name] = f->funcInfo();
             Gamma temp_map;
             for (const auto& [name, type_name_pointer] : globals_map) {
                 temp_map.insert(std::make_pair(std::move(name), new TypeName(*type_name_pointer))); //Inserts all globals into function
@@ -142,12 +140,12 @@ int main(int argc, char** argv) {
         // }
         // std::cout << "\nFunctions\n";
 
-        std::cout << "Functions map\n"; //Seems correct
-        for (const auto& entry : functions_map) {
-            std::cout << entry.first << std::endl; // entry.first contains the key (function name)
-            std::cout << entry.second.rettyp->typeName().get() << std::endl;
-        }
-        std::cout << "Moving on to real type checking\n\n";
+        // std::cout << "Functions map\n"; //Seems correct
+        // for (const auto& entry : functions_map) {
+        //     std::cout << entry.first << std::endl; // entry.first contains the key (function name)
+        //     std::cout << entry.second.rettyp->typeName().get() << std::endl;
+        // }
+        // std::cout << "Moving on to real type checking\n\n";
         //Actual type checking, going through statements
 
         for (Function* f: prog->functions) { //Creating locals map

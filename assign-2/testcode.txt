@@ -4,12 +4,10 @@ fn f(x:int) -> int {
     return 1;
 }
 fn g(x:s, y:int) -> int {
-    return q;
+    return 2;
 }
-fn h() -> _ {
-return;
-}
-extern e:(int) -> int;
+extern e:(int, t) -> _;
 fn main() -> int {
-    h(1);
+    let x:int, y:t;
+    return e(y);
 }

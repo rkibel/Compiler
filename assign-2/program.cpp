@@ -579,7 +579,7 @@ TypeName LvalId::typeCheck(Gamma& gamma, const Function* fun, Errors& errors) co
 
 TypeName const deref_TC(Gamma& gamma, const Function* fun, Errors& errors, std::variant<Exp*, Lval*> operand) {
     TypeName exp_type = std::visit([&exp_type, &gamma, &fun, &errors](auto* arg) { return arg->typeCheck(gamma, fun, errors); }, operand);
-    if (exp_type == TypeName("_")) { return exp_type; }
+    if (exp_type.get() == "_") { return exp_type; }
     if ( exp_type != TypeName("&_") && exp_type.get()[0] != '&') {
         errors["[NEG]"].push_back("[NEG] in function " + fun->name + ": dereferencing type " + exp_type.get() + " instead of pointer");
         return TypeName("_");
@@ -631,11 +631,12 @@ TypeName Equal::typeCheck(Gamma& gamma, const Function* fun, Errors& errors, Exp
 TypeName const arrayAccess_TC(Gamma& gamma, const Function* fun, Errors& errors, std::variant<Exp*, Lval*> ptr, Exp* index) {
     TypeName ptr_type = std::visit([&ptr_type, &gamma, &fun, &errors](auto* arg) { return arg->typeCheck(gamma, fun, errors); }, ptr);
     TypeName index_type ( index->typeCheck(gamma, fun, errors) );
+    // std::cout << "In arrayAccess_TC, index_type: " << index_type.get() << " and ptr type: " << ptr_type.get() << "\n";
     if (index_type != TypeName("int")) {
         errors["[BINOP-EQ]"].push_back("[BINOP-EQ] in function " + fun->name + ": array index is type " + index_type.get() + " instead of int");
     }
     if (ptr_type.get() != "_" && ptr_type.get()[0] != '&') { //don't have to worry about dereferencing nil
-        errors["[BINOP-EQ]"].push_back("[BINOP-EQ] in function " + fun->name + ": dereferencing non-pointer type " + index_type.get());
+        errors["[BINOP-EQ]"].push_back("[BINOP-EQ] in function " + fun->name + ": dereferencing non-pointer type " + ptr_type.get());
         return TypeName("_");
     }
     return TypeName( ptr_type.get().substr(1) );
@@ -651,19 +652,21 @@ TypeName const fieldAccess_TC(Gamma& gamma, const Function* fun, Errors& errors,
     extern Delta delta; //Cannot have a nil call, like nil(), that is a parse error
     TypeName ptr_type = std::visit([&ptr_type, &gamma, &fun, &errors](auto* arg) { return arg->typeCheck(gamma, fun, errors); }, ptr);
     if (ptr_type.get() == "_") { return TypeName("_"); } //errors won't happpen given Any struct
-    if ( ptr_type.get()[0] != '&' && ptr_type.get().substr(0,2) == "&(") { //if accessing something other than a struct type
+    // std::cout << "Past the _, ptr_type is " << ptr_type.get() << "\n";
+    if ( ptr_type.get()[0] != '&' || ptr_type.get().find("&(") != std::string::npos || ptr_type.get().find("&int") != std::string::npos || ptr_type.get().substr(0,2) == "&&") { //if accessing something other than a struct type
         errors["[FIELD]"].push_back("[FIELD] in function " + fun->name + ": accessing field of incorrect type " + ptr_type.get());
-        return TypeName("_");
+        return TypeName("_"); //all three errors are mutually exclusive
     }
-    if (delta.find(ptr_type.get()) == delta.end() ) {  // If the iterator points to the end of the map, the key doesn't exist
-        errors["[FIELD]"].push_back("[FIELD] in function " + fun->name + ": accessing field of non-existent struct type " + ptr_type.get().substr(1));
+    std::string struct_type = ptr_type.get().substr(1);
+    if (delta.find(struct_type) == delta.end() ) {  // If the iterator points to the end of the map, the key doesn't exist
+        errors["[FIELD]"].push_back("[FIELD] in function " + fun->name + ": accessing field of non-existent struct type " + struct_type);
         return TypeName("_"); 
     }
-    if (delta[ptr_type.get()].find(field) == delta[ptr_type.get()].end()) {
-        errors["[FIELD]"].push_back("[FIELD] in function " + fun->name + ": accessing non-existent field " + field + " of struct type " + ptr_type.get());
+    if (delta[struct_type].find(field) == delta[struct_type].end()) {
+        errors["[FIELD]"].push_back("[FIELD] in function " + fun->name + ": accessing non-existent field " + field + " of struct type " + struct_type);
         return TypeName("_"); 
     }
-    return *(delta[ptr_type.get()][field]);
+    return *(delta[struct_type][field]);
 }
 TypeName ExpFieldAccess::typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const {
     return fieldAccess_TC(gamma, fun, errors, ptr, field);
@@ -676,20 +679,21 @@ std::pair<TypeName, bool> call_TC(Gamma& gamma, const Function* fun, Errors& err
     extern FunctionsInfo functions_map; //Cannot have a nil call, like nil(), that is a parse error
     TypeName callee_type = std::visit([&callee_type, &gamma, &fun, &errors](auto* arg) { return arg->typeCheck(gamma, fun, errors); }, callee);
     std::string callee_name = std::visit([&callee_type](auto* arg) { return arg->getName(); }, callee);
-    if (callee_type.get() == "_") { return std::pair<TypeName, bool>(TypeName("_"), false); } //callee is just any, just return undefined error which typeCheck already added
     bool success = true;
     // std::cout << "Before main" << std::endl;
-    if (callee_type == TypeName("main")) { //If so, can't be an extern call
+    if (callee_type.get() == "main") { //If so, can't be an extern call
         errors["[ECALL-INTERNAL]"].push_back("[ECALL-INTERNAL] in function " + fun->name + ": calling main");
         success = false;
     }
+    // std::cout << "In function " << fun->name << " callee type is " << callee_type.get() << "\n";
+    if (callee_type.get() == "_") { return std::pair<TypeName, bool>(TypeName("_"), false); } //callee is just any, just return undefined error which typeCheck already added (and possibly main error)
     // std::cout << "In call_TC, callee name: " << callee_name << std::endl;
     ParamsReturnVal prv = functions_map[callee_name]; //can assume it exists since we already returned for values not in gamma
     // std::cout << "Return type of prv: " << prv.rettyp->typeName().get() << std::endl;
     std::string expression_statement = std::holds_alternative<Exp*>(callee) ? "[ECALL" : "[SCALL";
     std::string internal_external = ( callee_type.get()[0] == '&' ) ? "-INTERNAL]" : "-EXTERN]";
     std::string error_type = expression_statement + internal_external;
-        std::cout << "Before empty return type" << std::endl;
+    // std::cout << "Before empty return type" << std::endl;
     if (expression_statement != "[SCALL" && prv.rettyp->typeName().get() == "_") { //empty return type
         errors[error_type].push_back(error_type + " in function " + fun->name + ": calling a function with no return value");
         success = false;
@@ -727,9 +731,10 @@ bool Return::typeCheck(Gamma& gamma, const Function* fun, bool loop, Errors& err
     bool is_return_exp_any = exp->isAny();
     TypeName return_type = fun->rettyp->typeName();
     TypeName exp_type ( exp->typeCheck(gamma, fun, errors) ); //store typename given, typeCheck will replace undefined variables with Any
-    if ( exp_type.get() == "_") { return true; }
+    // std::cout << "For function " << fun->name << "\nReturn type any: " << is_return_type_any << " Return exp any: " << is_return_exp_any << " Return type: " << return_type.get() << " Exp Type: " << exp_type.get() << "\n";
+    if ( exp_type.get() == "_" && !is_return_exp_any) { return true; } //If exp was made to be Any in typeCheck
     if ( exp_type.get() != return_type.get()) { //If not equal, then at least one of the types not _ and they are different
-        if ( is_return_type_any && fun->rettyp->typeName().get() == "_" && !is_return_exp_any) { //If it wasnt Any before
+        if ( is_return_type_any && !is_return_exp_any && fun->rettyp->typeName().get() == "_") { //If it wasnt Any before
             errors["[RETURN-1]"].push_back("[RETURN-1] in function " + fun->name + ": should return nothing but returning " + exp_type.get());
         } else if ( return_type.get() != "_" && is_return_exp_any ) { //If it was Any before
             errors["[RETURN-2]"].push_back("[RETURN-2] in function " + fun->name + ": should return " + return_type.get() + " but returning nothing");
