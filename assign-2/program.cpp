@@ -37,6 +37,7 @@ struct Exp;
 struct Type;
 struct Function;
 extern const bool isFunction(const std::string& type_name);
+extern const bool isStruct(const std::string& type);
 
 struct ParamsReturnVal {
     std::vector<Type*> params;
@@ -660,7 +661,9 @@ TypeName const fieldAccess_TC(Gamma& gamma, const Function* fun, Errors& errors,
     TypeName ptr_type = std::visit([&ptr_type, &gamma, &fun, &errors](auto* arg) { return arg->typeCheck(gamma, fun, errors); }, ptr);
     if (ptr_type.get() == "_") { return TypeName("_"); } //errors won't happpen given Any struct
     // std::cout << "Past the _, ptr_type is " << ptr_type.get() << "\n";
-    if ( ptr_type.get()[0] != '&' || ptr_type.get().find("&(") != std::string::npos || ptr_type.get().find("&int") != std::string::npos || ptr_type.get().substr(0,2) == "&&") { //if accessing something other than a struct type
+    
+    // ptr_type.get()[0] != '&' || ptr_type.get().find("&(") != std::string::npos || ptr_type.get().find("&int") != std::string::npos || ptr_type.get().substr(0,2) == "&&"
+    if (!isStruct(ptr_type.get()) ) { //if accessing something other than a struct type
         errors["[FIELD]"].push_back("[FIELD] in function " + fun->name + ": accessing field of incorrect type " + ptr_type.get());
         return TypeName("_"); //all three errors are mutually exclusive
     }

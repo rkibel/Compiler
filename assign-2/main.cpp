@@ -51,8 +51,11 @@ bool isWhitespace(unsigned char c) {
     return (c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\v' || c == '\f');
 }
 
-extern const bool isFunction(const std::string& type_name) {
-    return type_name[0] == '(' || type_name.substr(0,2) == "&(";
+extern const bool isFunction(const std::string& type) {
+    return type[0] == '(' || type.substr(0,2) == "&(";
+}
+extern const bool isStruct(const std::string& type) {
+    return type[0] == '&' && type[1] != '(' && type[1] != '&' && type.substr(0,5) != "&int"; //one extra for substr in case type called inty or something
 }
 
 int main(int argc, char** argv) {
