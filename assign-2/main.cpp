@@ -108,7 +108,7 @@ int main(int argc, char** argv) {
             }
         }   
         
-        auto print_key_value = [](const auto& key, const auto& value)
+        /*auto print_key_value = [](const auto& key, const auto& value)
         {
             std::cout << "Key:[" << key << "] Value:[" << value->get() << "]\n";
         };
@@ -131,24 +131,29 @@ int main(int argc, char** argv) {
                 print_key_value(l.first, l.second);
             }
         }
-        std::cout << "\nFunctions\n";
+        std::cout << "\nFunctions\n";*/
 
 
         //Actual type checking, going through statements
 
-        // for (Function* f: prog->functions) { //Creating locals map
-        //     std::string function_name = f->name;
-        //     for (Stmt* s: f->stmts) {
-        //         s->typeCheck(locals_map[function_name], delta, f->rettyp->typeName(), false, errors_map, function_name); //defaults to not a loop
-        //     }
-        // } 
+        for (Function* f: prog->functions) { //Creating locals map
+            std::string function_name = f->name;
+            for (Stmt* s: f->stmts) {
+                s->typeCheck(locals_map[function_name], delta, f->rettyp->typeName(), false, errors_map, function_name); //defaults to not a loop
+            }
+        } 
 
-        // for (const auto& [error_type, errors] : errors_map) {
-        //     std::sort(errors.begin(), errors.end());
-        //     for (const auto& error : errors) {
-        //         std::cout << error << "\n";
-        //     }
-        // }
+        //Sorting errors
+        for (auto& [error_type, errors] : errors_map) {
+            std::sort(errors.begin(), errors.end());
+        }
+
+        //Printing out errors
+        for (const auto& [error_type, errors] : errors_map) {
+            for (const auto& error : errors) {
+                std::cout << error << "\n";
+            }
+        }
         
     }
 

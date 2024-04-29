@@ -4,6 +4,6 @@ fn f(fval:int) -> int {
     return;
 }
 fn main() -> int {
-    let tex:&t, x:int;
-    return;
+    let x:int;
+    return *x + -nil;
 }
