@@ -344,7 +344,7 @@ Key:[fval] Value:[int]
 Key:[f] Value:[&(int) -> int]
 
 
-#7 Nonexistent struct type:
+#7 Non-existent struct type:
 
 struct t{a:int}
 
@@ -768,4 +768,130 @@ fn main() -> int {
     x = tex.b;
     z = x.a;
     return 2;
+}
+
+Guards:
+
+#1 Don't need to update gamma
+let x:(int)->int, y:&t;
+struct t{a:int}
+struct s{a:int}
+fn f(x:int) -> &s {
+    return;
+}
+fn g(x:int, fun:f) -> int {
+    let x:&t, y:int;
+    y = 3;
+    if x {
+        y = 2;
+    }
+    return x.a;
+}
+
+
+
+
+
+Global/struct/function:
+
+#1 Declaring global as struct (parse_ref errors if remove &, global struct or function type)
+let x:(int)->int, y:&t;
+struct t{a:int}
+fn f(x:int) -> int {
+    return 1;
+}
+fn g(e:int, y:int, z:(int)->int) -> int {
+    e();
+    return z(1);
+}
+extern e:(int) -> _;
+extern k:() -> _;
+fn h() -> int {
+    y.a = 2;
+    x();
+    return g(1, 2, f(1));
+}
+
+#2 Function variables should check parameters AND locals. Don't have locals override yet.
+let x:(int)->int, y:&t;
+struct t{a:int}
+fn f(x:int) -> int {
+    return 1;
+}
+fn g(fun:f) -> int {
+    let fun:int;
+    fun(2);
+    return 2;
+}
+
+#3. Note, we showed earlier that errored types still get treated even if they error in struct/global.
+
+#4 Incorrect initialization type
+let x:(int)->int, y:&t;
+struct t{a:int}
+struct s{a:int}
+fn f(x:int) -> &s {
+    return;
+}
+fn g(x:int, fun:f) -> int {
+    let x:int = f();
+    
+    return 2;
+}
+
+
+#5 Large function test
+let x:(int)->int;
+struct t{a:int}
+fn f(x:int) -> int {
+    return 1;
+}
+fn g(f:int, y:int, z:(int)->int) -> int {
+    f();
+    return z(1);
+}
+extern e:(int) -> _;
+extern k:() -> _;
+fn h() -> int {
+    let g:(int)->int = f;
+    return g(1, 2, f(1));
+}
+
+
+Current?
+let x:(int)->int, y:t;
+struct t{a:int}
+struct s{a:int}
+fn f(x:int) -> &s {
+    return;
+}
+fn g(x:int, fun:f) -> int {
+    let x:&q, y:int, z:int;
+    if x==1 {
+        z = x+y;
+    }
+    return z;
+}
+
+
+
+
+
+
+TEST CASES:
+
+let x:(int)->int;
+struct t{a:int}
+fn f(x:int) -> int {
+    return 1;
+}
+fn g(f:int, y:int, z:(int)->int) -> int {
+    f();
+    return z(1);
+}
+extern e:(int) -> _;
+extern k:() -> _;
+fn h() -> int {
+    let g:(int)->int = wow;
+    return g(1, 2, f(1));
 }

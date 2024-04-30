@@ -109,9 +109,11 @@ int main(int argc, char** argv) {
             globals_map[e->name] = new TypeName(e->typeName()); 
             if (e->name != "main") { functions_map[e->name] = e->funcInfo(); }
         }
-        for (Function* f: prog->functions) { //Creating locals map
+        for (Function* f: prog->functions) {
             globals_map[f->name] = new TypeName(f->typeName()); 
             functions_map[f->name] = f->funcInfo();
+        }
+        for (Function* f: prog->functions) { //Creating locals map
             Gamma temp_map;
             for (const auto& [name, type_name_pointer] : globals_map) {
                 temp_map.insert(std::make_pair(std::move(name), new TypeName(*type_name_pointer))); //Inserts all globals into function
@@ -131,10 +133,10 @@ int main(int argc, char** argv) {
         }   
         
         
-        // auto print_key_value = [](const auto& key, const auto& value)
-        // {
-        //     std::cout << "Key:[" << key << "] Value:[" << value->get() << "]\n";
-        // };
+        auto print_key_value = [](const auto& key, const auto& value)
+        {
+            std::cout << "\tKey:[" << key << "] Value:[" << value->get() << "]\n";
+        };
         // std::cout << "\nGlobals\n";
         // for (auto g : globals_map){
         //     // std::cout << g.first << "\n";
@@ -155,21 +157,30 @@ int main(int argc, char** argv) {
         //     }
         // }
         // std::cout << "\nFunctions\n";
+        // for (auto f : locals_map){
+        //     std::cout << f.first << ":\n";
+        //     for (auto l: f.second) {
+        //         print_key_value(l.first, l.second);
+        //     }
+        // }
 
-        std::cout << "Functions map\n"; //Seems correct
-        for (const auto& entry : functions_map) {
-            std::cout << entry.first << std::endl; // entry.first contains the key (function name)
-            std::cout << entry.second.rettyp->typeName().get() << std::endl;
-        }
-        std::cout << "Moving on to real type checking\n\n";
+
+        // std::cout << "Functions map\n"; //Seems correct
+        // for (const auto& entry : functions_map) {
+        //     std::cout << entry.first << std::endl; // entry.first contains the key (function name)
+        //     // std::cout << entry.second.rettyp->typeName().get() << std::endl;
+        // }
+        // std::cout << "Moving on to real type checking\n\n";
+        
         // Actual type checking, going through statements
+        // for (Function* f: prog->functions) { //Creating locals map
+        //     std::string function_name = f->name;
+        //     for (Stmt* s: f->stmts) {
+        //         s->typeCheck(locals_map[function_name], f, false, errors_map); //defaults to not a loop
+        //     }
+        // } 
 
-        for (Function* f: prog->functions) { //Creating locals map
-            std::string function_name = f->name;
-            for (Stmt* s: f->stmts) {
-                s->typeCheck(locals_map[function_name], f, false, errors_map); //defaults to not a loop
-            }
-        } 
+        bool program_correct = prog->typeCheck(globals_map, errors_map); //Even if incorrect program, we'll still print out the errors
 
         //Sorting errors
         for (auto& [error_type, errors] : errors_map) {
@@ -182,9 +193,6 @@ int main(int argc, char** argv) {
                 std::cout << error << "\n";
             }
         }
-        
     }
-
-
     return 0;
 }

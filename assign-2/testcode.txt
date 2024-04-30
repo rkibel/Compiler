@@ -1,11 +1,15 @@
-let x:(int)->int, y:&t;
+let x:(int)->int;
 struct t{a:int}
-struct s{a:int}
-fn f(x:int) -> &s {
-    return;
+fn f(x:int) -> int {
+    return 1;
 }
-fn g(x:int, fun:f) -> int {
-    let x:&q;
-    x = new q;
-    return x.a;
+fn g(f:int, y:int, z:(int)->int) -> int {
+    f();
+    return z(1);
+}
+extern e:(int) -> _;
+extern k:() -> _;
+fn h() -> int {
+    let g:(int)->int = wow;
+    return g(1, 2, f(1));
 }
