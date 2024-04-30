@@ -29,13 +29,13 @@ bool isWhitespace(unsigned char c) {
 }
 
 extern const bool isFunction(const std::string& type) {
-    return type[0] == '(' || type.find("&()") != std::string::npos;
+    return type[0] == '(' || type.find("&(") != std::string::npos;
 }
 extern const bool isFunctionNotPointer(const std::string& type) {
     return type[0] == '(';
 }
 extern const bool isStruct(const std::string& type) {
-    return type[0] != '&' && type[0] != '(' && type.substr(0,3) != "int";
+    return type[0] != '&' && type.find('(') == std::string::npos && type.substr(0,3) != "int";
 }
 extern const bool isValidFieldAcesss(const std::string& type) {
     return type[0] == '&' && type[1] != '(' && type[1] != '&' && type.substr(0,5) != "&int"; //one extra for substr in case type called inty or something

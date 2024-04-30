@@ -10,6 +10,7 @@ class TypeName {
     private:
         std::string type_name;
     public:
+        TypeName() {};
         TypeName( std::string type_name) : type_name(type_name) {}; //No default arg to ensure constructing correctly
         TypeName(const TypeName& other) : type_name(other.get()) {}
         TypeName& operator=(const TypeName& other) {
@@ -220,7 +221,7 @@ struct Exp {
     virtual void print(std::ostream& os) const {}
     virtual TypeName typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const { return TypeName("_"); };
     virtual std::string getName() { 
-        // // std::cout << "\n\nPrinting nullptr in exp\n\n";
+        std::cout << "\n\nPrinting name in exp\n\n";
         return nullptr;
     };
     virtual bool isAny() const { return false; }
@@ -236,7 +237,7 @@ struct Num : Exp {
     void print(std::ostream& os) const override { os << "Num(" << n << ")"; }
     TypeName typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const override { return TypeName("int"); };
     std::string getName() override {
-        // // std::cout << "\n\nPrinting nullptr in num:exp\n\n";
+        std::cout << "\n\nPrinting name in num:exp\n\n";
         return nullptr; 
     }
 };
@@ -247,7 +248,7 @@ struct ExpId : Exp {
     void print(std::ostream& os) const override { os << "Id(" << name << ")"; }
     TypeName typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const override;
     std::string getName() override { 
-        // // std::cout << "\n\nPrinting nullptr in expid:exp\n\n";
+        std::cout << "\n\nPrinting name in expid:exp\n\n";
         return name; 
     }
 };
@@ -258,7 +259,7 @@ struct Nil : Exp {
     }
     TypeName typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const override { return TypeName("&_");};
     std::string getName() override {
-        // // std::cout << "\n\nPrinting nullptr in nil:exp\n\n";
+        std::cout << "\n\nPrinting name in nil:exp\n\n";
         return nullptr; 
     }
 };
@@ -270,7 +271,7 @@ struct UnOp : Exp {
         return op->typeCheck(gamma, fun, errors, operand);
     }
     std::string getName() override {
-        // // std::cout << "\n\nPrinting nullptr in unop:exp\n\n";
+        std::cout << "\n\nPrinting name in unop:exp\n\n";
         return nullptr; 
     }
     ~UnOp() { delete operand; }
@@ -286,7 +287,7 @@ struct BinOp : Exp {
         return op->typeCheck(gamma, fun, errors, left, right);
     }
     std::string getName() override {
-        // // std::cout << "\n\nPrinting nullptr in binop:exp\n\n";
+        std::cout << "\n\nPrinting name in binop:exp\n\n";
         return nullptr; 
     }
     ~BinOp() { delete left; delete right; }
@@ -299,7 +300,7 @@ struct ExpArrayAccess : Exp {
     }
     TypeName typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const override;
     std::string getName() override {
-        // // std::cout << "\n\nPrinting nullptr in exparrayaccess:exp\n\n";
+        std::cout << "\n\nPrinting name in exparrayaccess:exp\n\n";
         return ptr->getName(); 
     }
     ~ExpArrayAccess() { delete ptr; delete index; }
@@ -313,8 +314,11 @@ struct ExpFieldAccess : Exp {
     std::pair<bool, std::string> isFieldAccess() const override { return std::make_pair(true, field); }
     TypeName typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const override;
     std::string getName() override {
-        // // std::cout << "\n\nPrinting nullptr in expfieldaccess:exp\n\n";
-        return ptr->getName(); 
+        std::cout << "\n\nPrinting name in expfieldaccess:exp\n\n";
+        std::string temp = ptr->getName();
+        std::cout << "ExpFieldAccess giving name " << temp << "\n";
+        return temp;
+        // return ptr->getName(); 
     }
     ~ExpFieldAccess() { delete ptr; }
 };
@@ -335,8 +339,8 @@ struct ExpCall : Exp {
         for (Exp* exp: args) delete exp;
     }
     std::string getName() override {
-        // // std::cout << "\n\nPrinting nullptr in expcall:exp\n\n";
-        return nullptr; 
+        std::cout << "\n\nPrinting name in expcall:exp\n\n";
+        return callee->getName(); 
     }
 };
 struct AnyExp : Exp {
@@ -348,7 +352,7 @@ struct AnyExp : Exp {
     }
     bool isAny() const override { return true; }
     std::string getName() override {
-        // // std::cout << "\n\nPrinting nullptr in nil:exp\n\n";
+        std::cout << "\n\nPrinting name in nil:exp\n\n";
         return nullptr; 
     }
 };
@@ -357,7 +361,7 @@ struct Lval {
     virtual void print(std::ostream& os) const {}
     virtual TypeName typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const { return TypeName("_"); };
     virtual std::string getName() { 
-        // std::cout << "\n\nPrinting nullptr in lval\n\n";
+        std::cout << "\n\nPrinting name in lval\n\n";
         return nullptr; 
     };
     virtual std::pair<bool, std::string> isFieldAccess() const { return std::make_pair(false, ""); }
@@ -395,7 +399,7 @@ struct LvalFieldAccess : Lval {
         os << "FieldAccess(\nptr = " << *ptr << ",\nfield = " << field << "\n)";
     }
     std::string getName() override { 
-        // std::cout << "\n\nPrinting nullptr in lvalfieldaccess\n\n" << std::endl;
+        std::cout << "\n\nPrinting name in lvalfieldaccess\n\n" << std::endl;
         return ptr->getName(); 
     };
     std::pair<bool, std::string> isFieldAccess() const override { return std::make_pair(true, field); }
@@ -430,6 +434,10 @@ struct New : Rhs {
 struct Stmt {
     virtual void print(std::ostream& os) const {}
     virtual bool typeCheck(Gamma& gamma, const Function* fun, bool loop, Errors& errors) const { return true; };
+    virtual std::string getName() { 
+        std::cout << "\n\nPrinting name in exp\n\n";
+        return nullptr;
+    };
     virtual ~Stmt() {}
     friend std::ostream& operator<<(std::ostream& os, const Stmt& stmt) {
         stmt.print(os);
@@ -473,6 +481,10 @@ struct StmtCall : Stmt {
         }
         os << "]\n)";
     }
+    std::string getName() override { 
+        std::cout << "\n\nPrinting name in exp\n\n";
+        return callee->getName();
+    };
     bool typeCheck(Gamma& gamma, const Function* fun, bool loop, Errors& errors) const override;
     ~StmtCall() { delete callee; for (Exp* exp: args) delete exp; }
 };
@@ -752,13 +764,16 @@ TypeName const fieldAccess_TC(Gamma& gamma, const Function* fun, Errors& errors,
     std::cout << "Past the _, ptr_type is " << ptr_type.get() << "\n";
     
     // ptr_type.get()[0] != '&' || ptr_type.get().find("&(") != std::string::npos || ptr_type.get().find("&int") != std::string::npos || ptr_type.get().substr(0,2) == "&&"
+    std::string struct_type = ptr_type.get().substr(1);
     if (!isCall && !isValidFieldAcesss(ptr_type.get())) { //if accessing something other than a struct type
         errors.push_back("[FIELD] in function " + fun->name + ": accessing field of incorrect type " + ptr_type.get());
         return TypeName("_"); //all three errors are mutually exclusive
     }
-    std::string struct_type = ptr_type.get().substr(1);
-    if (delta.find(struct_type) == delta.end() ) {  // If the iterator points to the end of the map, the key doesn't exist
-        // std::cout << "Could not find struct " << struct_type << "\n";
+    // std::string struct_type = ptr_type.get().substr(1);
+    std::cout << "Trying to find struct_type " << struct_type << "\n";
+    //Could be non-struct type if a call! Allowed to do that.
+    if (isStruct(struct_type) && delta.find(struct_type) == delta.end() ) {  // If the iterator points to the end of the map, the key doesn't exist
+        std::cout << "Could not find struct " << struct_type << "\n";
         errors.push_back("[FIELD] in function " + fun->name + ": accessing field of non-existent struct type " + struct_type);
         return TypeName("_"); 
     }
@@ -767,26 +782,34 @@ TypeName const fieldAccess_TC(Gamma& gamma, const Function* fun, Errors& errors,
         errors.push_back("[FIELD] in function " + fun->name + ": accessing non-existent field " + field + " of struct type " + struct_type);
         return TypeName("_"); 
     }
-    std::cout << "Past\n";
+    std::cout << "Past, returning type " << (*(delta[struct_type][field])).get() << "\n";
     return *(delta[struct_type][field]);
 }
 TypeName ExpFieldAccess::typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const {
-    return fieldAccess_TC(gamma, fun, errors, ptr, field);
+    TypeName temp = fieldAccess_TC(gamma, fun, errors, ptr, field);
+    std::cout << "In expFieldAccess with type " << temp.get() << "\n";
+    return temp;
+    // return fieldAccess_TC(gamma, fun, errors, ptr, field);
 }
 TypeName LvalFieldAccess::typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const {
-    return fieldAccess_TC(gamma, fun, errors, ptr, field);
+     TypeName temp = fieldAccess_TC(gamma, fun, errors, ptr, field);
+    std::cout << "In lvalFieldAccess with type " << temp.get() << "\n";
+    return temp;
+    // return fieldAccess_TC(gamma, fun, errors, ptr, field);
 }
 
 std::pair<TypeName, bool> call_TC(Gamma& gamma, const Function* fun, Errors& errors, std::variant<Exp*, Lval*> callee, std::vector<Exp*> arg) {
     extern FunctionsInfo functions_map; //Cannot have a nil call, like nil(), that is a parse error
     extern StructFunctionsInfo struct_functions_map;
+    std::string callee_name = std::visit([](auto* arg) { return arg->getName(); }, callee);
+    std::cout << "<Starting call_TC> for name " << callee_name << "\n";
     TypeName callee_type = std::visit([&callee_type, &gamma, &fun, &errors](auto* arg) { 
         // std::string func_name = arg->getName();
         // std::cout << "Call-type for function: " << func_name << "\n";
         return arg->typeCheck(gamma, fun, errors); 
     }, callee);
-    std::string callee_name = std::visit([&callee_type](auto* arg) { return arg->getName(); }, callee);
-    std::cout << "After callee construction for callee name: " << callee_name << "and callee type: " << callee_type.get() << "\n";
+    std::cout << "<Continuing call_TC> with callee_type " << callee_type.get() << "\n";
+    std::cout << "After callee construction for callee name: " << callee_name << " and callee type: " << callee_type.get() << "\n";
     bool success = true;
     std::cout << "Before main" << std::endl;
     // if (callee_type.get() == "_") { return std::pair<TypeName, bool>(TypeName("_"), false); }
@@ -800,6 +823,7 @@ std::pair<TypeName, bool> call_TC(Gamma& gamma, const Function* fun, Errors& err
     }
     std::cout << "In function " << fun->name << " callee type is " << callee_type.get() << "\n";
     if (callee_type.get() == "_") { return std::pair<TypeName, bool>(TypeName("_"), true); }
+    std::cout << "Checking if function type: " << callee_type.get() << "\n";
     if (!isFunction(callee_type.get())) { //main can be a parameter, so should check if bad type
         errors.push_back(expression_statement+"-*] in function " + fun->name + ": calling non-function type " + callee_type.get());
         return std::pair<TypeName, bool>(TypeName("_"), false);
@@ -811,14 +835,24 @@ std::pair<TypeName, bool> call_TC(Gamma& gamma, const Function* fun, Errors& err
     std::cout << "In call_TC, callee name: " << callee_name << std::endl;
     
     std::pair<bool, std::string> pair = std::visit([](auto* arg) { return arg->isFieldAccess(); }, callee);
+    std::cout << "Callee name " << callee_name << " with Callee type " << callee_type.get() << "is expaccess? " << pair.first << "\n";
     std::cout << "After isFieldAccess\n";
     ParamsReturnVal prv;
-    if ( pair.first ) { //can assume struct name exists, not field
+    if ( pair.first) { //can assume struct name exists, not field
         std::cout << "Here\n";
         ExpId* struct_exp =  new ExpId(callee_name);
-        TypeName field_type = fieldAccess_TC(gamma, fun, errors, new ExpId(callee_name), pair.second, true);
+        std::cout << "BEFORE\n\n";
+        TypeName field_type;
+        if (isStruct(pair.second)) {
+            field_type = fieldAccess_TC(gamma, fun, errors, new ExpId(callee_name), pair.second, true);
+        } else {
+            field_type = pair.second;
+        }
+        // TypeName field_type = fieldAccess_TC(gamma, fun, errors, new ExpId(callee_name), pair.second, true); //propogates errors
+        std::cout << "AFTER\n\n";
         std::cout << "Success, field type " << field_type.get() << "\n";
-        if (field_type.get() == "_") { return std::pair<TypeName, bool>(TypeName("_"), true); }
+        if (field_type.get() == "_") { return std::pair<TypeName, bool>(TypeName("_"), true); } //no need to continue if Any
+        std::cout << "About to call typeCheck on type " << field_type.get() << "\n\n\n";
         std::string struct_type = struct_exp->typeCheck(gamma, fun, errors).get().substr(1);
         prv = struct_functions_map[struct_type][pair.second];
     } else { //can assume it exists since we already returned for values not in gamma

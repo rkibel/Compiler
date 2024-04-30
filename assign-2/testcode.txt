@@ -1,12 +1,13 @@
 struct list1 {
-  fun : &(int)->_,
-  gun :int,
+  fun : &(int)->int,
   x:int
 }
+struct list2 {
+  s: &list1
+}
 fn main() -> int {
-    let id5:&&()->int = id5, id4:int;
-    while id5[id4]() {
-       *id5();
+    let id5:&&()->&list2;
+    while id5[id4]().s.fun(2) {
     }
   return 0;
 }
