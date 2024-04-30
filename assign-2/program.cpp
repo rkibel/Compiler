@@ -767,7 +767,7 @@ TypeName const fieldAccess_TC(Gamma& gamma, const Function* fun, Errors& errors,
         errors.push_back("[FIELD] in function " + fun->name + ": accessing non-existent field " + field + " of struct type " + struct_type);
         return TypeName("_"); 
     }
-    // std::cout << "Past\n";
+    std::cout << "Past\n";
     return *(delta[struct_type][field]);
 }
 TypeName ExpFieldAccess::typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const {
@@ -853,6 +853,9 @@ std::pair<TypeName, bool> call_TC(Gamma& gamma, const Function* fun, Errors& err
         }
     }
     std::cout << "Done with function\n";
+    std::cout << "Returning type " << prv.rettyp->typeName().get() << "\n";
+    std::pair<TypeName, bool> temp(prv.rettyp->typeName(), success);
+    std::cout << "Seg after here\n";
     return std::pair<TypeName, bool>(prv.rettyp->typeName(), success);
 }
 
@@ -861,6 +864,7 @@ TypeName ExpCall::typeCheck(Gamma& gamma, const Function* fun, Errors& errors) c
 }
 
 bool StmtCall::typeCheck(Gamma& gamma, const Function* fun, bool loop, Errors& errors) const {
+    std::cout << "Statement about to enter...\n";
     return call_TC(gamma, fun, errors, callee, args).second;
 }
 

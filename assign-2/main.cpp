@@ -29,7 +29,7 @@ bool isWhitespace(unsigned char c) {
 }
 
 extern const bool isFunction(const std::string& type) {
-    return type[0] == '(' || type.substr(0,2) == "&(";
+    return type[0] == '(' || type.find("&()") != std::string::npos;
 }
 extern const bool isFunctionNotPointer(const std::string& type) {
     return type[0] == '(';

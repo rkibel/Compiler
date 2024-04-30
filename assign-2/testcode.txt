@@ -6,7 +6,7 @@ struct list1 {
 fn main() -> int {
     let id5:&&()->int = id5, id4:int;
     while id5[id4]() {
-      *id5();
+       *id5();
     }
   return 0;
 }
