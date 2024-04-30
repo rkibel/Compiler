@@ -24,11 +24,17 @@ class TypeName {
                 if (type_name == "_" || other.get() == "_") { return true; } //Any equal to others
                 if (type_name == other.get()) { return true; } //If equal then return true
                 //Checks for null pointer equality to other pointers
+                // std::cout << "\nChecking for null: " << (type_name.at(0) == '&' && other.get().at(0) == '&' && (type_name.at(1) == '_' || other.get().at(1) == '_')) << "\n";
+                // std::cout << "Lhs type name is " << type_name << " Rhs type name is: " << other.get() << "\n";
                 return type_name.at(0) == '&' && other.get().at(0) == '&' && (type_name.at(1) == '_' || other.get().at(1) == '_');
             } catch (const std::out_of_range& e) {} 
             return false;
         }
         bool operator!=(const TypeName& other) const {
+            // std::cout << "\n\n\nLhs type name is " << type_name << " Rhs type name is: " << other.get() << "\n";
+            // bool temp = !(*this == other);
+            // std::cout << "Result of not equal: " << temp << "\n";
+            // return temp;
             return !(*this == other);
         }
         std::string get() const { return type_name; }
@@ -763,14 +769,17 @@ bool Return::typeCheck(Gamma& gamma, const Function* fun, bool loop, Errors& err
     bool is_return_exp_any = exp->isAny();
     TypeName return_type = fun->rettyp->typeName();
     TypeName exp_type = exp->typeCheck(gamma, fun, errors); //store typename given, typeCheck will replace undefined variables with Any
+    // std::cout << "exp type " << exp_type.get() << " is any? " << is_return_exp_any << "\n";
     // std::cout << "For function " << fun->name << "\nReturn type any: " << is_return_type_any << " Return exp any: " << is_return_exp_any << " Return type: " << return_type.get() << " Exp Type: " << exp_type.get() << "\n";
     if ( exp_type.get() == "_" && !is_return_exp_any) { return true; } //If exp was made to be Any in typeCheck
     if ( exp_type.get() != return_type.get()) { //If not equal, then at least one of the types not _ and they are different
-        if ( is_return_type_any && !is_return_exp_any && fun->rettyp->typeName().get() == "_") { //If it wasnt Any before
+        // std::cout << "Nil comparison for return type " << return_type.get() << " and exp type "  << exp_type.get() << " " << (return_type.get() != "_" && exp_type != return_type) << "\n";
+        // std::cout << "is_return_type_any " << is_return_type_any << "!is_return_exp_any" << !is_return_exp_any <<  "fun->rettyp->typeName().get() == \"_\"" << (fun->rettyp->typeName().get() == "_") << "\n";
+        if ( is_return_type_any && !is_return_exp_any && fun->rettyp->typeName().get() == "_" ) { //If it wasnt Any before
             errors["[RETURN-1]"].push_back("[RETURN-1] in function " + fun->name + ": should return nothing but returning " + exp_type.get());
-        } else if ( return_type.get() != "_" && is_return_exp_any ) { //If it was Any before
+        } else if ( return_type.get() != "_" && is_return_exp_any) { //If it was Any before
             errors["[RETURN-2]"].push_back("[RETURN-2] in function " + fun->name + ": should return " + return_type.get() + " but returning nothing");
-        } else {
+        } else if (exp_type != return_type) {
             errors["[RETURN-2]"].push_back("[RETURN-2] in function " + fun->name + ": should return " + return_type.get() + " but returning " + exp_type.get());
         }
         return false;
