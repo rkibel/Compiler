@@ -2,7 +2,7 @@
 CC = g++
 
 # Compiler flags
-CFLAGS = -std=c++17 -Wall
+CFLAGS = -std=c++17 -Wall -g
 
 # Source files
 SRCS_PARSER = main.cpp

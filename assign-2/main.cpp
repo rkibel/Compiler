@@ -10,8 +10,10 @@
 
 using Gamma = std::unordered_map<std::string, TypeName*>;
 using Delta = std::unordered_map<std::string, Gamma>;
-using Errors = std::map<std::string, std::vector<std::string>>;
+using Errors = std::vector<std::string>;
 using FunctionsInfo = std::unordered_map<std::string, ParamsReturnVal>;
+using StructFunctionsInfo = std::unordered_map<std::string, FunctionsInfo>;
+
 
 std::vector<std::string> tokens;
 //Declare type maps for prog
@@ -19,33 +21,8 @@ Gamma globals_map; //used for creating local maps and for main function
 Delta delta;
 std::unordered_map<std::string, Gamma> locals_map; //keys for gamma are (non-main) function names, whose value is that function's gamma
 FunctionsInfo functions_map;
-
-Errors errors_map = {
-        {"[BINOP-REST]", {}},
-        {"[BINOP-EQ]", {}},
-        {"[ID]", {}},
-        {"[NEG]", {}},
-        {"[DEREF]", {}},
-        {"[ARRAY]", {}},
-        {"[FIELD]", {}},
-        {"[ECALL-INTERNAL]", {}},
-        {"[ECALL-EXTERN]", {}},
-        {"[ECALL-*]", {}},
-        {"[BREAK]", {}},
-        {"[CONTINUE]", {}},
-        {"[RETURN-1]", {}},
-        {"[RETURN-2]", {}},
-        {"[ASSIGN-EXP]", {}},
-        {"[ASSIGN-NEW]", {}},
-        {"[SCALL-INTERNAL]", {}},
-        {"[SCALL-EXTERN]", {}},
-        {"[SCALL-*]", {}},
-        {"[IF]", {}},
-        {"[WHILE]", {}},
-        {"[GLOBAL]", {}},
-        {"[STRUCT]", {}},
-        {"[FUNCTION]", {}}
-    };
+StructFunctionsInfo struct_functions_map;
+Errors errors_map;
 
 bool isWhitespace(unsigned char c) {
     return (c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\v' || c == '\f');
@@ -54,7 +31,13 @@ bool isWhitespace(unsigned char c) {
 extern const bool isFunction(const std::string& type) {
     return type[0] == '(' || type.substr(0,2) == "&(";
 }
+extern const bool isFunctionNotPointer(const std::string& type) {
+    return type[0] == '(';
+}
 extern const bool isStruct(const std::string& type) {
+    return type[0] != '&' && type[0] != '(' && type.substr(0,3) != "int";
+}
+extern const bool isValidFieldAcesss(const std::string& type) {
     return type[0] == '&' && type[1] != '(' && type[1] != '&' && type.substr(0,5) != "&int"; //one extra for substr in case type called inty or something
 }
 
@@ -101,7 +84,13 @@ int main(int argc, char** argv) {
         for (Struct* s: prog->structs) { 
             Gamma temp_map;
             for (Decl* f: s->fields) {
+                // if (f->name == "fun") { // std::cout << s->name << " YESSIR\n"; }
                 temp_map[f->name] = new TypeName(f->typeName());
+                // std::cout << "Type name here: " << f->typeName().get() << "\n";
+                if (isFunction(f->typeName().get())) { 
+                    // std::cout << "Number of parameters: " << f->funcInfo().params.size() << "\n";
+                    struct_functions_map[s->name][f->name] = f->funcInfo(); 
+                }
             }
             delta[s->name] = temp_map;
         }
@@ -118,9 +107,9 @@ int main(int argc, char** argv) {
             for (const auto& [name, type_name_pointer] : globals_map) {
                 temp_map.insert(std::make_pair(std::move(name), new TypeName(*type_name_pointer))); //Inserts all globals into function
             }
-            for (Struct* s: prog->structs) {
-                temp_map[s->name] = new TypeName(s->typeName());
-            }
+            // for (Struct* s: prog->structs) { //Do above struct and function earlier so each gamma has full global information
+            //     temp_map[s->name] = new TypeName(s->typeName());
+            // }
             for (Decl* p: f->params) { 
                 temp_map[p->name] = new TypeName(p->typeName()); 
                 if (isFunction(p->typeName().get())) { functions_map[p->name] = p->funcInfo(); } 
@@ -137,40 +126,40 @@ int main(int argc, char** argv) {
         {
             std::cout << "\tKey:[" << key << "] Value:[" << value->get() << "]\n";
         };
-        // std::cout << "\nGlobals\n";
+        // // std::cout << "\nGlobals\n";
         // for (auto g : globals_map){
-        //     // std::cout << g.first << "\n";
+        //     // // std::cout << g.first << "\n";
         //     print_key_value(g.first, g.second);
         // }
-        // std::cout << "\nStructs\n";
+        // // std::cout << "\nStructs\n";
         // for (auto s : delta){
-        //     std::cout << s.first << ":\n";
+        //     // std::cout << s.first << ":\n";
         //     for (auto l: s.second) {
         //         print_key_value(l.first, l.second);
         //     }
         // }
-        // std::cout << "\nLocals\n";
+        // // std::cout << "\nLocals\n";
         // for (auto f : locals_map){
-        //     std::cout << f.first << ":\n";
+        //     // std::cout << f.first << ":\n";
         //     for (auto l: f.second) {
         //         print_key_value(l.first, l.second);
         //     }
         // }
-        // std::cout << "\nFunctions\n";
+        // // std::cout << "\nFunctions\n";
         // for (auto f : locals_map){
-        //     std::cout << f.first << ":\n";
+        //     // std::cout << f.first << ":\n";
         //     for (auto l: f.second) {
         //         print_key_value(l.first, l.second);
         //     }
         // }
 
 
-        // std::cout << "Functions map\n"; //Seems correct
+        // // std::cout << "Functions map\n"; //Seems correct
         // for (const auto& entry : functions_map) {
-        //     std::cout << entry.first << std::endl; // entry.first contains the key (function name)
-        //     // std::cout << entry.second.rettyp->typeName().get() << std::endl;
+        //     // std::cout << entry.first << std::endl; // entry.first contains the key (function name)
+        //     // // std::cout << entry.second.rettyp->typeName().get() << std::endl;
         // }
-        // std::cout << "Moving on to real type checking\n\n";
+        // // std::cout << "Moving on to real type checking\n\n";
         
         // Actual type checking, going through statements
         // for (Function* f: prog->functions) { //Creating locals map
@@ -183,15 +172,11 @@ int main(int argc, char** argv) {
         bool program_correct = prog->typeCheck(globals_map, errors_map); //Even if incorrect program, we'll still print out the errors
 
         //Sorting errors
-        for (auto& [error_type, errors] : errors_map) {
-            std::sort(errors.begin(), errors.end());
-        }
+        std::sort(errors_map.begin(), errors_map.end());
 
         //Printing out errors
-        for (const auto& [error_type, errors] : errors_map) {
-            for (const auto& error : errors) {
-                std::cout << error << "\n";
-            }
+        for (const auto& error : errors_map) {
+            std::cout << error << "\n";
         }
     }
     return 0;

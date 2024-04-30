@@ -1,12 +1,12 @@
-struct s{a:int, a:int}
-extern e:(int, int) -> int;
-extern main:()->int;
-fn f(fval:int) -> &(int)->_ { 
-    return nil; 
+struct list1 {
+  fun : &(int)->_,
+  gun :int,
+  x:int
 }
 fn main() -> int {
-let x:int;
-let y:int = 2;
-let z:int = x + nil;
-return 0;
+    let id5:&&()->int = id5, id4:int;
+    while id5[id4]() {
+      *id5();
+    }
+  return 0;
 }

@@ -70,7 +70,7 @@ return 0;
 
 This works. So we just store one but it's not an error.
 
-#2: Nil type errors in main and other function
+#2: Nil type errors in main and other function. Note: let statements allowed successive lines.
 struct s{a:int, a:int}
 extern e:(int, int) -> int;
 fn f(fval:int) -> int { 
@@ -894,4 +894,129 @@ extern k:() -> _;
 fn h() -> int {
     let g:(int)->int = wow;
     return g(1, 2, f(1));
+}
+
+
+struct s{a:&int, b:&int}
+extern e:(int, int) -> int;
+extern main:()->int;
+fn f(fval:int) -> int { 
+    return q; 
+}
+fn main() -> int {
+    let id1:int, id2:&int, id3:&int, f1:(int, &int) -> int;
+    f = id2;
+    return 1;
+}
+
+#3 Important! Functions from struct parameters. Probably need their own function map since they are separate.
+struct list {
+  fun : &(int)->int,
+  fun:int
+}
+let fun:&(int, int)->_;
+
+
+fn main() -> int {
+    let s:&list, x:int;
+    s = new list;
+    fun(1,1);
+    s.fun(1);
+    return 1;
+}
+
+#4 Fails pretty bad on this one:
+
+truct list1 {
+  fun : &(int)->int
+}
+struct list2 {
+  fun : &(int)->int,
+  st : list1
+}
+let fun:&(int, int)->_;
+
+fn main() -> int {
+    let s:&list2, x:int;
+    s = new list2;
+    x = s.st.fun(1);
+    return 1;
+}
+
+#5 Almost to 6, but this shows you can't access struct type of another struct
+struct list1 {
+  fun : &(int)->int
+}
+struct list2 {
+  fun : &(int,int)->int,
+  st : list1
+}
+let fun:&(int, int)->_;
+
+fn main() -> int {
+    let s:&list2, t:&list1;
+    t.fun();
+    s.st.fun();
+    return 0;
+}
+
+#6 Big: Each struct knows it's Functions. If fun in list one removed & to be a function type no pointer, it gives an error but still works.
+struct list1 {
+  fun : &(int)->int
+}
+struct list2 {
+  fun : &(int,int)->int,
+  st : &list1
+}
+let fun:&(int, int)->_;
+
+fn main() -> int {
+    let s:&list2, t:&list1;
+    t.fun();
+    s.fun();
+    s.st.fun();
+    return 0;
+}
+
+#7 Don't include structs in gamma
+struct list1 {
+  fun : (int)->int
+}
+struct list2 {
+  fun : &(int,int)->int,
+  st : &list1
+}
+struct main {a:int}
+let fun:&(int, int)->_;
+
+fn main() -> int {
+    main();
+    list1();
+    list3();
+    return 0;
+}
+
+#8 Field access still for struct function calls
+struct list1 {
+  fun : &&&&&&(int)->_
+}
+fn main() -> int {
+    let t:&list1;
+    t.fun();
+    return 0;
+}
+
+#9 Confirming main can be overuled as parameter
+struct list1 {
+  fun : &&(int)->_,
+  x:int
+}
+fn h(main:int) -> int {
+  main();
+}
+fn main() -> int {
+    let t:&list1, s:&&list1, y:int;
+    y = s.x;
+    t.fun();
+    return 0;
 }
