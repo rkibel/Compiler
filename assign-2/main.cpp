@@ -4,9 +4,12 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <algorithm>
 #include "grammar.cpp"
 
-std::vector<std::string> tokens;
+bool isWhitespace(unsigned char c) {
+    return (c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\v' || c == '\f');
+}
 
 int main(int argc, char** argv) {
     if (argc < 2) {
@@ -26,16 +29,18 @@ int main(int argc, char** argv) {
     }
     std::stringstream ss(input);
     std::string s;
+    std::vector<std::string> tokens;
     while (std::getline(ss, s, '\n')) { 
+        s.erase(std::remove_if(s.begin(), s.end(), isWhitespace), s.end());
         tokens.push_back(s);
-    }    
+    }
     Grammar g;
     g.tokens = tokens;
     try {
         Program* prog = g.program(0);
         std::cout << *prog;
     } catch (fail& f) {
-        std::cout << "parse error at token _\n";
+        std::cout << "parse error at token " << f.get() << "\n";
     }
 
     return 0;
