@@ -606,7 +606,7 @@ TypeName const deref_TC(Gamma& gamma, const Function* fun, Errors& errors, std::
     TypeName exp_type = std::visit([&exp_type, &gamma, &fun, &errors](auto* arg) { return arg->typeCheck(gamma, fun, errors); }, operand);
     if (exp_type.get() == "_") { return exp_type; }
     if ( exp_type != TypeName("&_") && exp_type.get()[0] != '&') {
-        errors["[NEG]"].push_back("[NEG] in function " + fun->name + ": dereferencing type " + exp_type.get() + " instead of pointer");
+        errors["[DEREF]"].push_back("[DEREF] in function " + fun->name + ": dereferencing type " + exp_type.get() + " instead of pointer");
         return TypeName("_");
     }
     return TypeName( exp_type.get().substr(1) );
@@ -658,10 +658,10 @@ TypeName const arrayAccess_TC(Gamma& gamma, const Function* fun, Errors& errors,
     TypeName index_type ( index->typeCheck(gamma, fun, errors) );
     // std::cout << "In arrayAccess_TC, index_type: " << index_type.get() << " and ptr type: " << ptr_type.get() << "\n";
     if (index_type != TypeName("int")) {
-        errors["[BINOP-EQ]"].push_back("[BINOP-EQ] in function " + fun->name + ": array index is type " + index_type.get() + " instead of int");
+        errors["[ARRAY]"].push_back("[ARRAY] in function " + fun->name + ": array index is type " + index_type.get() + " instead of int");
     }
     if (ptr_type.get() != "_" && ptr_type.get()[0] != '&') { //don't have to worry about dereferencing nil
-        errors["[BINOP-EQ]"].push_back("[BINOP-EQ] in function " + fun->name + ": dereferencing non-pointer type " + ptr_type.get());
+        errors["[ARRAY]"].push_back("[ARRAY] in function " + fun->name + ": dereferencing non-pointer type " + ptr_type.get());
         return TypeName("_");
     }
     return TypeName( ptr_type.get().substr(1) );
@@ -794,7 +794,7 @@ TypeName New::typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const
         errors["[ASSIGN-NEW]"].push_back("[ASSIGN-NEW] in function " + fun->name + ": allocation amount is type " + amount_type.get() + " instead of int");
     }
     if((type_typename.get().substr(0,2) == "&(") || (type_typename.get()[0] == '(')) {
-        errors["[ASSIGN-NEW]"].push_back("[ASSIGN-NEW] in function " + fun->name + ": allocation allocating function type " + type_typename.get());
+        errors["[ASSIGN-NEW]"].push_back("[ASSIGN-NEW] in function " + fun->name + ": allocating function type " + type_typename.get());
     }
     return TypeName("new " + type_typename.get());
 }
@@ -817,7 +817,7 @@ bool Assign::typeCheck(Gamma& gamma, const Function* fun, bool loop, Errors& err
     TypeName lhs_type (lhs->typeCheck(gamma, fun, errors));
     TypeName rhs_type (rhs->typeCheck(gamma, fun, errors));
     bool tf = true;
-    if((rhs_type.get() == "_") || (rhs_type.get() == "new _") || (lhs_type.get() == "_")){
+    if((rhs_type.get() == "_") || (rhs_type.get() == "new _") || (lhs_type.get() == "_") || ((rhs_type.get()[0] == '&') && (lhs_type.get()[0] == '&'))){
         return true;
     } else {
         if(rhs_type.get().substr(0,3) != "new"){       
@@ -827,11 +827,13 @@ bool Assign::typeCheck(Gamma& gamma, const Function* fun, bool loop, Errors& err
                     tf = false;
                 }
             }
-            if(lhs_type.get() != rhs_type.get()){
+            //if((lhs_type.get() != rhs_type.get()) && ((lhs_type.get()[0] != '&') && (rhs_type.get()[0] != '&'))){
+            if((lhs_type.get() != rhs_type.get())){
                 errors["[ASSIGN-EXP]"].push_back("[ASSIGN-EXP] in function " + fun->name + ": assignment lhs has type " + lhs_type.get() + " but rhs has type " + rhs_type.get());
                 tf = false;
             }
-        } else if(rhs_type.get().substr(4) != lhs_type.get()){
+        } else if((rhs_type.get().substr(4) != lhs_type.get()) && ((rhs_type.get().substr(4)[0] != '&') && (lhs_type.get()[0] != '&'))){
+            //print(std::cout);
             errors["[ASSIGN-NEW]"].push_back("[ASSIGN-NEW] in function " + fun->name + ": assignment lhs has type " + lhs_type.get() + " but we're allocating type " + rhs_type.get().substr(4));
             tf = false;
         }
