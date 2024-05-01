@@ -1020,3 +1020,121 @@ fn main() -> int {
     t.fun();
     return 0;
 }
+
+#10
+struct list1 {
+  fun : &&(int)->_,
+  x:int
+}
+fn main() -> int {
+    let t:&list1, s:&list1, y:int;
+    y = s.fun();
+    return 0;
+}
+
+#11 Problem, not exactly a field access?
+
+#12 Isn't working
+
+struct list1 {
+  fun : &(int)->_,
+  gun :int,
+  x:int
+}
+fn main() -> int {
+    let id5:&&()->int = id5, id4:int;
+    while id5[id4]() {
+      *id5();
+    }
+  return 0;
+}
+
+
+
+#Issue 
+struct list1 {
+  fun : &(int)->int,
+  x:int
+}
+struct list2 {
+  s: &list1
+}
+fn main() -> int {
+    let id5:&&()->&list2;
+    while id5[id4]().s.fun(2) {
+    }
+  return 0;
+}
+
+
+No double callstruct //parse error
+list1 { 
+  fun : &(int)->int,
+  x:int
+}
+struct list2 {
+  s: &list1
+}
+fn main() -> int {
+    let id5:&&()->&()->int;
+    id5[1]()();
+    return 0;
+}
+
+
+#Seg fault
+
+struct list1 {
+  fun : &(int)->int,
+  x:int
+}
+struct list2 {
+  s: &list1
+}
+fn main() -> int {
+    let id5:&&()->&list2;
+    while id5[id4]().s.fun(2) {
+    }
+  return 0;
+}
+
+#Works!
+struct list1 {
+  main : &(int)->int,
+  x:int
+}
+struct list2 {
+  s: &list1
+}
+fn main() -> int {
+    let id5:&&()->&list2, id4:int;
+    while id5[id4](2, 3).s.main(2) {
+    }
+  return 0;
+}
+
+
+#Works
+fn main() -> int {
+  let id6:(int)->int, id7:&int, id8:r, id9:&(int)->int;
+  *i9 = id6; 
+  return id9;
+}
+
+#Assignment struct or function type
+fn main() -> int {
+  let id6:(int)->int, id7:&int;
+  id6 = id7;
+  return id9;
+}
+
+
+What's wrong with assignment?
+
+fn main() -> int {
+  let id6:&&int, id7:int;
+  *id6[1] = id7;
+  return id9;
+}
+
+#Needed to fix non-function type

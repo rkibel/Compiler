@@ -2149,7 +2149,4 @@ Id(id9)
 Gets
 Id(id9)
 Semicolon
-Return
-Id(id6)
-Semicolon
 CloseBrace

@@ -1,7 +1,6 @@
 fn main() -> int {
-    let id5:&&()->int = id5, id4:int;
-    while id5[id4]() {
-      *id5();
-    }
-  return 0;
+  let id6:&&int, id7:int, id7:&&(int)->int;
+  id7 = id7();
+  id7();
+  return id9;
 }

@@ -29,6 +29,9 @@ bool isWhitespace(unsigned char c) {
 }
 
 extern const bool isFunction(const std::string& type) {
+    return type[0] == '(' || type.substr(0,2) == "&(";
+}
+extern const bool isPointerToFunction(const std::string& type) {
     return type[0] == '(' || type.find("&(") != std::string::npos;
 }
 extern const bool isFunctionNotPointer(const std::string& type) {
@@ -79,7 +82,7 @@ int main(int argc, char** argv) {
         //Note! Decl should only call it's own typeName
         for (Decl* g: prog->globals) { 
             globals_map[g->name] = new TypeName(g->typeName());
-            if (isFunction(g->typeName().get())) { functions_map[g->name] = g->funcInfo(); } //decl could be function pointer
+            if (isPointerToFunction(g->typeName().get())) { functions_map[g->name] = g->funcInfo(); } //decl could be function pointer
         }
         for (Struct* s: prog->structs) { 
             Gamma temp_map;
@@ -88,7 +91,7 @@ int main(int argc, char** argv) {
                 // if (f->name == "fun") { // std::cout << s->name << " YESSIR\n"; }
                 temp_map[f->name] = new TypeName(f->typeName());
                 // std::cout << "Type name here: " << f->typeName().get() << "\n";
-                if (isFunction(f->typeName().get())) { 
+                if (isPointerToFunction(f->typeName().get())) { 
                     // std::cout << "Number of parameters: " << f->funcInfo().params.size() << "\n";
                     struct_functions_map[s->name][f->name] = f->funcInfo(); 
                 }
@@ -115,11 +118,11 @@ int main(int argc, char** argv) {
             // }
             for (Decl* p: f->params) { 
                 temp_map[p->name] = new TypeName(p->typeName()); 
-                if (isFunction(p->typeName().get())) { functions_map[p->name] = p->funcInfo(); } 
+                if (isPointerToFunction(p->typeName().get())) { functions_map[p->name] = p->funcInfo(); } 
             }
             for (auto [decl, exp]: f->locals){ 
                 temp_map[decl->name] = new TypeName(decl->typeName()); 
-                if (isFunction(decl->typeName().get())) { functions_map[decl->name] = decl->funcInfo(); } //decl could be function pointer
+                if (isPointerToFunction(decl->typeName().get())) { functions_map[decl->name] = decl->funcInfo(); } //decl could be function pointer
             }
             locals_map[f->name] = temp_map;
         }   

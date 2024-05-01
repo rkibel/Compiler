@@ -679,15 +679,18 @@ TypeName const id_TC(Gamma& gamma, const Function* fun, Errors& errors, std::str
         TypeName* temp = gamma.at(name); //Returns TypeName* struct
         return *temp;
     } catch (const std::out_of_range& e) {
+        // std::cout << "Correct undefined\n";
         errors.push_back("[ID] in function " + fun->name + ": variable " + name + " undefined");
-        gamma[name] = new TypeName("_"); //this should fix the types for expression
+        // gamma[name] = new TypeName("_"); //this should fix the types for expression
         return TypeName("_");
     }
 }
 TypeName ExpId::typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const {
+    // std::cout << "Expid\n";
     return id_TC(gamma, fun, errors, name);
 };
 TypeName LvalId::typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const {
+    // std::cout << "Lvalid\n";
     return id_TC(gamma, fun, errors, name);
 };
 
@@ -962,7 +965,7 @@ bool Return::typeCheck(Gamma& gamma, const Function* fun, bool loop, Errors& err
         // // // std::cout << "is_return_type_any " << is_return_type_any << "!is_return_exp_any" << !is_return_exp_any <<  "fun->rettyp->typeName().get() == \"_\"" << (fun->rettyp->typeName().get() == "_") << "\n";
         if ( is_return_type_any && !is_return_exp_any ) { //If it wasnt Any before
             errors.push_back("[RETURN-1] in function " + fun->name + ": should return nothing but returning " + exp_type.get());
-        } else if ( return_type.get() != "_" && is_return_exp_any) { //If it was Any before
+        } else if ( return_type.get() != "_" && exp_type.get() == "_") { //If it was Any before
             errors.push_back("[RETURN-2] in function " + fun->name + ": should return " + return_type.get() + " but returning nothing");
         } else if (exp_type != return_type) {
             errors.push_back("[RETURN-2] in function " + fun->name + ": should return " + return_type.get() + " but returning " + exp_type.get());
@@ -1010,13 +1013,17 @@ bool Assign::typeCheck(Gamma& gamma, const Function* fun, bool loop, Errors& err
                 errors.push_back("[ASSIGN-EXP] in function " + fun->name + ": assignment lhs has type " + lhs_type.get() + " but rhs has type " + rhs_type.get());
                 tf = false;
             }
+            if(isFunctionNotPointer(lhs_type.get()) || isStruct(lhs_type.get())) {
+                errors.push_back("[ASSIGN-EXP] in function " + fun->name + ": assignment to struct or function");
+                tf = false;
+            }
         } 
         else if(rhs_type.get().substr(4) != lhs_type.get()){
             if((lhs_type.get()[0] == '&') && (rhs_type.get().substr(4)[0] == '&')){
                 return true;
             }
             else{
-                if((lhs_type.get()[0] == '&') && (rhs_type.get().substr(4) == "int")){
+                if((lhs_type.get()[0] == '&') && (rhs_type.get().substr(4,5) == "int")){
                     return true;
                 }
                 errors.push_back("[ASSIGN-NEW] in function " + fun->name + ": assignment lhs has type " + lhs_type.get() + " but we're allocating type " + rhs_type.get().substr(4));
