@@ -750,11 +750,11 @@ TypeName const arrayAccess_TC(Gamma& gamma, const Function* fun, Errors& errors,
     TypeName ptr_type = std::visit([&ptr_type, &gamma, &fun, &errors](auto* arg) { return arg->typeCheck(gamma, fun, errors); }, ptr);
     TypeName index_type = index->typeCheck(gamma, fun, errors);
     // // // std::cout << "In arrayAccess_TC, index_type: " << index_type.get() << " and ptr type: " << ptr_type.get() << "\n";
-    if (ptr_type.get() == "_") { return TypeName("_"); }
     if (index_type != TypeName("int")) {
         // // std::cout << "Error is for ptr type: " << ptr_type.get() << " with index type " << index_type.get() << "\n";
         errors.push_back("[ARRAY] in function " + fun->name + ": array index is type " + index_type.get() + " instead of int");
     }
+    if (ptr_type.get() == "_") { return TypeName("_"); }
     if (ptr_type.get() != "_" && ptr_type.get()[0] != '&') { //don't have to worry about dereferencing nil
         errors.push_back("[ARRAY] in function " + fun->name + ": dereferencing non-pointer type " + ptr_type.get());
         return TypeName("_");
