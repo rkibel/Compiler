@@ -1,9 +1,436 @@
-fn somefunction(a: int, b: int) -> int {
-    return a + b;
-}
+extern foo1: (&&int) -> _;
+extern foo2: (int) -> &&int;
 
 fn main() -> int {
-    let x:&int, y:int;
-    x = new y+y;
-    return 0;
+  let id1: &&() -> int = nil, id0: &() -> int = id1[3], id5: &&&&int = id5, id4: &&&int = *id5, id3: &&int = id4[-id2[0]], id2: &int = id3[bar1()], id6: &() -> int, id9: &&() -> int = id1, id8: &() -> int = id9[bar1()], id7: int = id8(), id11: &&&&int = id5, id10: &&&&int = id11, id13: &&&int = *id10, id12: &&int = id13[bar1() / (id2 != id2)], id15: int = foo1(-7), id14: int = id15, id18: &&&&int = id18, id17: &&&int = *id18, id16: &&&int = id17, id19: int = -2, id21: &&&&&int, id20: &&&&int = *id21, id22: int = id22, id24: &&(int, &&int) -> &int, id23: &&(int, &&int) -> &int = id24, id25: &&(int, &&int) -> &int = id25, id26: int = 0, id28: &&int = *id5[id22], id30: &&&int = nil, id29: &&&int = id30, id31: &&int = nil, id32: &int = id32, id33: &int = nil, id34: &&int = id3, id37: &int = id37[7], id36: &int = id37, id35: &int = id36, id38: &&int = id12, id39: &() -> int = id0, id40: &&() -> int, id42: &&&&(int, &&int) -> &int = id42, id41: &&&(int, &&int) -> &int = id42[*id36 < 4], id43: &&&(int, &&int) -> &int = id42[7], id45: &&(&int) -> _, id46: &&&(&int) -> _ = nil, id47: &&(int, &&int) -> &int = id43[-(id17 == id4)], id50: &(int, &&int) -> &int = *id24, id49: &(int, &&int) -> &int = id50, id48: &(int, &&int) -> &int = id49, id51: &() -> int = id52, id56: &&(int, &&int) -> &int = nil, id55: &(int, &&int) -> &int = *id56, id59: &&&() -> int = nil, id58: &&() -> int = *id59, id57: &&() -> int = id58, id60: &&&&int, id64: &&(int, &&int) -> &int = id56, id63: &(int, &&int) -> &int = id64[id37[0 * 3]], id65: &&(&int) -> _ = id65;
+  while id0() {
+    id2 = new int 9;
+    id6 = id0;
+    id7 = 3;
+    id7 = 10;
+    foo2(id10[2][id7] == id12);
+    if foo2(id14)[*id2][0] {
+      id16 = new &&int;
+      id19 = 10;
+      id4 = new &&int id6();
+      id2 = id20[6][0][id22];
+      bar1();
+      id23 = id25;
+      id26 = id22;
+      bar2(bar2(id19, id3) == id2, id27);
+    }
+    else {
+      id22 = -*id28[id26];
+      *id4[id2 == id2] = *id29[-id19];
+      *id12[id2[10]] = *id31 == id32;
+      id12[7] = *id31;
+      id15 = id7;
+      bar1();
+      id33 = new int *id33;
+    }
+    foo1(id34);
+    id35 = new int;
+  }
+  while bar2(*id36, *id13) != bar2(id36 == id36, *id30) {
+    if 2 {
+      id2 = id32;
+      id15 = 0;
+      id38 = id38;
+      **id4[8] = 4 + bar1();
+      id37 = nil;
+      id14 = 10;
+    }
+    else {
+      id22 = 6;
+      id33 = new int -0;
+      id15 = id8();
+      id39();
+      id33 = new int;
+      *id40();
+      id32 = new int bar1();
+      id22 = 8;
+    }
+    if *id16[3] != bar2(id7, id12) {
+      foo2(4);
+      id32[*id3 == id36] = id22;
+      id12 = id28;
+      id37 = nil;
+      id15 = id22;
+      bar2(-((id41 == id43) * *id33));
+      bar2(**id44, id28);
+      id19 = id14;
+      id45 = *id46;
+    }
+    else {
+      id32 = id36;
+      main();
+      id26 = id19;
+      foo2(id22 + 10);
+      id33[id7] = id26;
+      *id2 = id15;
+      **id28 = -0;
+      id33 = new int id37[0] > id15;
+      id34 = new &int;
+    }
+    id16 = new &&int -7;
+    foo1(nil);
+    foo2(id15);
+    if id40[id33[id14]]() {
+      id4[1] = new &int id47[id14](id26, id34);
+      id33 = new int 0;
+      foo2(id6());
+      id26 = 7;
+      id32[id48(bar1(), id12)[id22]] = 6;
+      id32 = id33;
+      id33 = id32;
+      id32 = id37;
+      continue;
+    }
+    else {
+      id19 = id36;
+      foo1(nil);
+      id12 = new &int id8();
+      bar2(-*id35, id3);
+      id15 = 10;
+      id16 = new &&int;
+      id2 = new int;
+      id22 = **id21 != id11[id7];
+    }
+    id12 = id38;
+  }
+  id19(id25[id14](3, *id4) == bar2(id22, id38));
+  *id37 = id9[id22]();
+  id26 = id51() <= *id37;
+  while -(foo2(id26) == *id4) {
+    if 1 {
+      id37[*id53 == id48(id22, id34)] = id38 != id31;
+      id19 = *id31[-id54];
+      id32 = new int;
+      id36 = id55(9, id31);
+      id33 = new int;
+      id2 = id35;
+      id14 = *bar2(bar1(), id12);
+      id22 = 3;
+      break;
+    }
+    else {
+      bar2(bar1(), nil);
+      id36 = new int id8();
+      id15 = bar2(id7, id29[id19])[*id31[id22]];
+      bar3(id35);
+      id35 = *id28;
+      id37 = id48(bar2(id14, id31)[id26 > 8], id34);
+      *id12[id7] = id57[8]();
+      id15 = foo2(id14)[id19][*id60 != id16];
+    }
+    while 5 {
+      *id10 = new (int, &int) -> int id0();
+      *id34 = id16[*id2][10];
+      id16 = new &&int;
+      bar1();
+      *id35 = new &(int, &&int) -> &int -7;
+      id32 = new int 0;
+      id38 = new &int 6;
+      id33 = id2;
+    }
+    while foo2(id26) != id28 {
+      id14 = 2;
+      id2 = id35;
+      id61 = id62;
+      id26 = -id19 * id15;
+      id2 = new (int, &int) -> int id26;
+      bar3(bar2(0, foo2(*id36)));
+      foo2(bar2(3 <= id26, id38)[-id14]);
+    }
+    id33 = id36;
+    while 3 {
+      id36 = id36;
+      id35 = new int;
+      main();
+      *id13 = *id30;
+      id2 = id17[6][id63(4, id3)[id14]];
+      id28 = id28;
+      bar2(-9, id31);
+    }
+    return;
+  }
+  id36 = new int;
+  id6();
+  while id39() {
+    id14 = 0 * id22;
+    id30[id33[10]][bar2(id14, id3) != id32] = id37;
+    *id29[id51()] = bar2(bar2(id26, id34)[5 != 0], id15[0][id7]);
+    id0();
+    id22 = 10;
+    id26 = 4;
+    bar3(id2);
+    id65[id6()](id36);
+    return;
+  }
+  return 0;
+}
+
+fn bar1() -> int {
+  let id66: &&(int, &&int) -> &int = id66, id69: &&&&&&&(int, &&int) -> &int = id69, id70: &int = id70, id68: &&&&&(int, &&int) -> &int = *id69[id70[0]], id67: &&&&(int, &&int) -> &int = *id68, id72: &&&&&int = id72, id71: &&int = ***id72, id74: &int = nil, id78: &&&&int = id78, id79: int = 6, id77: &&&int = id78[*id70 >= id79], id76: &&&int = id77, id75: &&&int = id76, id81: &&&int = *id78, id80: &&&int = id81, id73: int = -id74[id75 != id80], id82: int = id83(), id84: int = bar1(), id86: &&() -> int = id86, id85: int = id86[7 - 3](), id88: &int = id70, id90: &int = nil, id89: &int = id90, id91: int = id82, id92: &int = id92, id93: &&() -> int = id86, id95: &&&() -> int = id95, id94: &&() -> int = *id95, id96: &&() -> int = *id95, id97: &&&int = nil, id99: &&&&int, id102: &&() -> int, id101: &() -> int = id102[7], id100: &() -> int = id101, id103: &&() -> int = nil, id104: &(&int) -> _ = id104, id105: &&&() -> int = id95, id106: &() -> int = id101;
+  id66 = id67[-4][bar1()];
+  bar1();
+  id71 = new &int;
+  id70[bar2(id73, id71) != *id73] = id82 != (id70[id84] + (id85 - id87));
+  foo1(id71);
+  id88 = id89;
+  if id91 {
+    id73 = id79;
+    id91 = id92[id93[id91]()];
+    id82 = -7;
+    foo1(nil);
+    foo2(id82);
+  }
+  else {
+    id73 = id82;
+    while bar1() {
+      id88 = new int;
+      foo2(7 == (id85 >= 10));
+      id84 = id79;
+      id70 = id90;
+      id90 = new int id91;
+      id70 = foo2(6)[9];
+      id79 = id66[id84](id82, id71)[id94[id73]()];
+      foo2(3);
+      id88 = id74;
+      id74 = id92;
+      continue;
+    }
+    if 1 {
+      id90 = id96[id66 != id66]();
+      *id71 = nil;
+      id82 = 10;
+      id97 = new &&int 2;
+      *id92 = id98[6];
+      id82 = bar1();
+      id79 = bar1();
+      id85 = id84();
+    }
+    else {
+      id70 = *id99[4][-id79];
+      id85 = bar2(*id88, id92[bar1()])[6];
+      id79 = id91;
+      id74[id85] = 7;
+      id85 = 4;
+      id100();
+      id76 = new &&int 3;
+      foo2(-id91);
+    }
+    foo1(nil);
+    id79 = *id74;
+    while bar1() {
+      id79 = id85;
+      id103();
+      foo2(id91);
+      foo2(*id89);
+      foo2();
+      id86 = id103;
+      id89 = nil;
+      id70 = nil;
+      id92 = new int bar1();
+      id104(bar2(bar2(id100(), id76[7]), id71));
+      id90 = new int id100();
+      id91 = id79 != 1;
+    }
+    *id88 = *id71[id85];
+    while id79 {
+      id85 = bar1();
+      id91 = bar1();
+      id79 = id105[bar1()][id85]();
+      *id88 = 9;
+      foo2(id106());
+      id79 = bar1();
+      id70[2] = 7;
+      id76 = new &&int;
+      id88 = new int 3;
+      id91 = -id82;
+      continue;
+    }
+    id73 = id84;
+    return;
+  }
+  *id76 = new &int (id84 <= bar1()) == id91;
+  return -2;
+}
+
+fn bar2(p: int, q: &&int) -> &int {
+  let id107: int = id107, id108: int = 8, id110: int = id110, id109: int = id110, id111: int = **foo2(bar1());
+  id107 = 2;
+  foo2(id108);
+  id109 = bar1();
+  bar3(nil);
+  id111 = 0;
+  return;
+}
+
+fn bar3(p: &int) -> _ {
+  let id114: &int = p, id113: &int = id114, id112: &int = id113, id117: &&&&int = nil, id116: &&int = id117[3 <= id115][bar1() - bar1()], id115: int = bar2(0, id116)[id115], id119: &() -> int = id119, id118: &int = *id117[id115][id119()], id122: &(int, &&int) -> &int, id121: int = *id122(id119(), id116), id120: int = id121, id125: &&&&int = id125, id124: &&&int = *id125, id123: int = id124 == *id117, id126: &&int = id116, id127: &&int = id127, id128: &int = id112, id129: &&&(int, &&int) -> &int = id129, id132: int, id131: int = id132, id134: &&&int, id133: &&int = id134[*bar2(9, id127)], id135: &&&int = nil, id136: &&(int, &&int) -> &int = nil, id138: &&&(int, &&int) -> &int, id137: &&(int, &&int) -> &int = id138[-2 != id123], id139: &&&int = id135, id140: &&int, id147: &&&&&&&&int = id148[5], id146: &&&&&&&int = *id147, id145: &&&&&&int = id146[*id128], id144: &&&&&int = id145[id115], id143: &&int = id144[9][-6][id113[bar1()]], id149: &(int, &&int) -> &int, id150: &() -> int = id150, id151: &&() -> int, id160: &&&&&&&&&&(int, &&int) -> &int, id159: &&&&&&&&&(int, &&int) -> &int = *id160, id158: &&&&&&&(int, &&int) -> &int = id159[id115][*bar2(bar1(), id133)], id163: &() -> int = bar1, id162: &() -> int = id163, id161: &() -> int = id162, id157: &&&&&&(int, &&int) -> &int = id158[id161()], id156: &&&&&&(int, &&int) -> &int = id157, id155: &&&&&(int, &&int) -> &int = id156[2], id154: &&&&(int, &&int) -> &int = id155[id123], id153: &&&(int, &&int) -> &int = *id154, id152: &&&(int, &&int) -> &int = id153, id166: &&&&&int = id144, id165: &&&int = id166[9][--id120], id167: &(int, &&int) -> &int = id167, id168: &&&int = *id117, id170: &&(int, &&int) -> &int = nil, id169: &(int, &&int) -> &int = *id170, id171: &&&&int, id174: &&&&int, id177: &&&&() -> int, id176: &&&() -> int = id177[id114[bar1()] * 10], id175: &&() -> int = id176[id120], id179: &&() -> int, id181: &&(&int) -> _, id182: &&&(&int) -> _ = nil;
+  while 6 {
+    while id112 {
+      id115 = -id116[1][*id118];
+      id114 = new int;
+      id120 = bar1();
+      id123 = 3;
+      id121 = new &int *id126 == *id127;
+    }
+    id113 = bar2(bar1(), id126);
+    id128 = id114;
+    if bar1() {
+      *id113 = *id118 <= id121;
+      *id129[id120](*p, nil);
+      bar2(4 + bar1(), *id124);
+      id114 = foo2(bar1() / id130)[id131];
+      id133 = new &int *id114;
+      id114 = new int;
+      break;
+    }
+    else {
+      foo2(*id114);
+      id120 = -bar2(id121, id127)[bar1()];
+      *id112 = id132;
+      foo1(id133);
+      *id129[-4](id128[id115], nil);
+      return bar1();
+    }
+    id118 = new int;
+    while -10 {
+      id135[id131] = new &int;
+      id136 = id137;
+      bar3();
+      foo1(nil);
+      id121 = id139 == *id125;
+      *id140[id131 / 6] = id132 / id131;
+      break;
+    }
+    if id134 == *id141 {
+      foo1(**id142);
+      id113[id115] = id132;
+      *p = id121;
+      **id126 = id114[id113[id123]];
+      id143[id149(7, id143)[0]] = new int id120;
+      id150 = *id151;
+      id118 = new int id120 >= (id124 == id124);
+      id131 = 7;
+    }
+    else {
+      *id136 = *id152[id118];
+      foo1(nil);
+      id126 = new &int id161();
+      bar3(id140[id162()]);
+      id121 = id121;
+      id121 = *9;
+      id113 = id118;
+      id164 = *id116;
+      id149(-id143[1][id115], foo2(id167(id113 == id118, *id165)));
+      id128[id128[9 * id115]] = *id128 / id120;
+    }
+    while 9 {
+      p = new int id161();
+      id114 = id126[5];
+      id113[id132] = id115;
+      id121();
+      id118 = *id127;
+      id132 = *id143 != id127[id120];
+      *id168 = new &int;
+      id116 = new &int;
+      p[id133[6][bar1()]] = 6;
+    }
+  }
+  bar3(bar2(id115, id116));
+  id123 = (id140 != id140) <= (id127 == id133);
+  while id131 {
+    p = id116[7];
+    id168 = new &&int;
+    while *id118 {
+      *id128 = id162();
+      id123 = id118[bar1()];
+      id132 = id119();
+      id115 = (id113 != id169(8, id116)) - id123;
+      id123 = id113[bar1()];
+      id140 = *id124;
+      id132 = id123;
+      id171[5] = new &&int 7;
+      foo2(id172[id123][bar1()]);
+      id121 = 2;
+      continue;
+    }
+    while 4 {
+      bar3();
+      bar1();
+      id114 = id113;
+      bar2(1, id173);
+      id174[id132][bar1()] = new &int 0;
+      id143 = new &int 6;
+      id113 = p;
+      id114 = new int;
+      id112 = new int 0;
+      break;
+    }
+    id121 = id131;
+    p = id112;
+    p = id114;
+    id119();
+    p = new int 6;
+    id127 = new &int;
+  }
+  if 1 {
+    id131 = 1;
+    *id116[id118[id123]] = bar1();
+    if id163() {
+      id118[0] = id131;
+      id120 = 0;
+      *id174 = new &&int;
+      *id128 = 2;
+      *id175();
+      return 9;
+    }
+    else {
+      id178 = id118;
+      id115 = new &int 7;
+      id118[5] = bar1();
+      id114 = new int;
+      *id113 = bar1();
+      id132 = id150();
+      p = id128;
+      id112 = id134[4][id121];
+      id175[id113[-1]]();
+    }
+    id116 = id127;
+    id112 = new int 0;
+    *id165[id163()] = bar2(bar2(id132, id140)[5 != 0], id121[0][id115]);
+  }
+  else {
+    while 0 {
+      id114 = new int;
+      id113 = new int;
+      *id179();
+      id112 = new int bar1();
+      id131 = 8;
+      id114 = bar2(5, id124[id115]);
+      continue;
+    }
+    id133 = foo2(id131);
+    id118 = new int bar1();
+    bar1();
+    id133 = new &int;
+    id112 = new int;
+    *id126 = id140[id131];
+    return 10;
+  }
+  while id121 {
+    id132 = bar1();
+    id131 = 10;
+    id132 = 6;
+    bar3();
+    **id143 = bar1();
+    id127 = *id139;
+    id180 = id120;
+    id181 = *id182;
+  }
+  **id168 = new int -id121;
+  return;
 }

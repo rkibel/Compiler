@@ -16,7 +16,6 @@ using StructFunctionsInfo = std::unordered_map<std::string, FunctionsInfo>;
 
 
 std::vector<std::string> tokens;
-//Declare type maps for prog
 Gamma globals_map; //used for creating local maps and for main function
 Delta delta;
 std::unordered_map<std::string, Gamma> locals_map; //keys for gamma are (non-main) function names, whose value is that function's gamma
@@ -86,17 +85,12 @@ int main(int argc, char** argv) {
         }
         for (Struct* s: prog->structs) { 
             Gamma temp_map;
-            // std::cout << "Structs name " << s->name << "\n";
             for (Decl* f: s->fields) {
-                // if (f->name == "fun") { // std::cout << s->name << " YESSIR\n"; }
                 temp_map[f->name] = new TypeName(f->typeName());
-                // std::cout << "Type name here: " << f->typeName().get() << "\n";
                 if (isPointerToFunction(f->typeName().get())) { 
-                    // std::cout << "Number of parameters: " << f->funcInfo().params.size() << "\n";
                     struct_functions_map[s->name][f->name] = f->funcInfo(); 
                 }
             }
-            // std::cout << "Adding " << s->name << "\n";
             delta[s->name] = temp_map;
         }
 
@@ -113,9 +107,6 @@ int main(int argc, char** argv) {
             for (const auto& [name, type_name_pointer] : globals_map) {
                 temp_map.insert(std::make_pair(std::move(name), new TypeName(*type_name_pointer))); //Inserts all globals into function
             }
-            // for (Struct* s: prog->structs) { //Do above struct and function earlier so each gamma has full global information
-            //     temp_map[s->name] = new TypeName(s->typeName());
-            // }
             for (Decl* p: f->params) { 
                 temp_map[p->name] = new TypeName(p->typeName()); 
                 if (isPointerToFunction(p->typeName().get())) { functions_map[p->name] = p->funcInfo(); } 

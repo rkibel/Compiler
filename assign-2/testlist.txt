@@ -1034,7 +1034,7 @@ fn main() -> int {
 
 #11 Problem, not exactly a field access?
 
-#12 Isn't working
+#12 Works now
 
 struct list1 {
   fun : &(int)->_,
@@ -1138,3 +1138,89 @@ fn main() -> int {
 }
 
 #Needed to fix non-function type
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#Differences:
+
+struct t {
+    a: int
+}
+
+fn f(x: int) -> int {
+    return 1;
+}
+
+fn g(x: s, y: int) -> int {
+    return q; // Assuming q is a variable not defined in the provided code
+}
+
+fn h() -> _ {
+    return;
+}
+
+extern e: (int) -> int;
+
+fn main() -> int {
+    let x: &q;
+    x = new q; // Error: 'q' is not defined
+    return x.a; // Error: Dereferencing a pointer to a non-structure type
+}
+
+
+
+#New allocations
+fn somefunction(a: int, b: int) -> int {
+    return a + b;
+}
+struct t {a:int}
+fn main() -> int {
+    let x:&int, y:int, z:&t;
+    z = new &&t;//also try &t and int
+}
+
+
+
+
+
+
+
+
+#Final issues
+fn bar1() -> int {
+    let id79:&int = 4;
+    id79[id79[id77]]();
+    return;
+}
