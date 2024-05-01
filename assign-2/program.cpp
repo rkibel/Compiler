@@ -978,7 +978,7 @@ bool Return::typeCheck(Gamma& gamma, const Function* fun, bool loop, Errors& err
 TypeName New::typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const {
     TypeName amount_type = amount->typeCheck(gamma, fun, errors);
     TypeName type_typename = type->typeName();
-    if(amount_type.get() != "int") {
+    if((amount_type.get() != "int") && (amount_type.get() != "_")) {
         errors.push_back("[ASSIGN-NEW] in function " + fun->name + ": allocation amount is type " + amount_type.get() + " instead of int");
     }
     if(isFunctionNotPointer(type_typename.get())) {
@@ -1025,7 +1025,7 @@ bool Assign::typeCheck(Gamma& gamma, const Function* fun, bool loop, Errors& err
                 return true;
             }
             else{
-                // std::cout << "Lhs/Rhs lhs type " << lhs_type.get().substr(1) << " rhs type " << rhs_type.get() << " and " << ("q" == rhs_type.get()) << "\n";      
+                // std::cout << "Lhs/Rhs lhs type " << lhs_type.get().substr(1) << " rhs type " << rhs_type.get() << "\n";      
                 if((lhs_type.get()[0] == '&') && (rhs_type.get().substr(4,5) == "int" || lhs_type.get().substr(1) == rhs_type.get().substr(4))){
                     return true;
                 }
@@ -1039,13 +1039,14 @@ bool Assign::typeCheck(Gamma& gamma, const Function* fun, bool loop, Errors& err
 
 bool If::typeCheck(Gamma& gamma, const Function* fun, bool loop, Errors& errors) const {
     TypeName exp_type (guard->typeCheck(gamma, fun, errors));
+    bool tf = true;
     if((exp_type.get() != "int") && (exp_type.get() != "_")) {
         errors.push_back("[IF] in function " + fun->name + ": if guard has type " + exp_type.get() + " instead of int");
-        return false;
+        tf = false;
     }
     for(auto s: tt){ s->typeCheck(gamma, fun, loop, errors); }
     for(auto s: ff){ s->typeCheck(gamma, fun, loop, errors); }
-    return true;
+    return tf;
 }
 bool While::typeCheck(Gamma& gamma, const Function* fun, bool loop, Errors& errors) const {
     TypeName exp_type (guard->typeCheck(gamma, fun, errors));
