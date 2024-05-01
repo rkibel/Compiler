@@ -1,6 +1,6 @@
+//struct q {a:int}
 fn main() -> int {
-  let id6:&&int, id7:int, id7:&&(int)->int;
-  id7 = id7();
-  id7();
-  return id9;
+    let x: &q, y:&&q;
+    x = new q; // Error: 'q' is not defined
+    return x.a; // Error: Dereferencing a pointer to a non-structure type
 }

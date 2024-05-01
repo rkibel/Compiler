@@ -1006,9 +1006,11 @@ bool Assign::typeCheck(Gamma& gamma, const Function* fun, bool loop, Errors& err
     TypeName rhs_type = rhs->typeCheck(gamma, fun, errors);
     bool tf = true;
     if((rhs_type.get() == "new _") || lhs_type == rhs_type){
+        // std::cout << "First lhs type " << lhs_type.get() << " rhs type " << rhs_type.get() << "\n";   
         return true;
     } else {
-        if(rhs_type.get().substr(0,3) != "new") {       
+        if(rhs_type.get().substr(0,3) != "new") {
+            // std::cout << "Here lhs type " << lhs_type.get() << " rhs type " << rhs_type.get() << "\n";      
             if((lhs_type.get() != rhs_type.get())){ //already not any from top if statement
                 errors.push_back("[ASSIGN-EXP] in function " + fun->name + ": assignment lhs has type " + lhs_type.get() + " but rhs has type " + rhs_type.get());
                 tf = false;
@@ -1023,7 +1025,8 @@ bool Assign::typeCheck(Gamma& gamma, const Function* fun, bool loop, Errors& err
                 return true;
             }
             else{
-                if((lhs_type.get()[0] == '&') && (rhs_type.get().substr(4,5) == "int")){
+                // std::cout << "Lhs/Rhs lhs type " << lhs_type.get().substr(1) << " rhs type " << rhs_type.get() << " and " << ("q" == rhs_type.get()) << "\n";      
+                if((lhs_type.get()[0] == '&') && (rhs_type.get().substr(4,5) == "int" || lhs_type.get().substr(1) == rhs_type.get().substr(4))){
                     return true;
                 }
                 errors.push_back("[ASSIGN-NEW] in function " + fun->name + ": assignment lhs has type " + lhs_type.get() + " but we're allocating type " + rhs_type.get().substr(4));
