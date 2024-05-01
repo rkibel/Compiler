@@ -956,7 +956,7 @@ bool Return::typeCheck(Gamma& gamma, const Function* fun, bool loop, Errors& err
     TypeName exp_type = exp->typeCheck(gamma, fun, errors); //store typename given, typeCheck will replace undefined variables with Any
     // // // std::cout << "exp type " << exp_type.get() << " is any? " << is_return_exp_any << "\n";
     // // // std::cout << "For function " << fun->name << "\nReturn type any: " << is_return_type_any << " Return exp any: " << is_return_exp_any << " Return type: " << return_type.get() << " Exp Type: " << exp_type.get() << "\n";
-    if ( exp_type.get() == "_" && is_return_exp_any) { return true; } //If exp was made to be Any in typeCheck
+    if ( exp_type.get() == "_" && !is_return_exp_any) { return true; } //If exp was made to be Any in typeCheck
     if ( exp_type.get() != return_type.get()) { //If not equal, then at least one of the types not _ and they are different
         // // // std::cout << "Nil comparison for return type " << return_type.get() << " and exp type "  << exp_type.get() << " " << (return_type.get() != "_" && exp_type != return_type) << "\n";
         // // // std::cout << "is_return_type_any " << is_return_type_any << "!is_return_exp_any" << !is_return_exp_any <<  "fun->rettyp->typeName().get() == \"_\"" << (fun->rettyp->typeName().get() == "_") << "\n";
