@@ -15,8 +15,8 @@ struct Grammar {
 
 std::vector<std::string> tokens;
 
-//Notice how all type returns std::pair<Type*, unsigned int>, recursive calls until this is always returned: the current AST struct type and then the next index into the token vector
-//Then binop rules will return std::pair<BinaryOp*, unsigned int>, this behaves similarly
+// Notice how all type returns std::pair<Type*, unsigned int>, recursive calls until this is always returned: the current AST struct type and then the next index into the token vector
+// Then binop rules will return std::pair<BinaryOp*, unsigned int>, this behaves similarly
 
 // type ::= `&`* type_ad
 std::pair<Type*, unsigned int> type(unsigned int i) noexcept(false) {
@@ -54,7 +54,7 @@ std::pair<Type*, unsigned int> type_ad(unsigned int i) noexcept(false) {
 std::pair<Type*, unsigned int> type_op(unsigned int i) noexcept(false) {
     if (i >= tokens.size()) throw fail(i);
     if (tokens[i] == "CloseParen") {
-        return type_ar(i+1, new Fn()); //New function with no parameters
+        return type_ar(i+1, new Fn());
     }
     auto [t, itemp] = type(i);
     return type_fp(itemp, t);

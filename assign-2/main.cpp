@@ -4,11 +4,43 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <map>
 #include <algorithm>
 #include "grammar.cpp"
 
+using Gamma = std::unordered_map<std::string, TypeName*>;
+using Delta = std::unordered_map<std::string, Gamma>;
+using Errors = std::vector<std::string>;
+using FunctionsInfo = std::unordered_map<std::string, ParamsReturnVal>;
+using StructFunctionsInfo = std::unordered_map<std::string, FunctionsInfo>;
+
+
+std::vector<std::string> tokens;
+Gamma globals_map; // used for creating local maps and for main function
+Delta delta;
+std::unordered_map<std::string, Gamma> locals_map; // keys for gamma are (non-main) function names, whose value is that function's gamma
+FunctionsInfo functions_map;
+StructFunctionsInfo struct_functions_map;
+Errors errors_map;
+
 bool isWhitespace(unsigned char c) {
     return (c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\v' || c == '\f');
+}
+
+extern const bool isFunction(const std::string& type) {
+    return type[0] == '(' || type.substr(0,2) == "&(";
+}
+extern const bool isPointerToFunction(const std::string& type) {
+    return type[0] == '(' || type.find("&(") != std::string::npos;
+}
+extern const bool isFunctionNotPointer(const std::string& type) {
+    return type[0] == '(';
+}
+extern const bool isStruct(const std::string& type) {
+    return type[0] != '&' && type.find('(') == std::string::npos && type.substr(0,3) != "int";
+}
+extern const bool isValidFieldAcesss(const std::string& type) {
+    return type[0] == '&' && type[1] != '(' && type[1] != '&' && type.substr(0,5) != "&int"; // one extra for substr in case type called inty or something
 }
 
 int main(int argc, char** argv) {
@@ -36,12 +68,64 @@ int main(int argc, char** argv) {
     }
     Grammar g;
     g.tokens = tokens;
+    Program* prog;
     try {
-        Program* prog = g.program(0);
-        std::cout << *prog;
+        prog = g.program(0);
+        std::cout << *prog << "\n\n";
     } catch (fail& f) {
         std::cout << "parse error at token " << f.get() << "\n";
+        prog = nullptr;
     }
 
+    if (prog != nullptr) {
+        // Note! Decl should only call its own typeName
+        for (Decl* g: prog->globals) { 
+            globals_map[g->name] = new TypeName(g->typeName());
+            if (isPointerToFunction(g->typeName().get())) { functions_map[g->name] = g->funcInfo(); } // decl could be function pointer
+        }
+        for (Struct* s: prog->structs) { 
+            Gamma temp_map;
+            for (Decl* f: s->fields) {
+                temp_map[f->name] = new TypeName(f->typeName());
+                if (isPointerToFunction(f->typeName().get())) { 
+                    struct_functions_map[s->name][f->name] = f->funcInfo(); 
+                }
+            }
+            delta[s->name] = temp_map;
+        }
+
+        for (Decl* e: prog->externs) { 
+            globals_map[e->name] = new TypeName(e->typeName()); 
+            if (e->name != "main") { functions_map[e->name] = e->funcInfo(); }
+        }
+        for (Function* f: prog->functions) {
+            globals_map[f->name] = new TypeName(f->typeName()); 
+            functions_map[f->name] = f->funcInfo();
+        }
+        for (Function* f: prog->functions) { // Creating locals map
+            Gamma temp_map;
+            for (const auto& [name, type_name_pointer] : globals_map) {
+                temp_map.insert(std::make_pair(std::move(name), new TypeName(*type_name_pointer))); // Inserts all globals into function
+            }
+            for (Decl* p: f->params) { 
+                temp_map[p->name] = new TypeName(p->typeName()); 
+                if (isPointerToFunction(p->typeName().get())) { functions_map[p->name] = p->funcInfo(); } 
+            }
+            for (auto [decl, exp]: f->locals){ 
+                temp_map[decl->name] = new TypeName(decl->typeName()); 
+                if (isPointerToFunction(decl->typeName().get())) { functions_map[decl->name] = decl->funcInfo(); } // decl could be function pointer
+            }
+            locals_map[f->name] = temp_map;
+        }   
+        prog->typeCheck(globals_map, errors_map);
+
+        // Sorting errors
+        std::sort(errors_map.begin(), errors_map.end());
+
+        // Printing out errors
+        for (const auto& error : errors_map) {
+            std::cout << error << "\n";
+        }
+    }
     return 0;
 }

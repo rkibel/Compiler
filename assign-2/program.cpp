@@ -2,9 +2,76 @@
 #include <vector>
 #include <optional>
 #include <iostream>
+#include <unordered_map>
+#include <map>
+#include <variant>
+#include <tuple>
+
+class TypeName {
+    private:
+        std::string type_name;
+        std::string struct_name; // used to pass in for exp or *
+        std::string field_name;  // used to pass in for exp or *
+    public:
+        TypeName() {};
+        TypeName( std::string t, std::string s = "", std::string f = "") : type_name(t), struct_name(s), field_name(f) {}; //No default arg to ensure constructing correctly
+        TypeName(const TypeName& other) : type_name(other.get()) {}
+        TypeName& operator=(const TypeName& other) {
+            if (this != &other) {
+                type_name = other.get();
+            }
+            return *this;
+        }
+        bool operator==(const TypeName& other) const {
+            try {
+                //Checks for equality to Any
+                if (type_name == "_" || other.get() == "_") { return true; } //Any equal to others
+                if (type_name == other.get()) { return true; } //If equal then return true
+                //Checks for null pointer equality to other pointers
+                return type_name.at(0) == '&' && other.get().at(0) == '&' && (type_name.at(1) == '_' || other.get().at(1) == '_');
+            } catch (const std::out_of_range& e) {} 
+            return false;
+        }
+        bool operator!=(const TypeName& other) const {
+            return !(*this == other);
+        }
+        std::string get() const { return type_name; }
+        std::string getStructName() const { return struct_name; }
+        std::string getFieldName() const { return field_name; }
+};
+struct Exp;
+struct Type;
+struct Function;
+extern const bool isFunction(const std::string& type_name);
+extern const bool isFunctionNotPointer(const std::string& type);
+extern const bool isStruct(const std::string& type);
+extern const bool isValidFieldAcesss(const std::string& type);
+
+struct ParamsReturnVal {
+    std::vector<Type*> params;
+    Type* rettyp;
+    ParamsReturnVal() {};
+    ParamsReturnVal(const std::vector<Type*>& params, Type* rettyp) : params(params), rettyp(rettyp) {}
+    ParamsReturnVal& operator=(const ParamsReturnVal& other) {
+        if (this != &other) { // Avoid self-assignment
+            params = other.params;
+            rettyp = other.rettyp;
+        }
+        return *this;
+    }
+};
+
+using Gamma = std::unordered_map<std::string, TypeName*>;
+using Delta = std::unordered_map<std::string, Gamma>;
+using Errors = std::vector<std::string>;
+using FunctionsInfo = std::unordered_map<std::string, ParamsReturnVal>;
+using StructFunctionsInfo = std::unordered_map<std::string, FunctionsInfo>;
 
 struct Type {
     virtual void print(std::ostream& os) const {}
+    virtual bool isAny() const { return false; }
+    virtual TypeName typeName() const { return TypeName("_"); }
+    virtual ParamsReturnVal funcInfo() const;
     virtual ~Type() {}
     friend std::ostream& operator<<(std::ostream& os, const Type& obj) {
         obj.print(os);
@@ -15,11 +82,17 @@ struct Int : Type {
     void print(std::ostream& os) const override {
         os << "Int";
     }
+    TypeName typeName() const override {
+        return TypeName("int");
+    }
 };
 struct StructType : Type {
     std::string name;
     void print(std::ostream& os) const override { 
         os << "Struct(" << name << ")"; 
+    }
+    TypeName typeName() const override {
+        return TypeName(name);
     }
 };
 struct Fn : Type {
@@ -34,27 +107,56 @@ struct Fn : Type {
         }
         os << "], ret = " << *ret << ")";
     }
+    TypeName typeName() const override {
+        std::string prms_type_names;
+        for (unsigned int i = 0; i < prms.size(); i++) {
+            prms_type_names += prms[i]->typeName().get();
+            if (i != prms.size() - 1) prms_type_names += ", ";
+        }
+        std::string temp = "(" + prms_type_names + ") -> " + ret->typeName().get();
+        return TypeName(temp);
+    }
+    ParamsReturnVal funcInfo () const override { return ParamsReturnVal(prms, ret); }
     ~Fn() {
         for (Type* t: prms) delete t;
         delete ret;
     }
-
 };
 struct Ptr : Type {
     Type* ref;
     void print(std::ostream& os) const override { 
         os << "Ptr(" << *ref << ")";
     }
+    TypeName typeName() const override {
+        std::string ptr_type_names;
+        const Type* temp = ref;
+        while (temp) {
+            ptr_type_names += "&";
+            if (dynamic_cast<const Ptr*>(temp)) { // Checks if temp is a pointer type
+                temp = static_cast<const Ptr*>(temp)->ref;
+            } else {
+                ptr_type_names += temp->typeName().get();
+                break;
+            }
+        }
+        return TypeName(ptr_type_names);
+    }
+    ParamsReturnVal funcInfo () const override { return ref->funcInfo(); }
     ~Ptr() { delete ref; }
 };
 struct Any : Type {
     void print(std::ostream& os) const override { 
         os << "_";
     }
+    TypeName typeName() const override {
+        return TypeName("_");
+    }
+    bool isAny() const override { return true; }
 };
 
 struct UnaryOp {
     virtual void print(std::ostream& os) const {}
+    virtual TypeName typeCheck(Gamma& gamma, const Function* fun, Errors& errors, Exp* exp) const { return TypeName("_"); };
     friend std::ostream& operator<<(std::ostream& os, const UnaryOp& uo) {
         uo.print(os);
         return os;
@@ -62,13 +164,16 @@ struct UnaryOp {
 };
 struct Neg : UnaryOp {
     void print(std::ostream& os) const override { os << "Neg"; }
+    TypeName typeCheck(Gamma& gamma, const Function* fun, Errors& errors, Exp* operand) const override; //Defined at the bottom
 };
 struct UnaryDeref : UnaryOp {
     void print(std::ostream& os) const override { os << "Deref"; }
+    TypeName typeCheck(Gamma& gamma, const Function* fun, Errors& errors, Exp* operand) const override;
 };
 
 struct BinaryOp{
     virtual void print(std::ostream& os) const {}
+    virtual TypeName typeCheck(Gamma& gamma, const Function* fun, Errors& errors, Exp* left, Exp* right) const; //define for rest, overload for eq/not eq (defined below)
     friend std::ostream& operator<<(std::ostream& os, const BinaryOp& bo) {
         bo.print(os);
         return os;
@@ -88,8 +193,9 @@ struct Div : BinaryOp{
 };
 struct Equal : BinaryOp{
     void print(std::ostream& os) const override { os << "Equal"; }
+    TypeName typeCheck(Gamma& gamma, const Function* fun, Errors& errors, Exp* left, Exp* right) const override;
 };
-struct NotEq : BinaryOp{
+struct NotEq : Equal{ //so the same typeCheck function is inherited
     void print(std::ostream& os) const override { os << "NotEq"; }
 };
 struct Lt : BinaryOp{
@@ -107,6 +213,10 @@ struct Gte : BinaryOp{
 
 struct Exp {
     virtual void print(std::ostream& os) const {}
+    virtual TypeName typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const { return TypeName("_"); };
+    virtual std::string getName() { return "_"; };
+    virtual bool isAny() const { return false; }
+    virtual bool isFieldAccess() const { return false; }
     virtual ~Exp() {}
     friend std::ostream& operator<<(std::ostream& os, const Exp& exp) {
         exp.print(os);
@@ -116,18 +226,31 @@ struct Exp {
 struct Num : Exp {
     int32_t n;
     void print(std::ostream& os) const override { os << "Num(" << n << ")"; }
+    TypeName typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const override { return TypeName("int"); };
+    std::string getName() override { return "int"; }
 };
 struct ExpId : Exp {
     std::string name;
+    ExpId() {}
+    ExpId(const std::string& name) : name(name) {}
     void print(std::ostream& os) const override { os << "Id(" << name << ")"; }
+    TypeName typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const override;
+    std::string getName() override { return name; }
 };
 struct Nil : Exp {
     void print(std::ostream& os) const override { os << "Nil"; }
+    TypeName typeName() const { return TypeName("&_"); }
+    TypeName typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const override { return TypeName("&_");};
+    std::string getName() override { return "_"; }
 };
 struct UnOp : Exp {
     UnaryOp* op;
     Exp* operand;
     void print(std::ostream& os) const override { os << *op << "(" << *operand << ")"; }
+    TypeName typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const override {
+        return op->typeCheck(gamma, fun, errors, operand);
+    }
+    std::string getName() override { return operand->getName(); }
     ~UnOp() { delete operand; }
 };
 struct BinOp : Exp {
@@ -137,6 +260,10 @@ struct BinOp : Exp {
     void print(std::ostream& os) const override {
         os << "BinOp(\nop = " << *op << ",\nleft = " << *left << ",\nright = " << *right << "\n)"; 
     }
+    TypeName typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const override {
+        return op->typeCheck(gamma, fun, errors, left, right);
+    }
+    std::string getName() override { return "_"; }
     ~BinOp() { delete left; delete right; }
 };
 struct ExpArrayAccess : Exp {
@@ -145,6 +272,8 @@ struct ExpArrayAccess : Exp {
     void print(std::ostream& os) const override {
         os << "ArrayAccess(\nptr = " << *ptr << ",\nindex = " << *index << "\n)";
     }
+    TypeName typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const override;
+    std::string getName() override { return ptr->getName(); }
     ~ExpArrayAccess() { delete ptr; delete index; }
 };
 struct ExpFieldAccess : Exp {
@@ -153,6 +282,9 @@ struct ExpFieldAccess : Exp {
     void print(std::ostream& os) const override {
         os << "FieldAccess(\nptr = " << *ptr << ",\nfield = " << field << "\n)";
     }
+    bool isFieldAccess() const override { return true; }
+    TypeName typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const override;
+    std::string getName() override { return field; }
     ~ExpFieldAccess() { delete ptr; }
 };
 struct ExpCall : Exp {
@@ -166,19 +298,25 @@ struct ExpCall : Exp {
         }
         os << "\n]\n)";
     }
+    TypeName typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const override;
     ~ExpCall() {
         delete callee;
         for (Exp* exp: args) delete exp;
     }
+    std::string getName() override { return callee->getName(); }
 };
 struct AnyExp : Exp {
-    void print(std::ostream& os) const override { 
-        os << "_";
-    }
+    void print(std::ostream& os) const override { os << "_"; }
+    TypeName typeName() const { return TypeName("_"); }
+    bool isAny() const override { return true; }
+    std::string getName() override { return "_"; }
 };
 
 struct Lval {
     virtual void print(std::ostream& os) const {}
+    virtual TypeName typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const { return TypeName("_"); };
+    virtual std::string getName() { return "_"; }
+    virtual bool isFieldAccess() const { return false; }
     virtual ~Lval() {}
     friend std::ostream& operator<<(std::ostream& os, const Lval& lval) {
         lval.print(os);
@@ -188,10 +326,14 @@ struct Lval {
 struct LvalId : Lval {
     std::string name;
     void print(std::ostream& os) const override { os << "Id(" << name << ")"; }
+    TypeName typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const override;
+    std::string getName() override { return name; }
 };
 struct LvalDeref : Lval {
     Lval* lval;
     void print(std::ostream& os) const override { os << "Deref(" << *lval << ")"; }
+    TypeName typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const override;
+    std::string getName() override { return lval->getName(); }
     ~LvalDeref() { delete lval; }
 };
 struct LvalArrayAccess : Lval {
@@ -200,6 +342,8 @@ struct LvalArrayAccess : Lval {
     void print(std::ostream& os) const override {
         os << "ArrayAccess(\nptr = " << *ptr << ",\nindex = " << *index << "\n)";
     }
+    TypeName typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const override;
+    std::string getName() override { return ptr->getName(); }
     ~LvalArrayAccess() { delete ptr; delete index; }
 };
 struct LvalFieldAccess : Lval {
@@ -208,12 +352,16 @@ struct LvalFieldAccess : Lval {
     void print(std::ostream& os) const override {
         os << "FieldAccess(\nptr = " << *ptr << ",\nfield = " << field << "\n)";
     }
+    std::string getName() override { return ptr->getName(); }
+    bool isFieldAccess() const override { return false;  }
+    TypeName typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const override;
     ~LvalFieldAccess() { delete ptr; }
 };
 
 
 struct Rhs {
     virtual void print(std::ostream& os) const {}
+    virtual TypeName typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const { return TypeName("_"); };
     virtual ~Rhs() {}
     friend std::ostream& operator<<(std::ostream& os, const Rhs& rhs) {
         rhs.print(os);
@@ -223,17 +371,21 @@ struct Rhs {
 struct RhsExp : Rhs {
     Exp* exp;
     void print(std::ostream& os) const override { os << *exp; }
+    TypeName typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const override;
     ~RhsExp() { delete exp; }
 };
 struct New : Rhs {
     Type* type;
     Exp* amount;
     void print(std::ostream& os) const override { os << "New(" << *type << ", " << *amount << ")"; }
+    TypeName typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const override;
     ~New() { delete type; delete amount; }
 };
 
 struct Stmt {
     virtual void print(std::ostream& os) const {}
+    virtual bool typeCheck(Gamma& gamma, const Function* fun, bool loop, Errors& errors) const { return true; };
+    virtual std::string getName() { return "_"; }
     virtual ~Stmt() {}
     friend std::ostream& operator<<(std::ostream& os, const Stmt& stmt) {
         stmt.print(os);
@@ -242,9 +394,11 @@ struct Stmt {
 };
 struct Break : Stmt {
     void print(std::ostream& os) const override { os << "Break"; }
+    virtual bool typeCheck(Gamma& gamma, const Function* fun, bool loop, Errors& errors) const override;
 };
 struct Continue : Stmt {
     void print(std::ostream& os) const override { os << "Continue"; }
+    virtual bool typeCheck(Gamma& gamma, const Function* fun, bool loop, Errors& errors) const override;
 };
 struct Return : Stmt {
     // WARNING: if there is no return, exp is AnyExp : Exp
@@ -252,6 +406,7 @@ struct Return : Stmt {
     void print(std::ostream& os) const override {
         os << "Return(" << *exp << ")";
     }
+    bool typeCheck(Gamma& gamma, const Function* fun, bool loop, Errors& errors) const override;
     ~Return() { delete exp; }
 };
 struct Assign : Stmt {
@@ -260,6 +415,7 @@ struct Assign : Stmt {
     void print(std::ostream& os) const override {
         os << "Assign(\nlhs = " << *lhs << ",\nrhs = " << *rhs << "\n)";
     }
+    bool typeCheck(Gamma& gamma, const Function* fun, bool loop, Errors& errors) const override;
     ~Assign() { delete lhs; delete rhs; }
 };
 struct StmtCall : Stmt {
@@ -273,6 +429,8 @@ struct StmtCall : Stmt {
         }
         os << "]\n)";
     }
+    std::string getName() override { return callee->getName(); }
+    bool typeCheck(Gamma& gamma, const Function* fun, bool loop, Errors& errors) const override;
     ~StmtCall() { delete callee; for (Exp* exp: args) delete exp; }
 };
 struct If : Stmt {
@@ -292,6 +450,7 @@ struct If : Stmt {
         }
         os << "]\n)";
     }
+    bool typeCheck(Gamma& gamma, const Function* fun, bool loop, Errors& errors) const override;
     ~If() { delete guard; for (Stmt* stmt: tt) delete stmt; for (Stmt* stmt: ff) delete stmt; }
 };
 struct While : Stmt {
@@ -305,17 +464,22 @@ struct While : Stmt {
         }
         os << "]\n)";
     }
+    bool typeCheck(Gamma& gamma, const Function* fun, bool loop, Errors& errors) const override;
     ~While() { delete guard; for (Stmt* stmt: body) delete stmt; }
 };
 
 struct Decl {
+    //WARNING: should only call it's own typename
     std::string name;
-    Type* type;
+    Type* type; //Fn type if this Decl is an extern
+    std::vector<Decl*> params; //optional, used to keep track of parameters for extern decl
     ~Decl() { delete type; }
     friend std::ostream& operator<<(std::ostream& os, const Decl& decl) {
         os << "Decl(" << decl.name << ", " << *(decl.type) << ")";
         return os;
     }
+    TypeName typeName() const { return type->typeName(); }
+    ParamsReturnVal funcInfo () const { return type->funcInfo(); }
 };
 
 struct Struct {
@@ -331,6 +495,8 @@ struct Struct {
         os << "]\n)";
         return os;
     }
+    TypeName typeName() const { return TypeName(name); }
+    bool typeCheck(Gamma& gamma, Errors& errors) const;
 };
 
 struct Function {
@@ -366,6 +532,22 @@ struct Function {
         os << "]\n)";
         return os;
     }
+    TypeName typeName() const {
+        std::string prms_type_names;
+        for (unsigned int i = 0; i < params.size(); i++) {
+            prms_type_names += params[i]->typeName().get();
+            if (i != params.size() - 1) prms_type_names += ", ";
+        }
+        return TypeName("&(" + prms_type_names + ") -> " + rettyp->typeName().get()); //Functions should return a pointer to a function
+    }
+    ParamsReturnVal funcInfo () const { 
+        std::vector<Type*> prms;
+        for (Decl* decl: params) {
+            prms.push_back(decl->type);
+        }
+        return ParamsReturnVal(prms, rettyp); 
+    }
+    bool typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const;
 };
 
 struct Program {
@@ -403,4 +585,368 @@ struct Program {
         os << "]\n)";
         return os;
     }
+    bool typeCheck(Gamma& gamma, Errors& errors) const;
 };
+
+
+
+//General functions (with _TC for ones used by both Exp and Stmt) which depend on earlier definitions
+ParamsReturnVal Type::funcInfo () const {
+    return ParamsReturnVal(std::vector<Type*>(), new Any());
+}
+
+TypeName RhsExp::typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const {
+    return exp->typeCheck(gamma, fun, errors);
+}
+
+TypeName const id_TC(Gamma& gamma, const Function* fun, Errors& errors, std::string name) {
+    try {
+        TypeName* temp = gamma.at(name); //Returns TypeName* struct
+        return *temp;
+    } catch (const std::out_of_range& e) {
+        errors.push_back("[ID] in function " + fun->name + ": variable " + name + " undefined");
+        return TypeName("_");
+    }
+}
+TypeName ExpId::typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const {
+    return id_TC(gamma, fun, errors, name);
+};
+TypeName LvalId::typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const {
+    return id_TC(gamma, fun, errors, name);
+};
+
+TypeName const deref_TC(Gamma& gamma, const Function* fun, Errors& errors, std::variant<Exp*, Lval*> operand) {
+    TypeName exp_type = std::visit([&exp_type, &gamma, &fun, &errors](auto* arg) { return arg->typeCheck(gamma, fun, errors); }, operand);
+    if (exp_type.get() == "_") { return exp_type; }
+    if ( exp_type != TypeName("&_") && exp_type.get()[0] != '&') {
+        errors.push_back("[DEREF] in function " + fun->name + ": dereferencing type " + exp_type.get() + " instead of pointer");
+        return TypeName("_");
+    }
+    return TypeName( exp_type.get().substr(1) );
+}
+TypeName UnaryDeref::typeCheck(Gamma& gamma, const Function* fun, Errors& errors, Exp* operand) const {
+    return deref_TC(gamma, fun, errors, operand);
+}
+TypeName LvalDeref::typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const {
+    return deref_TC(gamma, fun, errors, lval);
+}
+
+TypeName Neg::typeCheck(Gamma& gamma, const Function* fun, Errors& errors, Exp* operand) const {
+    TypeName exp_type ( operand->typeCheck(gamma, fun, errors) );
+    if (exp_type != TypeName("int")) {
+        errors.push_back("[NEG] in function " + fun->name + ": negating type " + exp_type.get() + " instead of int");
+    }
+    return TypeName("int");
+};
+
+TypeName BinaryOp::typeCheck(Gamma& gamma, const Function* fun, Errors& errors, Exp* left, Exp* right) const {
+    TypeName left_type ( left->typeCheck(gamma, fun, errors) );
+    TypeName right_type ( right->typeCheck(gamma, fun, errors) );
+    if ( left_type != TypeName("int") ) {
+        errors.push_back("[BINOP-REST] in function " + fun->name + ": operand has type " + left_type.get() + " instead of int");
+    }
+    if ( right_type != TypeName("int") ) {
+        errors.push_back("[BINOP-REST] in function " + fun->name + ": operand has type " + right_type.get() + " instead of int");
+    }
+    return TypeName("int");
+}
+
+TypeName Equal::typeCheck(Gamma& gamma, const Function* fun, Errors& errors, Exp* left, Exp* right) const {
+    TypeName left_type ( left->typeCheck(gamma, fun, errors) );
+    TypeName right_type ( right->typeCheck(gamma, fun, errors) );
+    if (left_type != TypeName("int") && left_type.get()[0] != '&') {
+        errors.push_back("[BINOP-EQ] in function " + fun->name + ": operand has non-primitive type " + left_type.get());
+    }
+    if (right_type != TypeName("int") && right_type.get()[0] != '&') {
+        errors.push_back("[BINOP-EQ] in function " + fun->name + ": operand has non-primitive type " + right_type.get());
+    }
+    if (left_type != right_type) {
+        errors.push_back("[BINOP-EQ] in function " + fun->name + ": operands with different types: " + left_type.get() + " vs " + right_type.get());
+    }
+    return TypeName("int");
+}
+
+TypeName const arrayAccess_TC(Gamma& gamma, const Function* fun, Errors& errors, std::variant<Exp*, Lval*> ptr, Exp* index) {
+    TypeName ptr_type = std::visit([&ptr_type, &gamma, &fun, &errors](auto* arg) { return arg->typeCheck(gamma, fun, errors); }, ptr);
+    TypeName index_type = index->typeCheck(gamma, fun, errors);
+    if (index_type != TypeName("int")) {
+        errors.push_back("[ARRAY] in function " + fun->name + ": array index is type " + index_type.get() + " instead of int");
+    }
+    if (ptr_type.get() == "_") { return TypeName("_"); }
+    if (ptr_type.get() != "_" && ptr_type.get()[0] != '&') { //don't have to worry about dereferencing nil
+        errors.push_back("[ARRAY] in function " + fun->name + ": dereferencing non-pointer type " + ptr_type.get());
+        return TypeName("_");
+    }
+    return TypeName( ptr_type.get().substr(1) );
+}
+TypeName ExpArrayAccess::typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const {
+    return arrayAccess_TC(gamma, fun, errors, ptr, index);
+}
+TypeName LvalArrayAccess::typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const {
+    return arrayAccess_TC(gamma, fun, errors, ptr, index);
+}
+
+TypeName const fieldAccess_TC(Gamma& gamma, const Function* fun, Errors& errors, std::variant<Exp*, Lval*> ptr, std::string field, bool isCall=false) {
+    extern Delta delta; //Cannot have a nil call, like nil(), that is a parse error
+    if (isCall) { return std::visit([&gamma, &fun, &errors](auto* arg) { return arg->typeCheck(gamma, fun, errors); }, ptr);}
+    
+    TypeName ptr_type = std::visit([&ptr_type, &gamma, &fun, &errors](auto* arg) { return arg->typeCheck(gamma, fun, errors); }, ptr);
+    if (ptr_type.get() == "_") { return TypeName("_"); } //errors won't happpen given Any struct
+    
+    std::string struct_type = ptr_type.get().substr(1);
+    if (isCall) { return TypeName("_", struct_type, field); }
+    
+    if ( !isValidFieldAcesss(ptr_type.get())) { //if accessing something other than a struct type
+        errors.push_back("[FIELD] in function " + fun->name + ": accessing field of incorrect type " + ptr_type.get());
+        return TypeName("_"); //all three errors are mutually exclusive
+    }
+    if (delta.find(struct_type) == delta.end() ) {  // If the iterator points to the end of the map, the key doesn't exist
+        errors.push_back("[FIELD] in function " + fun->name + ": accessing field of non-existent struct type " + struct_type);
+        return TypeName("_");
+    }
+    if (delta[struct_type].find(field) == delta[struct_type].end()) {
+        errors.push_back("[FIELD] in function " + fun->name + ": accessing non-existent field " + field + " of struct type " + struct_type);
+        return TypeName("_");
+    }
+    return TypeName((*(delta[struct_type][field])).get(), struct_type, field);
+}
+TypeName ExpFieldAccess::typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const {
+    TypeName temp = fieldAccess_TC(gamma, fun, errors, ptr, field);
+    return temp;
+}
+TypeName LvalFieldAccess::typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const {
+    TypeName temp = fieldAccess_TC(gamma, fun, errors, ptr, field);
+    return temp;
+}
+
+std::pair<TypeName, bool> call_TC(Gamma& gamma, const Function* fun, Errors& errors, std::variant<Exp*, Lval*> callee, std::vector<Exp*> arg) {
+    extern FunctionsInfo functions_map; //Cannot have a nil call, like nil(), that is a parse error
+    extern StructFunctionsInfo struct_functions_map;
+    
+    TypeName callee_type = std::visit([&callee_type, &gamma, &fun, &errors](auto* arg) { return arg->typeCheck(gamma, fun, errors); }, callee);
+    bool isFieldAccess = std::visit([](auto* arg) { return arg->isFieldAccess(); }, callee);
+    std::string callee_name = std::visit([](auto* arg) { return arg->getName(); }, callee); //field name for field, function for others
+    
+    if (callee_name == "_") { return std::pair<TypeName, bool>(TypeName("_"), true); } //no need to continue if Any
+    bool success = true;
+    
+    std::string expression_statement = std::holds_alternative<Exp*>(callee) ? "[ECALL" : "[SCALL";
+    if (callee_name == "main") { //If so, can't be an extern call
+        errors.push_back(expression_statement+"-INTERNAL] in function " + fun->name + ": calling main");
+        success = false;
+    }
+    if (callee_type.get() == "_") { return std::pair<TypeName, bool>(TypeName("_"), true); }
+    if (!isFunction(callee_type.get())) { //main can be a parameter, so should check if bad type
+        errors.push_back(expression_statement+"-*] in function " + fun->name + ": calling non-function type " + callee_type.get());
+        return std::pair<TypeName, bool>(TypeName("_"), false);
+    }
+    if (callee_name == "main" && functions_map.find("main") == functions_map.end()) { //if main not defined as a function, return
+            return std::pair<TypeName, bool>(TypeName("_"), false);
+    }
+    if (callee_type.get() == "_") { return std::pair<TypeName, bool>(TypeName("_"), true); } //callee is just any, just return undefined error which typeCheck already added (and possibly main error)
+    
+    ParamsReturnVal prv;
+    
+    if ( isFieldAccess ) { //can assume struct name exists, not field
+        std::string struct_name = callee_type.getStructName();
+        std::string field_name = callee_type.getFieldName();
+        prv = struct_functions_map[struct_name][field_name];
+    } else { //can assume it exists since we already returned for values not in gamma
+        prv = functions_map[callee_name]; 
+    }
+    
+    std::string internal_external = ( callee_type.get()[0] == '&' ) ? "-INTERNAL]" : "-EXTERN]";
+    std::string error_type = expression_statement + internal_external;
+    if (expression_statement != "[SCALL" && prv.rettyp->typeName().get() == "_") { //empty return type
+        errors.push_back(error_type + " in function " + fun->name + ": calling a function with no return value");
+        success = false;
+    }
+    if (prv.params.size() != arg.size()) {
+        errors.push_back(error_type + " in function " + fun->name + 
+        ": call number of arguments (" + std::to_string(arg.size()) + ") and parameters (" + std::to_string(prv.params.size()) + ") don't match");
+        success = false;
+    }
+    unsigned int min = (prv.params.size() < arg.size()) ? prv.params.size() : arg.size();
+    for (unsigned int i = 0; i < min; i++) {
+        TypeName param_type = prv.params[i]->typeName();
+        TypeName arg_type = arg[i]->typeCheck(gamma, fun, errors);
+        if (param_type != arg_type) {
+            errors.push_back(error_type + " in function " + fun->name + ": call argument has type " + arg_type.get() 
+                + " but parameter has type " + param_type.get());
+            success = false;
+        }
+    }
+    std::pair<TypeName, bool> temp(prv.rettyp->typeName(), success);
+    return std::pair<TypeName, bool>(prv.rettyp->typeName(), success);
+}
+
+TypeName ExpCall::typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const {
+    return call_TC(gamma, fun, errors, callee, args).first;
+}
+
+bool StmtCall::typeCheck(Gamma& gamma, const Function* fun, bool loop, Errors& errors) const {
+    return call_TC(gamma, fun, errors, callee, args).second;
+}
+
+bool Return::typeCheck(Gamma& gamma, const Function* fun, bool loop, Errors& errors) const {
+    bool is_return_type_any = fun->rettyp->isAny();
+    bool is_return_exp_any = exp->isAny();
+    TypeName return_type = fun->rettyp->typeName();
+    TypeName exp_type = exp->typeCheck(gamma, fun, errors); //store typename given, typeCheck will replace undefined variables with Any
+    if ( !is_return_exp_any && exp_type.get() == "_") { 
+        if ( is_return_type_any ) {
+            errors.push_back("[RETURN-1] in function " + fun->name + ": should return nothing but returning " + exp_type.get());
+        } else { return true; }
+    } //If exp was made to be Any in typeCheck
+    if ( exp_type.get() != return_type.get()) { //If not equal, then at least one of the types not _ and they are different
+        if ( is_return_type_any && !is_return_exp_any ) { //If it wasnt Any before
+            errors.push_back("[RETURN-1] in function " + fun->name + ": should return nothing but returning " + exp_type.get());
+        } else if ( return_type.get() != "_" && exp_type.get() == "_") { //If it was Any before
+            errors.push_back("[RETURN-2] in function " + fun->name + ": should return " + return_type.get() + " but returning nothing");
+        } else if (exp_type != return_type) {
+            errors.push_back("[RETURN-2] in function " + fun->name + ": should return " + return_type.get() + " but returning " + exp_type.get());
+        }
+        return false;
+    }
+    return true;
+};
+
+TypeName New::typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const {
+    TypeName amount_type = amount->typeCheck(gamma, fun, errors);
+    TypeName type_typename = type->typeName();
+    if((amount_type.get() != "int") && (amount_type.get() != "_")) {
+        errors.push_back("[ASSIGN-NEW] in function " + fun->name + ": allocation amount is type " + amount_type.get() + " instead of int");
+    }
+    if(isFunctionNotPointer(type_typename.get())) {
+        errors.push_back("[ASSIGN-NEW] in function " + fun->name + ": allocating function type " + type_typename.get());
+    }
+    return TypeName("new " + type_typename.get());
+}
+
+bool Break::typeCheck(Gamma& gamma, const Function* fun, bool loop, Errors& errors) const {
+    if(!loop){
+        errors.push_back("[BREAK] in function " + fun->name + ": break outside of loop");
+        return false;
+    } else{ return true; }
+}
+
+bool Continue::typeCheck(Gamma& gamma, const Function* fun, bool loop, Errors& errors) const {
+    if(!loop){
+        errors.push_back("[CONTINUE] in function " + fun->name + ": continue outside of loop");
+        return false;
+    } else { return true; }
+}
+
+bool Assign::typeCheck(Gamma& gamma, const Function* fun, bool loop, Errors& errors) const {
+    TypeName lhs_type = lhs->typeCheck(gamma, fun, errors);
+    TypeName rhs_type = rhs->typeCheck(gamma, fun, errors);
+    bool tf = true;
+    if((rhs_type.get() == "new _") || lhs_type == rhs_type){ return true;} 
+    else {
+        if(rhs_type.get().substr(0,3) != "new") { //not new section
+            if((lhs_type.get() != rhs_type.get())){ //already not any from top if statement
+                errors.push_back("[ASSIGN-EXP] in function " + fun->name + ": assignment lhs has type " + lhs_type.get() + " but rhs has type " + rhs_type.get());
+                tf = false;
+            }
+            if(isFunctionNotPointer(lhs_type.get()) || isStruct(lhs_type.get())) {
+                errors.push_back("[ASSIGN-EXP] in function " + fun->name + ": assignment to struct or function");
+                tf = false;
+            }
+        } 
+        else if (lhs_type.get() == rhs_type.get().substr(4)) {
+            errors.push_back("[ASSIGN-NEW] in function " + fun->name + ": assignment lhs has type " + lhs_type.get() + " but we're allocating type " + rhs_type.get().substr(4));
+            tf = false;
+        }
+        else if(lhs_type.get() != rhs_type.get().substr(4) && lhs_type.get().substr(1) != rhs_type.get().substr(4)){ //not equal types and without pointer not equal
+            errors.push_back("[ASSIGN-NEW] in function " + fun->name + ": assignment lhs has type " + lhs_type.get() + " but we're allocating type " + rhs_type.get().substr(4));
+            tf = false;
+         }     
+    }
+    return tf;
+}
+
+bool If::typeCheck(Gamma& gamma, const Function* fun, bool loop, Errors& errors) const {
+    TypeName exp_type (guard->typeCheck(gamma, fun, errors));
+    bool tf = true;
+    if((exp_type.get() != "int") && (exp_type.get() != "_")) {
+        errors.push_back("[IF] in function " + fun->name + ": if guard has type " + exp_type.get() + " instead of int");
+        tf = false;
+    }
+    for(auto s: tt){ s->typeCheck(gamma, fun, loop, errors); }
+    for(auto s: ff){ s->typeCheck(gamma, fun, loop, errors); }
+    return tf;
+}
+bool While::typeCheck(Gamma& gamma, const Function* fun, bool loop, Errors& errors) const {
+    TypeName exp_type (guard->typeCheck(gamma, fun, errors));
+    if((exp_type.get() != "int") && (exp_type.get() != "_")) {
+        errors.push_back("[WHILE] in function " + fun->name + ": while guard has type " + exp_type.get() + " instead of int");
+    }
+    for(auto s: body){ s->typeCheck(gamma, fun, true, errors); } 
+    return true;
+}
+
+bool global_TC(Gamma& gamma, Errors& errors, std::string global_name, Type* type) {
+    bool tf = true;
+    TypeName global_type = type->typeName();
+    if ( isStruct(global_type.get()) || isFunctionNotPointer(global_type.get()) ) { 
+        errors.push_back("[GLOBAL] global " + global_name + " has a struct or function type");
+        tf = false; 
+    }
+    return tf;
+}
+
+bool Struct::typeCheck(Gamma& gamma, Errors& errors) const {
+    extern Delta delta;
+    bool tf = true;
+    for (Decl* decl: fields) {
+        TypeName field_type = decl->typeName();
+        if ( isStruct(field_type.get()) || isFunctionNotPointer(field_type.get()) ) { 
+            errors.push_back("[STRUCT] struct " + name + " field " + decl->name + " has a struct or function type");
+            tf = false; 
+        }
+    }
+    return tf;
+}
+
+bool Function::typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const {
+    //Need to check for bad parameter type
+    bool tf = true;
+    for (Decl* decl: params) {
+        TypeName var_type = decl->typeName();
+        if ( isStruct(var_type.get()) || isFunctionNotPointer(var_type.get()) ) { 
+            errors.push_back("[FUNCTION] in function " + name + ": variable " + decl->name + " has a struct or function type");
+            tf = false; 
+        }
+    }
+    for (auto [decl, exp]: locals) {
+        TypeName var_type = decl->typeName();
+        if ( isStruct(var_type.get()) || isFunctionNotPointer(var_type.get()) ) { 
+            errors.push_back("[FUNCTION] in function " + name + ": variable " + decl->name+ " has a struct or function type");
+            tf = false; 
+        }
+        TypeName exp_type = exp->typeCheck(gamma, fun, errors);
+        if (var_type != exp_type) {
+            errors.push_back("[FUNCTION] in function " + name + ": variable " + decl->name + " with type " + var_type.get() + " has initializer of type " + exp_type.get());
+            tf = false; 
+        }
+    }
+    for (Stmt* stmt : stmts) {
+        if (!stmt->typeCheck(gamma, fun, false, errors)) { tf = false; }
+    }
+    return tf;
+}
+
+bool Program::typeCheck(Gamma& gamma, Errors& errors) const { //input gamma is the initial gamma
+    extern std::unordered_map<std::string, Gamma> locals_map;
+    bool tf = true;
+    for (Decl* decl: globals) { 
+        if (!global_TC(gamma, errors, decl->name, decl->type)) { tf = false; }
+    }
+    for (Struct* str: structs) {
+        if (!str->typeCheck(gamma, errors)) { tf = false; }
+    }
+    for (Function* fun: functions) { //Creating locals map
+        if (!fun->typeCheck(locals_map[fun->name], fun, errors)) { tf = false; }
+    } 
+    return tf;
+}

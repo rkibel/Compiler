@@ -64,8 +64,8 @@ block ::= `{` stmt* `}`
 assign_or_call ::= lval gets_or_args
   gets_or_args ::= `=` rhs
                  | `(` args? `)`
-           rhs ::= exp 
-                 | `new` type exp?
+   rhs ::= exp 
+         | `new` type exp?
 
 # lvalues for assignments and call statements. for lval `*` is right-
 # associative, access is left-associative; access binds tighter than `*`, 
