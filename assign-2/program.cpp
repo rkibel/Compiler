@@ -10,8 +10,8 @@
 class TypeName {
     private:
         std::string type_name;
-        std::string struct_name; //used to pass in for exp or *
-        std::string field_name;  //used to pass in for exp or *
+        std::string struct_name; // used to pass in for exp or *
+        std::string field_name;  // used to pass in for exp or *
     public:
         TypeName() {};
         TypeName( std::string t, std::string s = "", std::string f = "") : type_name(t), struct_name(s), field_name(f) {}; //No default arg to ensure constructing correctly
