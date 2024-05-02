@@ -42,11 +42,15 @@ Icon
 ehthumbs.db
 Thumbs.db
 
+# assign-1
+assign-1/*.txt
 
 # assign-2
 assign-2/lexer
 assign-2/parse
 assign-2/*.txt
-=======
-.vscode
 
+# assign-3
+assign-3/*.txt
+
+.vscode
