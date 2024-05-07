@@ -7,9 +7,14 @@
 #include <map>
 #include <algorithm>
 #include "grammar.cpp"
+#include "lir.cpp"
 
-using Gamma = std::unordered_map<std::string, TypeName*>;
-using Delta = std::unordered_map<std::string, Gamma>;
+// using ParamsReturnVal = std::pair<std::vector<Type*>, Type*>;
+// using Gamma = std::unordered_map<std::string, TypeName*>;
+// using Delta = std::unordered_map<std::string, Gamma>;
+// using Errors = std::vector<std::string>;
+// using FunctionsInfo = std::unordered_map<std::string, ParamsReturnVal>;
+// using StructFunctionsInfo = std::unordered_map<std::string, FunctionsInfo>;
 
 Gamma globals_map;
 Delta delta;
@@ -18,7 +23,7 @@ std::unordered_map<std::string, ParamsReturnVal> functions_map;
 std::unordered_map<std::string, FunctionsInfo> struct_functions_map;
 std::vector<std::string> errors_map;
 
-const bool isWhitespace(unsigned char c) {
+bool isWhitespace(unsigned char c) {
     return (c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\v' || c == '\f');
 }
 
@@ -91,10 +96,8 @@ int main(int argc, char** argv) {
     Program* prog;
     try {
         prog = g.program(0);
-        std::cout << *prog << "\n\n";
     } catch (fail& f) {
         std::cout << "parse error at token " << f.get() << "\n";
-        prog = nullptr;
         return 0;
     }
     initializeMaps(prog);
@@ -103,6 +106,9 @@ int main(int argc, char** argv) {
     for (const auto& error : errors_map) {
         std::cout << error << "\n";
     }
+    LIR::Program program(prog);
+    program.print();
+
 
 
 

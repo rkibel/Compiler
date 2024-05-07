@@ -7,6 +7,9 @@
 #include <variant>
 #include <tuple>
 
+#ifndef AST_CPP
+#define AST_CPP
+
 struct TypeName {
     std::string type_name;
     std::string struct_name; // used to pass in for exp or *
@@ -28,11 +31,11 @@ struct TypeName {
     bool operator!=(const TypeName& other) const {
         return !(*this == other);
     }
-    const bool isFunction() { return type_name[0] == '(' || type_name.substr(0,2) == "&("; }
-    const bool isNonPointerFunction() { return type_name[0] == '('; }
-    const bool isStruct() { return type_name[0] != '&' && type_name.find('(') == std::string::npos && type_name.substr(0,3) != "int"; }
-    const bool isValidFieldAcesss() { return type_name[0] == '&' && type_name[1] != '(' && type_name[1] != '&' && type_name.substr(0,5) != "&int"; }
-    const bool isPointerToFunction() { return type_name[0] == '(' || type_name.find("&(") != std::string::npos; }
+    bool isFunction() const { return type_name[0] == '(' || type_name.substr(0,2) == "&("; }
+    bool isNonPointerFunction() const { return type_name[0] == '('; }
+    bool isStruct() const { return type_name[0] != '&' && type_name.find('(') == std::string::npos && type_name.substr(0,3) != "int"; }
+    bool isValidFieldAcesss() const { return type_name[0] == '&' && type_name[1] != '(' && type_name[1] != '&' && type_name.substr(0,5) != "&int"; }
+    bool isPointerToFunction() const { return type_name[0] == '(' || type_name.find("&(") != std::string::npos; }
 };
 
 namespace AST {
@@ -58,6 +61,7 @@ struct Type {
         obj.print(os);
         return os;
     }
+    virtual std::string toLIRString() const { return ""; }
 };
 struct Int : Type {
     void print(std::ostream& os) const override {
@@ -66,6 +70,7 @@ struct Int : Type {
     TypeName typeName() const override {
         return TypeName("int");
     }
+    std::string toLIRString() const override { return "Int"; }
 };
 struct StructType : Type {
     std::string name;
@@ -75,6 +80,7 @@ struct StructType : Type {
     TypeName typeName() const override {
         return TypeName(name);
     }
+    std::string toLIRString() const override { return "Struct(" + name + ")"; }
 };
 struct Fn : Type {
     std::vector<Type*> prms;
@@ -102,6 +108,15 @@ struct Fn : Type {
         for (Type* t: prms) delete t;
         delete ret;
     }
+    std::string toLIRString() const override { 
+        std::string res = "Fn([";
+        for (unsigned int i = 0; i < prms.size(); i++) {
+            res += prms[i]->toLIRString();
+            if (i != prms.size() - 1) res += ", ";
+        }
+        res += "], " + ret->toLIRString() + ")";
+        return res;
+    }
 };
 struct Ptr : Type {
     Type* ref;
@@ -124,6 +139,7 @@ struct Ptr : Type {
     }
     ParamsReturnVal funcInfo () const override { return ref->funcInfo(); }
     ~Ptr() { delete ref; }
+    std::string toLIRString() const override {  return "Ptr(" + ref->toLIRString() + ")"; }
 };
 struct Any : Type {
     void print(std::ostream& os) const override { 
@@ -133,6 +149,7 @@ struct Any : Type {
         return TypeName("_");
     }
     bool isAny() const override { return true; }
+    std::string toLIRString() const override { return "_"; }
 };
 
 struct UnaryOp {
@@ -488,6 +505,15 @@ struct Function {
     // WARNING: for each local, if there is no value after declaration, Exp is AnyExp : Exp
     std::vector<std::pair<Decl*, Exp*>> locals;
     std::vector<Stmt*> stmts;
+    std::string toLIRString() const {
+        std::string res = "Fn([";
+        for (unsigned int i = 0; i < params.size(); i++) {
+            res += params[i]->type->toLIRString();
+            if (i != params.size() - 1) res += ", ";
+        }
+        res += "], " + rettyp->toLIRString() + ")";
+        return res;
+    }
     ~Function() {
         for (Decl* decl: params) delete decl;
         delete rettyp;
@@ -934,3 +960,5 @@ bool Program::typeCheck(Gamma& gamma, Errors& errors, std::unordered_map<std::st
     } 
     return tf;
 }
+
+#endif
