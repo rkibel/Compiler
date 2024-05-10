@@ -8,20 +8,21 @@
 #include <algorithm>
 #include "grammar.cpp"
 #include "lir.cpp"
+using namespace std;
 
-// using ParamsReturnVal = std::pair<std::vector<Type*>, Type*>;
-// using Gamma = std::unordered_map<std::string, TypeName*>;
-// using Delta = std::unordered_map<std::string, Gamma>;
-// using Errors = std::vector<std::string>;
-// using FunctionsInfo = std::unordered_map<std::string, ParamsReturnVal>;
-// using StructFunctionsInfo = std::unordered_map<std::string, FunctionsInfo>;
+// using ParamsReturnVal = pair<vector<Type*>, Type*>;
+// using Gamma = unordered_map<string, TypeName*>;
+// using Delta = unordered_map<string, Gamma>;
+// using Errors = vector<string>;
+// using FunctionsInfo = unordered_map<string, ParamsReturnVal>;
+// using StructFunctionsInfo = unordered_map<string, FunctionsInfo>;
 
-Gamma globals_map;
-Delta delta;
-std::unordered_map<std::string, Gamma> locals_map;
-std::unordered_map<std::string, ParamsReturnVal> functions_map;
-std::unordered_map<std::string, FunctionsInfo> struct_functions_map;
-std::vector<std::string> errors_map;
+Gamma globals_map; // stores globals, externs, and functions
+Delta delta; // struct name to (struct decl to type)
+unordered_map<string, Gamma> locals_map; // function name to its locals (params and locals)
+unordered_map<string, ParamsReturnVal> functions_map; // all functions to their funcInfo
+unordered_map<string, FunctionsInfo> struct_functions_map; // struct name to (struct decl to funcInfo)
+vector<string> errors_map;
 
 bool isWhitespace(unsigned char c) {
     return (c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\v' || c == '\f');
@@ -36,7 +37,7 @@ void initializeMaps(AST::Program* prog) {
         Gamma temp_map;
         for (AST::Decl* f: s->fields) {
             temp_map[f->name] = new TypeName(f->typeName());
-            if (f->typeName().isPointerToFunction()) { 
+            if (f->typeName().isPointerToFunction()) {
                 struct_functions_map[s->name][f->name] = f->funcInfo(); 
             }
         }
@@ -54,7 +55,7 @@ void initializeMaps(AST::Program* prog) {
     for (AST::Function* f: prog->functions) { // Creating locals map
         Gamma temp_map;
         for (const auto& [name, type_name_pointer] : globals_map) {
-            temp_map.insert(std::make_pair(std::move(name), new TypeName(*type_name_pointer))); // Inserts all globals into function
+            temp_map.insert(make_pair(move(name), new TypeName(*type_name_pointer))); // Inserts all globals into function
         }
         for (AST::Decl* p: f->params) { 
             temp_map[p->name] = new TypeName(p->typeName()); 
@@ -70,25 +71,25 @@ void initializeMaps(AST::Program* prog) {
 
 int main(int argc, char** argv) {
     if (argc != 3) {
-        std::cerr << "Incorrect number of args, should include json_file followed by token_stream\n"; 
+        cerr << "Incorrect number of args, should include json_file followed by token_stream\n"; 
         return 1; 
     }
-    std::string input;
+    string input;
     try {
-        std::ifstream ifs(argv[2]);
-        std::stringstream buffer;
+        ifstream ifs(argv[2]);
+        stringstream buffer;
         buffer << ifs.rdbuf();
         input = buffer.str();
     }
-    catch(const std::exception& e) {
-        std::cerr << "Invalid file\n";
+    catch(const exception& e) {
+        cerr << "Invalid file\n";
         return 1;
     }
-    std::stringstream ss(input);
-    std::string s;
-    std::vector<std::string> tokens;
-    while (std::getline(ss, s, '\n')) { 
-        s.erase(std::remove_if(s.begin(), s.end(), isWhitespace), s.end());
+    stringstream ss(input);
+    string s;
+    vector<string> tokens;
+    while (getline(ss, s, '\n')) { 
+        s.erase(remove_if(s.begin(), s.end(), isWhitespace), s.end());
         tokens.push_back(s);
     }
     Grammar g;
@@ -97,15 +98,15 @@ int main(int argc, char** argv) {
     try {
         prog = g.program(0);
     } catch (fail& f) {
-        std::cout << "parse error at token " << f.get() << "\n";
+        cout << "parse error at token " << f.get() << "\n";
         return 0;
     }
     initializeMaps(prog);
-    prog->typeCheck(globals_map, errors_map, locals_map);
-    std::sort(errors_map.begin(), errors_map.end());
+    /*prog->typeCheck(globals_map, errors_map, locals_map);
+    sort(errors_map.begin(), errors_map.end());
     for (const auto& error : errors_map) {
-        std::cout << error << "\n";
-    }
+        cout << error << "\n";
+    }*/
     LIR::Program program(prog);
     program.print();
 
