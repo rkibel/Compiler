@@ -6,9 +6,9 @@ using namespace std;
 namespace LIR {
 
     // these are declared in main.cpp
-    extern Gamma globals_map; // stores globals, externs, and functions
+    extern Gamma globals_map; // stores globals, externs, and functions. Used unless you call another function, in which case you do locals_map[functions_name]
     extern Delta delta; // struct name to (struct decl to type)
-    extern unordered_map<string, Gamma> locals_map; // function name to its locals (params and locals)
+    extern unordered_map<string, Gamma> locals_map; // function name to its locals (params and locals) with global included
     extern unordered_map<string, ParamsReturnVal> functions_map; // all functions to their funcInfo
     extern unordered_map<string, FunctionsInfo> struct_functions_map; // struct name to (struct decl to funcInfo)
     
@@ -67,13 +67,13 @@ namespace LIR {
         }
 
         // the idea for lowering Exp is to evaluate the instructions of the operand first
-        // whatever the operand is will be stored in a fresh type in pair.first
-        // the instructions for evaluating this operand are in pair.second
+        // whatever the operand is will be stored in a fresh type in get<0>(tuple)
+        // the instructions for evaluating this operand are in get<1>(tuple)
+        // the actual typename is in get<2>(tuple)
         // then evaluate the current Exp
-        // note: if no fresh type is needed, returns pair<0, ...>
-        pair<unsigned int, string> lowerExp(AST::Exp* exp) {
-            vector<string> errors_vec;
-            return exp->lower(tempsToType, numLabels, globals_map, func, errors_vec);
+        // note: if no fresh type is needed, returns pair<0, ...> (either if it references an id, number, nil, etc.)
+        tuple<unsigned int, string, string> lowerExp(AST::Exp* exp, Gamma& gamma, const AST::Function* fun) {
+            return exp->lower(tempsToType, numLabels, gamma, fun);
             // TODO other lower methods in AST::Exp
         }
 
@@ -135,7 +135,7 @@ namespace LIR {
             }
             cout << "\n";
             for (const auto& pair: function_map) {
-                cout << pair.second << "\n\n";
+                cout << pair.second << "\n\n"; //Second contains the full 
             }
         }
     };
