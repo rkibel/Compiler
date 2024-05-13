@@ -6,6 +6,7 @@ CFLAGS = -std=c++17 -Wall -g
 
 # Source files
 SRC = main.cpp
+SRC_AST = ast.cpp
 
 # Intermediate files
 INTER_LEXER = lexer-output.txt
@@ -13,6 +14,7 @@ INTER_LEXER = lexer-output.txt
 # Executable names
 EXEC_LEXER = lexer
 EXEC_LOWER = lower
+EXEC_PARSER = parse
 
 # Default target
 all: $(EXEC_LOWER)
@@ -20,6 +22,10 @@ all: $(EXEC_LOWER)
 # Build the lowering executable
 $(EXEC_LOWER): $(SRC)
 	$(CC) $(CFLAGS) $(SRC) -o $(EXEC_LOWER)
+
+# Build the parser executable
+$(EXEC_PARSER): $(SRC) $(SRC_AST) 
+	$(CC) $(CFLAGS) $(SRC) -o $(EXEC_PARSER)
 
 # run raw code
 # ex: make run testcode.txt

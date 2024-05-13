@@ -8,10 +8,11 @@
 #include <algorithm>
 #include "grammar.cpp"
 #include "lir.cpp"
+#include "ast.cpp"
 using namespace std;
 
 // using ParamsReturnVal = pair<vector<Type*>, Type*>;
-// using Gamma = unordered_map<string, TypeName*>;
+// using Gamma = unordered_map<string, Type*>;
 // using Delta = unordered_map<string, Gamma>;
 // using Errors = vector<string>;
 // using FunctionsInfo = unordered_map<string, ParamsReturnVal>;
@@ -30,13 +31,13 @@ bool isWhitespace(unsigned char c) {
 
 void initializeMaps(AST::Program* prog) {
     for (AST::Decl* g: prog->globals) { 
-        globals_map[g->name] = new TypeName(g->typeName());
+        globals_map[g->name] = g->type;
         if (g->typeName().isPointerToFunction()) { functions_map[g->name] = g->funcInfo(); } // decl could be function pointer
     }
     for (AST::Struct* s: prog->structs) { 
         Gamma temp_map;
         for (AST::Decl* f: s->fields) {
-            temp_map[f->name] = new TypeName(f->typeName());
+            temp_map[f->name] = f->type;
             if (f->typeName().isPointerToFunction()) {
                 struct_functions_map[s->name][f->name] = f->funcInfo(); 
             }
@@ -45,24 +46,24 @@ void initializeMaps(AST::Program* prog) {
     }
 
     for (AST::Decl* e: prog->externs) { 
-        globals_map[e->name] = new TypeName(e->typeName()); 
+        globals_map[e->name] = e->type; 
         if (e->name != "main") { functions_map[e->name] = e->funcInfo(); }
     }
     for (AST::Function* f: prog->functions) {
-        globals_map[f->name] = new TypeName(f->typeName()); 
+        globals_map[f->name] = f->functionType(); 
         functions_map[f->name] = f->funcInfo();
     }
     for (AST::Function* f: prog->functions) { // Creating locals map
         Gamma temp_map;
-        for (const auto& [name, type_name_pointer] : globals_map) {
-            temp_map.insert(make_pair(move(name), new TypeName(*type_name_pointer))); // Inserts all globals into function
+        for (const auto& [name, type_pointer] : globals_map) {
+            temp_map.insert(make_pair(move(name), type_pointer)); // Inserts all globals into function's local map
         }
         for (AST::Decl* p: f->params) { 
-            temp_map[p->name] = new TypeName(p->typeName()); 
+            temp_map[p->name] = p->type; 
             if (p->typeName().isPointerToFunction()) { functions_map[p->name] = p->funcInfo(); } 
         }
         for (auto [decl, exp]: f->locals){ 
-            temp_map[decl->name] = new TypeName(decl->typeName()); 
+            temp_map[decl->name] = decl->type; 
             if (decl->typeName().isPointerToFunction()) { functions_map[decl->name] = decl->funcInfo(); } // decl could be function pointer
         }
         locals_map[f->name] = temp_map;
