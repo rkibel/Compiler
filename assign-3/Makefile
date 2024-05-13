@@ -20,7 +20,7 @@ EXEC_PARSER = parse
 all: $(EXEC_LOWER)
 
 # Build the lowering executable
-$(EXEC_LOWER): $(SRC)
+$(EXEC_LOWER): $(SRC) $(SRC_AST)
 	$(CC) $(CFLAGS) $(SRC) -o $(EXEC_LOWER)
 
 # Build the parser executable

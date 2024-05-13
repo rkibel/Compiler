@@ -238,14 +238,14 @@ struct Exp {
         exp.print(os);
         return os;
     }
-    virtual tuple<unsigned int, string, string> lower(vector<string>& tempsToType, unsigned int& numLabels, Gamma& gamma, const Function* fun) const { return make_tuple(0, "", ""); }
+    virtual tuple<unsigned int, string, string> lower(vector<string>& tempsToType, unsigned int& numLabels, Gamma& gamma, const Function* fun, map<string, string>& extern_map, map<string, string>& function_map) const { return make_tuple(0, "", ""); }
 };
 struct Num : Exp {
     int32_t n;
     void print(ostream& os) const override { os << "Num(" << n << ")"; }
     TypeName typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const override { return TypeName("int"); };
     string getName() override { return "int"; }
-    tuple<unsigned int, string, string> lower(vector<string>& tempsToType, unsigned int& numLabels, Gamma& gamma, const Function* fun) const override {
+    tuple<unsigned int, string, string> lower(vector<string>& tempsToType, unsigned int& numLabels, Gamma& gamma, const Function* fun, map<string, string>& extern_map, map<string, string>& function_map) const override {
         return make_tuple(0, to_string(n), "Num");
     }
 };
@@ -257,7 +257,7 @@ struct ExpId : Exp {
     TypeName typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const override;
     string getName() override { return name; }
     virtual bool isId() const { return true; }
-    tuple<unsigned int, string, string> lower(vector<string>& tempsToType, unsigned int& numLabels, Gamma& gamma, const Function* fun) const override {
+    tuple<unsigned int, string, string> lower(vector<string>& tempsToType, unsigned int& numLabels, Gamma& gamma, const Function* fun, map<string, string>& extern_map, map<string, string>& function_map) const override {
         return make_tuple(0, name, gamma[name]->toLIRType()); 
     }
 };
@@ -266,7 +266,7 @@ struct Nil : Exp {
     TypeName typeName() const { return TypeName("&_"); }
     TypeName typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const override { return TypeName("&_");};
     string getName() override { return "_"; }
-    tuple<unsigned int, string, string> lower(vector<string>& tempsToType, unsigned int& numLabels, Gamma& gamma, const Function* fun) const override {
+    tuple<unsigned int, string, string> lower(vector<string>& tempsToType, unsigned int& numLabels, Gamma& gamma, const Function* fun, map<string, string>& extern_map, map<string, string>& function_map) const override {
         return make_tuple(0, "0", "_"); 
     }
 };
@@ -279,30 +279,32 @@ struct UnOp : Exp {
     }
     string getName() override { return operand->getName(); }
     ~UnOp() { delete operand; }
-    tuple<unsigned int, string, string> lower(vector<string>& tempsToType, unsigned int& numLabels, Gamma& gamma, const Function* fun) const override {
-        auto [eval_var_src, eval_string_src, op_type] = operand->lower(tempsToType, numLabels, gamma, fun);
+    tuple<unsigned int, string, string> lower(vector<string>& tempsToType, unsigned int& numLabels, Gamma& gamma, const Function* fun, map<string, string>& extern_map, map<string, string>& function_map) const override {
         string res = "";
         string lhs_type = "";
         if (op->toLIRType() == "neg") {
+            tempsToType.push_back("!");
+            unsigned int fresh_var = tempsToType.size();
+            auto [eval_var_src, eval_string_src, op_type] = operand->lower(tempsToType, numLabels, gamma, fun, extern_map, function_map);
             if (eval_var_src != 0) {
                 res += eval_string_src; //building the res instructions
                 eval_string_src = "_t" + to_string(eval_var_src); //now used for old var
             }
             lhs_type = "Int";
-            tempsToType.push_back(lhs_type);
-            unsigned int fresh_var = tempsToType.size();
-            res += "Arith(_t" + to_string(fresh_var) + ", sub, 0, " + eval_string_src + ")\n";                  
+            tempsToType[fresh_var-1] = lhs_type;
+            res += "    Arith(_t" + to_string(fresh_var) + ", sub, 0, " + eval_string_src + ")\n";                  
             return make_tuple(fresh_var, res, lhs_type);
         }
         else {
+            auto [eval_var_src, eval_string_src, op_type] = operand->lower(tempsToType, numLabels, gamma, fun, extern_map, function_map);
             if (eval_var_src != 0) {
                 res += eval_string_src; //building the res instructions
                 eval_string_src = "_t" + to_string(eval_var_src);
-                lhs_type = op_type.substr(1);
-            } else { lhs_type = op_type; }
+            }
+            lhs_type = op_type.substr(4, op_type.length() - 5);
             tempsToType.push_back(lhs_type);
             unsigned int fresh_var = tempsToType.size();
-            res += "Load(_t" + to_string(fresh_var) + "," + eval_string_src + ")\n";  
+            res += "    Load(_t" + to_string(fresh_var) + ", " + eval_string_src + ")\n";  
             return make_tuple(fresh_var, res, lhs_type); //returning new type
         }
         return make_tuple(0, "", ""); 
@@ -321,9 +323,9 @@ struct BinOp : Exp {
     string getName() override { return "_"; }
     ~BinOp() { delete left; delete right; }
     
-    tuple<unsigned int, string, string> lower(vector<string>& tempsToType, unsigned int& numLabels, Gamma& gamma, const Function* fun) const override {
-        auto [eval_var_left, eval_string_left, _] = left->lower(tempsToType, numLabels, gamma, fun);
-        auto [eval_var_right, eval_string_right, _2] = right->lower(tempsToType, numLabels, gamma, fun);
+    tuple<unsigned int, string, string> lower(vector<string>& tempsToType, unsigned int& numLabels, Gamma& gamma, const Function* fun, map<string, string>& extern_map, map<string, string>& function_map) const override {
+        auto [eval_var_left, eval_string_left, _] = left->lower(tempsToType, numLabels, gamma, fun, extern_map, function_map);
+        auto [eval_var_right, eval_string_right, _2] = right->lower(tempsToType, numLabels, gamma, fun, extern_map, function_map);
         string opType = op->toLIRType();
         string res = "";
         string lhs_type = "Int";
@@ -338,10 +340,10 @@ struct BinOp : Exp {
         tempsToType.push_back(lhs_type);
         unsigned int fresh_var = tempsToType.size();
         if (opType == "add" || opType == "sub" || opType == "mul" || opType == "div") {
-            res += "Arith(_t" + to_string(fresh_var) + ", " + opType + ", " + eval_string_left + ", " + eval_string_right + ")\n";
+            res += "    Arith(_t" + to_string(fresh_var) + ", " + opType + ", " + eval_string_left + ", " + eval_string_right + ")\n";
         }
         else {
-            res += "Cmp(_t" + to_string(fresh_var) + ", " + opType + ", " + eval_string_left + ", " + eval_string_right + ")\n";
+            res += "    Cmp(_t" + to_string(fresh_var) + ", " + opType + ", " + eval_string_left + ", " + eval_string_right + ")\n";
         }
         return make_tuple(fresh_var, res, lhs_type);        
     }
@@ -357,9 +359,9 @@ struct ExpArrayAccess : Exp {
     ~ExpArrayAccess() { delete ptr; delete index; }
     
     // TODO this method
-    tuple<unsigned int, string, string> lower(vector<string>& tempsToType, unsigned int& numLabels, Gamma& gamma, const Function* fun) const override {
-        auto [eval_var_src, eval_string_src, src_type] = ptr->lower(tempsToType, numLabels, gamma, fun);
-        auto [eval_var_idx, eval_string_idx, _] = index->lower(tempsToType, numLabels, gamma, fun);
+    tuple<unsigned int, string, string> lower(vector<string>& tempsToType, unsigned int& numLabels, Gamma& gamma, const Function* fun, map<string, string>& extern_map, map<string, string>& function_map) const override {
+        auto [eval_var_src, eval_string_src, src_type] = ptr->lower(tempsToType, numLabels, gamma, fun, extern_map, function_map);
+        auto [eval_var_idx, eval_string_idx, _] = index->lower(tempsToType, numLabels, gamma, fun, extern_map, function_map);
         string res = "";
         string lhs_type = "";
         if (eval_var_src != 0) {
@@ -375,8 +377,8 @@ struct ExpArrayAccess : Exp {
         lhs_type = src_type.substr(1);
         tempsToType.push_back(lhs_type);
         unsigned int fresh_var_lhs = tempsToType.size();
-        res += "Gep(_t" + to_string(fresh_var_elem) + "," + eval_string_src + "," + eval_string_idx + ")\n";
-        res += "Load(_t" + to_string(fresh_var_lhs) + ",_t" + to_string(fresh_var_elem) + ")\n";
+        res += "    Gep(_t" + to_string(fresh_var_elem) + ", " + eval_string_src + ", " + eval_string_idx + ")\n";
+        res += "    Load(_t" + to_string(fresh_var_lhs) + ", _t" + to_string(fresh_var_elem) + ")\n";
         return make_tuple(fresh_var_lhs, res, lhs_type);
     }
 };
@@ -392,7 +394,7 @@ struct ExpFieldAccess : Exp {
     Exp* getPtr() override { return ptr; }
     ~ExpFieldAccess() { delete ptr; }
     
-    tuple<unsigned int, string, string> lower(vector<string>& tempsToType, unsigned int& numLabels, Gamma& gamma, const Function* fun) const;
+    tuple<unsigned int, string, string> lower(vector<string>& tempsToType, unsigned int& numLabels, Gamma& gamma, const Function* fun, map<string, string>& extern_map, map<string, string>& function_map) const;
 };
 struct ExpCall : Exp {
     Exp* callee;
@@ -401,7 +403,7 @@ struct ExpCall : Exp {
         os << "Call(\ncallee = " << *callee << ",\nargs = [";
         for (unsigned int i = 0; i < args.size(); i++) {
             os << *args[i];
-            if (i != args.size() - 1) os << ",";
+            if (i != args.size() - 1) os << ", ";
         }
         os << "\n]\n)";
     }
@@ -411,7 +413,7 @@ struct ExpCall : Exp {
         for (Exp* exp: args) delete exp;
     }
     string getName() override { return callee->getName(); }
-    tuple<unsigned int, string, string> lower(vector<string>& tempsToType, unsigned int& numLabels, Gamma& gamma, const Function* fun) const override;
+    tuple<unsigned int, string, string> lower(vector<string>& tempsToType, unsigned int& numLabels, Gamma& gamma, const Function* fun, map<string, string>& extern_map, map<string, string>& function_map) const override;
 };
 struct AnyExp : Exp {
     void print(ostream& os) const override { os << "_"; }
@@ -419,7 +421,7 @@ struct AnyExp : Exp {
     bool isAny() const override { return true; }
     string getName() override { return "_"; }
     // TODO this method
-    tuple<unsigned int, string, string> lower(vector<string>& tempsToType, unsigned int& numLabels, Gamma& gamma, const Function* fun) const override {
+    tuple<unsigned int, string, string> lower(vector<string>& tempsToType, unsigned int& numLabels, Gamma& gamma, const Function* fun, map<string, string>& extern_map, map<string, string>& function_map) const override {
         return make_tuple(0, "_", "_"); 
     }
 };
@@ -433,7 +435,7 @@ struct Lval {
         lval.print(os);
         return os;
     }
-    virtual tuple<unsigned int, string, string> lower(vector<string>& tempsToType, unsigned int& numLabels, Gamma& gamma, const Function* fun) const {
+    virtual tuple<unsigned int, string, string> lower(vector<string>& tempsToType, unsigned int& numLabels, Gamma& gamma, const Function* fun, map<string, string>& extern_map, map<string, string>& function_map) const {
         return make_tuple(0, "_", "_"); 
     }
 };
@@ -442,7 +444,7 @@ struct LvalId : Lval {
     void print(ostream& os) const override { os << "Id(" << name << ")"; }
     TypeName typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const override;
     string getName() override { return name; }
-    tuple<unsigned int, string, string> lower(vector<string>& tempsToType, unsigned int& numLabels, Gamma& gamma, const Function* fun) const override {
+    tuple<unsigned int, string, string> lower(vector<string>& tempsToType, unsigned int& numLabels, Gamma& gamma, const Function* fun, map<string, string>& extern_map, map<string, string>& function_map) const override {
         return make_tuple(0, name, gamma[name]->toLIRType()); 
     }
 };
@@ -452,7 +454,7 @@ struct LvalDeref : Lval {
     TypeName typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const override;
     string getName() override { return lval->getName(); }
     ~LvalDeref() { delete lval; }
-    tuple<unsigned int, string, string> lower(vector<string>& tempsToType, unsigned int& numLabels, Gamma& gamma, const Function* fun) const override;
+    tuple<unsigned int, string, string> lower(vector<string>& tempsToType, unsigned int& numLabels, Gamma& gamma, const Function* fun, map<string, string>& extern_map, map<string, string>& function_map) const override;
 };
 struct LvalArrayAccess : Lval {
     Lval* ptr;
@@ -464,7 +466,7 @@ struct LvalArrayAccess : Lval {
     string getName() override { return ptr->getName(); }
     ~LvalArrayAccess() { delete ptr; delete index; }
     // TODO this method
-    tuple<unsigned int, string, string> lower(vector<string>& tempsToType, unsigned int& numLabels, Gamma& gamma, const Function* fun) const override;
+    tuple<unsigned int, string, string> lower(vector<string>& tempsToType, unsigned int& numLabels, Gamma& gamma, const Function* fun, map<string, string>& extern_map, map<string, string>& function_map) const override;
 };
 struct LvalFieldAccess : Lval {
     Lval* ptr;
@@ -477,7 +479,7 @@ struct LvalFieldAccess : Lval {
     TypeName typeCheck(Gamma& gamma, const Function* fun, Errors& errors) const override;
     ~LvalFieldAccess() { delete ptr; }
     // TODO this method
-    tuple<unsigned int, string, string> lower(vector<string>& tempsToType, unsigned int& numLabels, Gamma& gamma, const Function* fun) const override;
+    tuple<unsigned int, string, string> lower(vector<string>& tempsToType, unsigned int& numLabels, Gamma& gamma, const Function* fun, map<string, string>& extern_map, map<string, string>& function_map) const override;
 };
 
 
@@ -513,6 +515,9 @@ struct Stmt {
         stmt.print(os);
         return os;
     }
+    virtual string lower(vector<string>& tempsToType, unsigned int& numLabels, Gamma& gamma, const Function* fun, unsigned int& prevWhileHdr, unsigned int& prevWhileEnd, map<string, string>& extern_map, map<string, string>& function_map) const {
+        return "?\n"; 
+    }
 };
 struct Break : Stmt {
     void print(ostream& os) const override { os << "Break"; }
@@ -530,6 +535,16 @@ struct Return : Stmt {
     }
     bool typeCheck(Gamma& gamma, const Function* fun, bool loop, Errors& errors) const override;
     ~Return() { delete exp; }
+    string lower(vector<string>& tempsToType, unsigned int& numLabels, Gamma& gamma, const Function* fun, unsigned int& prevWhileHdr, unsigned int& prevWhileEnd, map<string, string>& extern_map, map<string, string>& function_map) const override {
+        if (typeid(*exp) == typeid(AnyExp)) {
+            return "    Ret(_)\n";
+        }
+        auto [temp_var, res_string, _] = exp->lower(tempsToType, numLabels, gamma, fun, extern_map, function_map);
+        string res = "";
+        if (temp_var != 0) {res += res_string; res_string = "_t" + to_string(temp_var); }
+        res += "    Ret(" + res_string + ")\n";
+        return res;
+    }
 };
 struct Assign : Stmt {
     Lval* lhs;
@@ -1094,8 +1109,8 @@ bool Program::typeCheck(Gamma& gamma, Errors& errors, unordered_map<string, Gamm
 
 //LIR
 //Helper function for le (lowering lvals as expressions)
-tuple<unsigned int, string, string> le(vector<string>& tempsToType, unsigned int& numLabels, Gamma& gamma, const Function* fun, Lval* lval) {
-    auto [eval_var_src, eval_string_src, op_type] = lval->lower(tempsToType, numLabels, gamma, fun);
+tuple<unsigned int, string, string> le(vector<string>& tempsToType, unsigned int& numLabels, Gamma& gamma, const Function* fun, Lval* lval, map<string, string>& extern_map, map<string, string>& function_map) {
+    auto [eval_var_src, eval_string_src, op_type] = lval->lower(tempsToType, numLabels, gamma, fun, extern_map, function_map);
     if (eval_var_src == 0) { return make_tuple(eval_var_src, eval_string_src, op_type); } //else, lv!=Id(name)
     string res = "";
     string lhs_type;
@@ -1105,15 +1120,15 @@ tuple<unsigned int, string, string> le(vector<string>& tempsToType, unsigned int
     //Create fresh type of type t std src:&t
     tempsToType.push_back(lhs_type);
     unsigned int fresh_var = tempsToType.size();
-    res += "Load(_t" + to_string(fresh_var) + "," + eval_string_src + ")\n";  
+    res += "    Load(_t" + to_string(fresh_var) + ", " + eval_string_src + ")\n";  
     return make_tuple(fresh_var, res, lhs_type); //returning new type
 }
-tuple<unsigned int, string, string> LvalDeref::lower(vector<string>& tempsToType, unsigned int& numLabels, Gamma& gamma, const Function* fun) const {
-    return le(tempsToType, numLabels, gamma, fun, lval);
+tuple<unsigned int, string, string> LvalDeref::lower(vector<string>& tempsToType, unsigned int& numLabels, Gamma& gamma, const Function* fun, map<string, string>& extern_map, map<string, string>& function_map) const {
+    return le(tempsToType, numLabels, gamma, fun, lval, extern_map, function_map);
 }
-tuple<unsigned int, string, string> LvalArrayAccess::lower(vector<string>& tempsToType, unsigned int& numLabels, Gamma& gamma, const Function* fun) const {
-    auto [eval_var_src, eval_string_src, src_type] = le(tempsToType, numLabels, gamma, fun, ptr);
-    auto [eval_var_idx, eval_string_idx, _] = index->lower(tempsToType, numLabels, gamma, fun);
+tuple<unsigned int, string, string> LvalArrayAccess::lower(vector<string>& tempsToType, unsigned int& numLabels, Gamma& gamma, const Function* fun, map<string, string>& extern_map, map<string, string>& function_map) const {
+    auto [eval_var_src, eval_string_src, src_type] = le(tempsToType, numLabels, gamma, fun, ptr, extern_map, function_map);
+    auto [eval_var_idx, eval_string_idx, _] = index->lower(tempsToType, numLabels, gamma, fun, extern_map, function_map);
     string res = "";
     string lhs_type = "";
     if (eval_var_src != 0) {
@@ -1127,12 +1142,12 @@ tuple<unsigned int, string, string> LvalArrayAccess::lower(vector<string>& temps
     lhs_type = src_type;
     tempsToType.push_back(lhs_type);
     unsigned int fresh_var_lhs = tempsToType.size();
-    res += "Gep(_t" + to_string(fresh_var_lhs) + "," + eval_string_src + "," + eval_string_idx + ")\n";
+    res += "    Gep(_t" + to_string(fresh_var_lhs) + ", " + eval_string_src + ", " + eval_string_idx + ")\n";
     return make_tuple(fresh_var_lhs, res, lhs_type);
 }
 
-tuple<unsigned int, string, string> ExpFieldAccess::lower(vector<string>& tempsToType, unsigned int& numLabels, Gamma& gamma, const Function* fun) const {
-        auto [eval_var_src, eval_string_src, src_type] = ptr->lower(tempsToType, numLabels, gamma, fun);
+tuple<unsigned int, string, string> ExpFieldAccess::lower(vector<string>& tempsToType, unsigned int& numLabels, Gamma& gamma, const Function* fun, map<string, string>& extern_map, map<string, string>& function_map) const {
+        auto [eval_var_src, eval_string_src, src_type] = ptr->lower(tempsToType, numLabels, gamma, fun, extern_map, function_map);
         string res = "";
         string lhs_type = "";
         if (eval_var_src != 0) {
@@ -1140,20 +1155,21 @@ tuple<unsigned int, string, string> ExpFieldAccess::lower(vector<string>& tempsT
             eval_string_src = "_t" + to_string(eval_var_src);
             src_type = tempsToType[eval_var_src-1];
         }
-        string struct_type = src_type.substr(1);    
+        size_t start_pos = src_type.find("Struct(") + 7;
+        string struct_type = src_type.substr(start_pos, src_type.find(')') - start_pos);
         string field_type = delta[struct_type][field]->toLIRType();
-        tempsToType.push_back("&" + field_type);
+        tempsToType.push_back("Ptr(" + field_type + ")");
         unsigned int fresh_var_fldp = tempsToType.size();
         lhs_type = field_type;
         tempsToType.push_back(lhs_type);
         unsigned int fresh_var_lhs = tempsToType.size();
-        res += "Gfp(_t" + to_string(fresh_var_fldp) + "," + eval_string_src + "," + field + ")\n";
-        res += "Load(_t" + to_string(fresh_var_lhs) + ",_t" + to_string(fresh_var_fldp) + ")\n";
+        res += "    Gfp(_t" + to_string(fresh_var_fldp) + ", " + eval_string_src + ", " + field + ")\n";
+        res += "    Load(_t" + to_string(fresh_var_lhs) + ", _t" + to_string(fresh_var_fldp) + ")\n";
         return make_tuple(fresh_var_lhs, res, lhs_type);
 }
 
-tuple<unsigned int, string, string> LvalFieldAccess::lower(vector<string>& tempsToType, unsigned int& numLabels, Gamma& gamma, const Function* fun) const {
-    auto [eval_var_src, eval_string_src, src_type] = le(tempsToType, numLabels, gamma, fun, ptr);
+tuple<unsigned int, string, string> LvalFieldAccess::lower(vector<string>& tempsToType, unsigned int& numLabels, Gamma& gamma, const Function* fun, map<string, string>& extern_map, map<string, string>& function_map) const {
+    auto [eval_var_src, eval_string_src, src_type] = le(tempsToType, numLabels, gamma, fun, ptr, extern_map, function_map);
     string res = "";
     string lhs_type = "";
     if (eval_var_src != 0) {
@@ -1162,19 +1178,18 @@ tuple<unsigned int, string, string> LvalFieldAccess::lower(vector<string>& temps
     }
     string struct_type = src_type.substr(1);    
     string field_type = delta[struct_type][field]->toLIRType();
-    lhs_type = "&" + field_type;
+    lhs_type = "Ptr(" + field_type + ")";
     tempsToType.push_back(lhs_type);
     unsigned int fresh_var_lhs = tempsToType.size();
-    res += "Gfp(_t" + to_string(fresh_var_lhs) + "," + eval_string_src + "," + field + ")\n";
+    res += "    Gfp(_t" + to_string(fresh_var_lhs) + ", " + eval_string_src + ", " + field + ")\n";
     return make_tuple(fresh_var_lhs, res, lhs_type);
 }
-tuple<unsigned int, string, string> ExpCall::lower(vector<string>& tempsToType, unsigned int& numLabels, Gamma& gamma, const Function* fun) const {
+tuple<unsigned int, string, string> ExpCall::lower(vector<string>& tempsToType, unsigned int& numLabels, Gamma& gamma, const Function* fun, map<string, string>& extern_map, map<string, string>& function_map) const {
     string res = "";
     string lhs_type = "";
     string aops = "[";
     for (unsigned int i = 0; i < args.size(); i++) {
-        Exp* arg = args[i];
-        auto [eval_var_src, eval_string_src, src_type] = arg->lower(tempsToType, numLabels, gamma, fun);
+        auto [eval_var_src, eval_string_src, src_type] = args[i]->lower(tempsToType, numLabels, gamma, fun, extern_map, function_map);
         if (eval_var_src != 0) {
             res += eval_string_src;
             eval_string_src = "_t" + to_string(eval_var_src);
@@ -1183,42 +1198,54 @@ tuple<unsigned int, string, string> ExpCall::lower(vector<string>& tempsToType, 
         if (i != args.size() - 1) { aops += ", "; }
     }
     aops += "]";
-    bool direct = true;
-    if (callee->isId()) {
-        direct = false;
-    } else {
-        for (Decl* param: fun->params) { if (param->name == callee->getName()) { direct = false; } }
-        for (auto [local, _]: fun->locals) { if (local->name == callee->getName()) { direct = false; } }
-    }
-    //structs can only have indirect, so assume indirect and make extern if not a struct (not fieldAccess) and the type is (), simply using gamma (since direct assumes it's an id!)
+
     ParamsReturnVal prv;
-    bool isExtern = false;
     string callee_name;
+    bool direct = true;
+    bool isExtern = false;
+    bool isFunction = false;
+
     if ( callee->isFieldAccess() ) { //can assume struct name exists, not field
         Errors errors;
-        TypeName callee_type = callee->getPtr()->typeCheck(gamma, fun, errors);
-        string struct_name = callee_type.struct_name;
-        callee_name = callee_type.field_name;
-        prv = struct_functions_map[struct_name][callee_name];
+        string struct_name = callee->getPtr()->typeCheck(gamma, fun, errors).type_name.substr(1);
+        string field_name = callee->getName();
+        auto [eval_var_lhs, eval_string_lhs, _] = callee->lower(tempsToType, numLabels, gamma, fun, extern_map, function_map);
+        if (eval_var_lhs != 0) {
+            res += eval_string_lhs;
+            eval_string_lhs = "_t" + to_string(eval_var_lhs);
+        }
+        prv = struct_functions_map[struct_name][field_name];
+        callee_name = eval_string_lhs; //id is the most recent fresh variable made
     } else { //can assume it exists since we already returned for values not in gamma
-        string callee_name = callee->getName();
+        callee_name = callee->getName();
+        // cout << "Callee name: " << callee_name << "\n";
         prv = functions_map[callee_name]; 
-        callee_name = gamma[callee_name]->toLIRType();; //should exist with type checking
-        if (direct && callee_name[0] == '(') { isExtern = true; }
+        // cout << "Callee type: " << callee_type << "\n";
+        if (!callee->isId()) {
+            direct = false;
+        } else {
+            for (Decl* param: fun->params) { if (param->name == callee_name) { direct = false; } }
+            for (auto [local, _]: fun->locals) { if (local->name == callee_name) { direct = false; } }
+        }
+        for (auto& pair: extern_map) { if (pair.first == callee_name) isExtern = true; }
+        for (auto& pair: function_map) { if (pair.first == callee_name) isFunction = true; }
+        // cout << "For function call " << callee_name << " is it direct? " << direct << "\n";
     }
     lhs_type = prv.second->toLIRType();
     tempsToType.push_back(lhs_type);
     unsigned int fresh_var_lhs = tempsToType.size();
-    if (isExtern) {
-        res += "CallEx(_t" + to_string(fresh_var_lhs) + "," + callee_name + "," + aops + ")\n";
+
+    if (direct && isExtern) {
+        res += "    CallEx(_t" + to_string(fresh_var_lhs) + ", " + callee_name + ", " + aops + ")\n";
     } else {
+        unsigned int NEXT = numLabels + 1;
         numLabels++;
-        if (direct) {
-            res += "CallDirect(_t" + to_string(fresh_var_lhs) + "," + callee_name + "," + aops + ",lbl" + to_string(numLabels) + ")\n";
+        if (direct && isFunction) {
+            res += "    CallDirect(_t" + to_string(fresh_var_lhs) + ", " + callee_name + ", " + aops + ", lbl" + to_string(NEXT) + ")\n";
         } else {
-            res += "CallIndirect(_t" + to_string(fresh_var_lhs) + "," + callee_name + "," + aops + ",lbl" + to_string(numLabels) + ")\n";
+            res += "    CallIndirect(_t" + to_string(fresh_var_lhs) + ", " + callee_name + ", " + aops + ", lbl" + to_string(NEXT) + ")\n";
         }
-        res += "\nlbl" + to_string(numLabels) + ":\n";
+        res += "\n  lbl" + to_string(NEXT) + ":\n";
     }
     return make_tuple(fresh_var_lhs, res, lhs_type); 
 }

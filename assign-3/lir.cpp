@@ -5,10 +5,10 @@ using namespace std;
 
 namespace LIR {
 
-    // these are declared in main.cpp
+    // // these are declared in main.cpp
     extern Gamma globals_map; // stores globals, externs, and functions. Used unless you call another function, in which case you do locals_map[functions_name]
     extern Delta delta; // struct name to (struct decl to type)
-    extern unordered_map<string, Gamma> locals_map; // function name to its locals (params and locals) with global included
+    // extern unordered_map<string, Gamma> locals_map; // function name to its locals (params and locals) with global included
     extern unordered_map<string, ParamsReturnVal> functions_map; // all functions to their funcInfo
     extern unordered_map<string, FunctionsInfo> struct_functions_map; // struct name to (struct decl to funcInfo)
     
@@ -16,14 +16,20 @@ namespace LIR {
         AST::Function* func;
         vector<string> tempsToType; // stores which type each temp has, ie if _t2 is type Int, Int will be in tempsToType[1]
         unsigned int numLabels = 0;
-        Function(AST::Function* func, map<string, string> globals_map, map<string, map<string, string>> struct_map, map<string, string> extern_map) : func(func) {}
+        unsigned int prevWhileHdr = 0;
+        unsigned int prevWhileEnd = 0;
+        map<string, string> extern_map;
+        map<string, string> function_map;
+        unordered_map<string, Type*> gamma;
+        Function(AST::Function* func, map<string, string> extern_map, map<string, string> function_map, Gamma& gamma) : func(func), extern_map(extern_map), function_map(function_map), gamma(gamma) {}
         
         string lowerFunc() {
-            // loweredLocalExpStmts takes a local declaration, ie let x: int = 3;
+            // loweredStmts takes a local declaration, ie let x: int = 3;
             // then creates an AST::Assign with Lval x and Rhs 3
-            // Then lowers this Stmt and stores the resulting instructions
-            vector<string> loweredLocalExpStmts;
+            // then lowers this Stmt and stores the resulting instructions
+            // also stores following functions stmts to lowered form
             map<string, string> localsMap;
+            vector<string> loweredStmts;
             for (auto& pair: func->locals) {
                 localsMap[pair.first->name] = pair.first->type->toLIRType();
                 if (typeid(*(pair.second)) == typeid(AST::AnyExp)) { continue; }
@@ -35,12 +41,10 @@ namespace LIR {
                     AST::Assign* assign = new Assign();
                     assign->lhs = lvalid;
                     assign->rhs = rhs;
-                    loweredLocalExpStmts.push_back(lowerStmt(assign));
+                    loweredStmts.push_back(assign->lower(tempsToType, numLabels, gamma, func, prevWhileHdr, prevWhileEnd, extern_map, function_map));
                 }
             }
-            // stores lowering of each of func's statements
-            vector<string> loweredStmts;
-            for (AST::Stmt* stmt: func->stmts) loweredStmts.push_back(lowerStmt(stmt));
+            for (AST::Stmt* stmt: func->stmts) loweredStmts.push_back(stmt->lower(tempsToType, numLabels, gamma, func, prevWhileHdr, prevWhileEnd, extern_map, function_map));
             
             string res = "Function " + func->name + "(";
             for (unsigned int i = 0; i < func->params.size(); i++) {
@@ -55,52 +59,25 @@ namespace LIR {
                 res += "    " + pair.first + " : " + pair.second + "\n";
             }
             res += "\n  entry:\n";
-            for (string str: loweredLocalExpStmts) res += str;
             for (string str: loweredStmts) res += str;
             res += "}";
             return res;
         }
-        
-        // TODO
-        string lowerStmt(AST::Stmt* stmt) {
-            return "";
-        }
-
-        // the idea for lowering Exp is to evaluate the instructions of the operand first
-        // whatever the operand is will be stored in a fresh type in get<0>(tuple)
-        // the instructions for evaluating this operand are in get<1>(tuple)
-        // the actual typename is in get<2>(tuple)
-        // then evaluate the current Exp
-        // note: if no fresh type is needed, returns pair<0, ...> (either if it references an id, number, nil, etc.)
-        tuple<unsigned int, string, string> lowerExp(AST::Exp* exp, Gamma& gamma, const AST::Function* fun) {
-            return exp->lower(tempsToType, numLabels, gamma, fun);
-            // TODO other lower methods in AST::Exp
-        }
-
-        // TODO
-        string lowerLval(AST::Lval* lval) {
-            return "";
-        }
-
-        // TODO
-        string lowerLvalAsExp(AST::Lval* lval) {
-            return "";
-        }
-
     };
 
     struct Program {
-        map<string, string> globals_map;
+        map<string, string> global_map;
         map<string, map<string, string>> struct_map;
         map<string, string> extern_map;
         map<string, string> function_map;
+        unordered_map<string, Gamma> locals_map;
 
-        Program(AST::Program* prog) {
+        Program(AST::Program* prog, unordered_map<string, Gamma>& locals_map) : locals_map(locals_map) {
             for (AST::Decl* decl: prog->globals) { 
-                globals_map[decl->name] = decl->type->toLIRType();
+                global_map[decl->name] = decl->type->toLIRType();
             }
             for (AST::Function* func: prog->functions) {
-                if (func->name != "main") globals_map[func->name] = "Ptr(" + func->toLIRType() + ")";
+                if (func->name != "main") global_map[func->name] = "Ptr(" + func->toLIRType() + ")";
             }
             for (AST::Struct* str: prog->structs) {
                 map<string, string> temp_map;
@@ -113,7 +90,7 @@ namespace LIR {
                 extern_map[decl->name] = decl->type->toLIRType();
             }
             for (AST::Function* func: prog->functions) {
-                Function helper(func, globals_map, struct_map, extern_map);
+                Function helper(func, extern_map, function_map, locals_map[func->name]);
                 function_map[func->name] = helper.lowerFunc();
             }
         }
@@ -130,16 +107,13 @@ namespace LIR {
                 cout << "  " << pair.first << " : " << pair.second << "\n";
             }
             cout << "\nGlobals\n";
-            for (const auto& pair: globals_map) {
+            for (const auto& pair: global_map) {
                 cout << "  " << pair.first << " : " << pair.second << "\n";
             }
             cout << "\n";
             for (const auto& pair: function_map) {
-                cout << pair.second << "\n\n"; //Second contains the full 
+                cout << pair.second << "\n\n"; // second contains the full string of the function lowering
             }
         }
     };
-
-    // Feel free to work on converting AST::Program to LIR::Program
-    // DO NOT work on BasicBlock, LirInst, Terminal, Operand, ArithmeticOp, ComparisonOp
 }

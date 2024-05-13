@@ -8,7 +8,6 @@
 #include <algorithm>
 #include "grammar.cpp"
 #include "lir.cpp"
-#include "ast.cpp"
 using namespace std;
 
 // using ParamsReturnVal = pair<vector<Type*>, Type*>;
@@ -36,13 +35,16 @@ void initializeMaps(AST::Program* prog) {
     }
     for (AST::Struct* s: prog->structs) { 
         Gamma temp_map;
+        // cout << "Adding for struct with name " << s->name;
         for (AST::Decl* f: s->fields) {
             temp_map[f->name] = f->type;
+            // cout << " and for field " << f->name;
             if (f->typeName().isPointerToFunction()) {
                 struct_functions_map[s->name][f->name] = f->funcInfo(); 
             }
         }
         delta[s->name] = temp_map;
+        // cout << " ... added!\n";
     }
 
     for (AST::Decl* e: prog->externs) { 
@@ -108,7 +110,7 @@ int main(int argc, char** argv) {
     for (const auto& error : errors_map) {
         cout << error << "\n";
     }*/
-    LIR::Program program(prog);
+    LIR::Program program(prog, locals_map);
     program.print();
 
 
