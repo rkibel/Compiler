@@ -102,11 +102,6 @@ int main(int argc, char** argv) {
         return 0;
     }
     initializeMaps(prog);
-    /*prog->typeCheck(globals_map, errors_map, locals_map);
-    sort(errors_map.begin(), errors_map.end());
-    for (const auto& error : errors_map) {
-        cout << error << "\n";
-    }*/
     LIR::Program program(prog);
     program.print();
 
