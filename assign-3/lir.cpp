@@ -55,28 +55,52 @@ namespace LIR {
             }
             res += ") -> " + func->rettyp->toLIRType() + " {\n  Locals\n";
             for (unsigned int i = 0; i < tempsToType.size(); i++) {
-                res += "    _t" + to_string(i+1) + " : " + tempsToType[i] + "\n";
+                localsMap["_t" + to_string(i+1)] = tempsToType[i];
             }
             for (auto& pair: localsMap) {
                 res += "    " + pair.first + " : " + pair.second + "\n";
             }
-            res += "\n  entry:\n";
-            for (string str: loweredStmts) res += str;
-            res += "}";
 
+            string lowered = "";
+            for (string str: loweredStmts) lowered += str;
+            
             // this is the CFG construction
-            istringstream iss(res);
+            istringstream iss(lowered);
             bool terminalBefore = false;
-            string actual_res = "";
+            string actual = "";
             string line;
             while(getline(iss, line)) {
-                actual_res += "\n";
-                if (line.substr(0, 5) == "  lbl" || line.substr(0, 1) == "}") terminalBefore = false;
+                actual += "\n";
+                if (line.substr(0, 5) == "  lbl") terminalBefore = false;
                 if (terminalBefore) continue;
-                actual_res += line;
+                actual += line;
                 if (line.substr(0, 8) == "    Jump" || line.substr(0, 7) == "    Ret") terminalBefore = true;
             }
-            return actual_res;
+            
+            map<string, string> lblToInstructions;
+            string prevLabel = "entry";
+            string chunk = "";
+            istringstream iss2(actual);
+            while (getline(iss2, line)) {
+                if (line.substr(0, 5) == "  lbl") {
+                    lblToInstructions[prevLabel] = chunk;
+                    chunk = "";
+                    prevLabel = line.substr(2, line.size()-3);
+                }
+                else chunk += "\n" + line;
+            }
+            if (chunk != "") lblToInstructions[prevLabel] = chunk + "\n";
+
+            res += "\n";
+            for (auto& pair: lblToInstructions) {
+                res += "  " + pair.first + ":";
+                res += pair.second;
+                res += "\n";
+            }
+            
+            res += "}";
+
+            return res;
         }
     };
 
