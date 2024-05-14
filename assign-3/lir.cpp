@@ -1,4 +1,6 @@
 #include <typeinfo>
+#include <sstream>
+#include <iostream>
 
 #include "ast.cpp"
 using namespace std;
@@ -61,7 +63,20 @@ namespace LIR {
             res += "\n  entry:\n";
             for (string str: loweredStmts) res += str;
             res += "}";
-            return res;
+
+            // this is the CFG construction
+            istringstream iss(res);
+            bool terminalBefore = false;
+            string actual_res = "";
+            string line;
+            while(getline(iss, line)) {
+                actual_res += "\n";
+                if (line.substr(0, 5) == "  lbl" || line.substr(0, 1) == "}") terminalBefore = false;
+                if (terminalBefore) continue;
+                actual_res += line;
+                if (line.substr(0, 8) == "    Jump" || line.substr(0, 7) == "    Ret") terminalBefore = true;
+            }
+            return actual_res;
         }
     };
 
