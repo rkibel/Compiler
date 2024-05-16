@@ -39,12 +39,12 @@ struct Fn : Type {
     // WARNING: if there is no return for Fn, ret is Any (look at struct Any : Type)
     Type* ret;
     void print(std::ostream& os) const override { 
-        os << "Fn(prms = [";
+        os << "Fn([";
         for (unsigned int i = 0; i < prms.size(); i++) {
             os << *prms[i];
             if (i != prms.size() - 1) os << ", ";
         }
-        os << "], ret = " << *ret << ")";
+        os << "], " << *ret << ")";
     }
 };
 struct Ptr : Type {
@@ -133,17 +133,21 @@ struct Branch : Terminal{
     BbId tt;
     BbId ff;
     void print(std::ostream& os) const override {
-        // TODO : override print 
+        os << "Branch(" << *guard << ", " << tt << ", " << ff << ")" << endl;
     }
 };
-
 struct CallDirect : Terminal{
     VarId lhs;
     FuncId callee;
     vector<Operand*> args;
     BbId next_bb;
     void print(std::ostream& os) const override {
-        // TODO : override print 
+        os << "CallDirect(" << lhs << ", " << callee << ", [";
+        for (int i = 0; i < args.size(); i++) {
+            os << *(args[i]);
+            if (i != args.size() - 1) os << ", ";
+        }
+        os << "], " << next_bb << ")" << endl;
     }
 };
 struct CallIndirect : Terminal{
@@ -152,19 +156,24 @@ struct CallIndirect : Terminal{
     vector<Operand*> args;
     BbId next_bb;
     void print(std::ostream& os) const override {
-        // TODO : override print 
+        os << "CallDirect(" << lhs << ", " << callee << ", [";
+        for (int i = 0; i < args.size(); i++) {
+            os << *(args[i]);
+            if (i != args.size() - 1) os << ", ";
+        }
+        os << "], " << next_bb << ")" << endl;
     }
 };
 struct Jump : Terminal{
     BbId next_bb;
     void print(std::ostream& os) const override {
-        // TODO : override print 
+        os << "Jump(" << next_bb << ")" << endl;
     }
 };
 struct Ret : Terminal{
     Operand* op;
     void print(std::ostream& os) const override {
-        // TODO : override print 
+        os << "Ret(" << *op << ")" << endl;
     }
 };
 
@@ -180,7 +189,7 @@ struct Alloc : LirInst{
     VarId lhs;
     Operand* num;
     void print(std::ostream& os) const override {
-        // TODO : override print 
+        os << "Alloc(" << lhs << ", " << *num << ")" << endl;
     }
 };
 struct Arith : LirInst{
@@ -189,7 +198,7 @@ struct Arith : LirInst{
     Operand* left;
     Operand* right;
     void print(std::ostream& os) const override {
-        // TODO : override print 
+        os << "Arith(" << lhs << ", " << *aop << ", " << *left << ", " << *right << ")" << endl;
     }
 };
 struct CallExt : LirInst{
@@ -197,7 +206,12 @@ struct CallExt : LirInst{
     FuncId callee;
     vector<Operand*> args;
     void print(std::ostream& os) const override {
-        // TODO : override print 
+        os << "CallExt(" << lhs << ", " << callee << ", [";
+        for (int i = 0; i < args.size(); i++) {
+            os << *(args[i]);
+            if (i != args.size() - 1) os << ", ";
+        }
+        os << "]" << ")" << endl; 
     }
 };
 struct Cmp : LirInst{
@@ -206,14 +220,14 @@ struct Cmp : LirInst{
     Operand* left;
     Operand* right;
     void print(std::ostream& os) const override {
-        // TODO : override print 
+        os << "Cmp(" << lhs << ", " << *aop << ", " << *left << ", " << *right << ")" << endl;
     }
 };
 struct Copy : LirInst{
     VarId lhs;
     Operand* op;
     void print(std::ostream& os) const override {
-        // TODO : override print 
+        os << "Copy(" << lhs << ", " << *op << ")" << endl;
     }
 };
 struct Gep : LirInst{
@@ -236,14 +250,14 @@ struct Load : LirInst{
     VarId lhs;
     VarId src;
     void print(std::ostream& os) const override {
-        // TODO : override print 
+        os << "Load(" << lhs << ", " << src << ")" << endl;
     }
 };
 struct Store : LirInst{
     VarId dst;
     Operand* op;
     void print(std::ostream& os) const override {
-        // TODO : override print 
+        os << "Store(" << dst << ", " << *op << ")" << endl;
     }
 };
 
@@ -251,6 +265,15 @@ struct BasicBlock{
     BbId label;
     vector<LirInst*> insts;
     Terminal* term;
+
+    friend std::ostream& operator<<(std::ostream& os, const BasicBlock& bb) {
+        os << bb.label << endl;
+        for(int i = 0; i < bb.insts.size(); i++){
+            os << "    " << "INST" << *bb.insts[i] << endl;
+        }
+        os << "    " << *bb.term << endl;
+        return os;
+    }
 };
 
 struct Function{
@@ -263,7 +286,23 @@ struct Function{
     ~Function() { 
     }
     friend std::ostream& operator<<(std::ostream& os, const Function& func) {
-        os << "Sample Function";
+        os << "Function " << func.name << "(";
+        for (int i = 0; i < func.params.size(); i++) {
+            os << func.params[i].first << ":" << *func.params[i].second;
+            if (i != func.params.size() - 1) os << ", ";
+        }
+        os << ") -> " << *func.rettyp << " {" << endl;
+        os << "  Locals" << endl;
+        for (auto local : func.locals) {
+            os << "    ";
+            os << local.first << " : " << *local.second << endl;
+        }
+        os << endl;
+        
+        for(auto bb : func.body){
+            os << "  " << *bb.second;
+        }
+        os << "}" << endl;
         return os;
     }
 };
@@ -278,22 +317,32 @@ struct Program{
     }
 
     friend std::ostream& operator<<(std::ostream& os, const Program& prog) {
+        for(auto s: prog.structs){
+            os << "Struct " << s.first << endl;
+            for(auto field : s.second){
+                os << "  " << field.first << " : " << *field.second << endl;
+            }
+            os << endl;
+        }
+        
+
         os << "Externs" << endl;
         for(auto e: prog.externs){
-            os << e.first << " : " << e.second << endl;
+            os << "  " << e.first << " : " << *e.second << endl;
         }
         os << endl;
 
         os << "Globals" << endl;
         for(auto g: prog.globals){
-            os << g.first << " : " << g.second << endl;
+            os << "  " << g.first << " : " << *g.second << endl;
         }
         os << endl;
 
         for(auto f: prog.functions){
-            os << "Function " << f.second << endl;
+            os << *f.second << endl;
             os << endl;
         }
+        
         return os;
     }
 };
