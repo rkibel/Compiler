@@ -11,7 +11,7 @@
 
 // for convenience
 using json = nlohmann::json;
-
+Type* get_type_object(json data);
 
 Terminal* get_terminal_instruction(json terminal){
     json::iterator term = terminal.begin();
@@ -105,98 +105,284 @@ Terminal* get_terminal_instruction(json terminal){
         return r;
     }
 }
-
 LirInst* get_lir_instruction(json instruction){
-    LirInst* li = new LirInst;
     json::iterator inst = instruction.begin();
     string key = inst.key();
     json body = inst.value();
 
     if(key == "Alloc"){
+        Alloc* a = new Alloc;
+        a->lhs = body["lhs"]["name"];
+        
+        json::iterator num_info = body["num"].begin();
 
+        if(num_info.key() == "Var"){
+            Var* o = new Var;
+            o->id = num_info.value()["name"];
+            a->num = o;
+        }
+        else{
+            Const* constant = new Const;
+            constant->num = num_info.value();
+            a->num = constant;
+        }
+        return a;
     }
     else if(key == "Arith"){
+        Arith* a = new Arith;
+        a->lhs = body["lhs"]["name"];
 
+        if(body["aop"] == "Add"){
+            Add* add = new Add;
+            a->aop = add;
+        }
+        else if (body["aop"] == "Subtract"){
+            Sub* sub = new Sub;
+            a->aop = sub;
+        }
+        else if (body["aop"] == "Multiply"){
+            Mul* mul = new Mul;
+            a->aop = mul;
+        }
+        else{
+            Div* div = new Div;
+            a->aop = div;
+        }
+
+        json::iterator operand1_info = body["op1"].begin();
+
+        if(operand1_info.key() == "Var"){
+            Var* o = new Var;
+            o->id = operand1_info.value()["name"];
+            a->left = o;
+        }
+        else{
+            Const* constant = new Const;
+            constant->num = operand1_info.value();
+            a->left = constant;
+        }
+
+        json::iterator operand2_info = body["op2"].begin();
+
+        if(operand2_info.key() == "Var"){
+            Var* o = new Var;
+            o->id = operand2_info.value()["name"];
+            a->right = o;
+        }
+        else{
+            Const* constant = new Const;
+            constant->num = operand2_info.value();
+            a->right = constant;
+        }
+
+        return a;
     }
     else if(key == "CallExt"){
+        CallExt* cext = new CallExt;
+        cext->callee = body["ext_callee"];
+        if(body["lhs"] == nullptr){
+            cext->lhs = "_";
+        }
+        else{
+            cext->lhs = body["lhs"];
+        }
 
+        vector<Operand*> arguments;
+        for(auto a : body["args"]){
+            json::iterator arg_type = a.begin();
+            if(arg_type.key() == "Var"){
+                Var* o = new Var;
+                o->id = arg_type.value()["name"];
+                arguments.push_back(o);
+            }
+            else{
+                Const* c = new Const;
+                c->num = arg_type.value();
+                arguments.push_back(c);
+            }
+        }
+        cext->args = arguments;
+        return cext;
     }
     else if(key == "Cmp"){
+        Cmp* cmp = new Cmp;
+        cmp->lhs = body["lhs"]["name"];
 
+        if(body["rop"] == "Eq"){
+            Equal* eq = new Equal;
+            cmp->cop = eq;
+        }
+        else if (body["rop"] == "Neq"){
+            NotEq* neq = new NotEq;
+            cmp->cop = neq;
+        }
+        else if (body["rop"] == "Less"){
+            Lt* lt = new Lt;
+            cmp->cop = lt;
+        }
+        else if (body["rop"] == "LessEq"){
+            Lte* lte = new Lte;
+            cmp->cop = lte;
+        }
+        else if (body["rop"] == "Greater"){
+            Gt* gt = new Gt;
+            cmp->cop = gt;
+        }
+        else{
+            Gte* gte = new Gte;
+            cmp->cop = gte;
+        }
+        
+        json::iterator operand1_info = body["op1"].begin();
+
+        if(operand1_info.key() == "Var"){
+            Var* o = new Var;
+            o->id = operand1_info.value()["name"];
+            cmp->left = o;
+        }
+        else{
+            Const* constant = new Const;
+            constant->num = operand1_info.value();
+            cmp->left = constant;
+        }
+
+        json::iterator operand2_info = body["op2"].begin();
+
+        if(operand2_info.key() == "Var"){
+            Var* o = new Var;
+            o->id = operand2_info.value()["name"];
+            cmp->right = o;
+        }
+        else{
+            Const* constant = new Const;
+            constant->num = operand2_info.value();
+            cmp->right = constant;
+        }
+        return cmp;
     }
     else if(key == "Copy"){
+        Copy* c = new Copy;
+        c->lhs = body["lhs"]["name"];
+        json::iterator operand_info = body["op"].begin();
 
+        if(operand_info.key() == "Var"){
+            Var* o = new Var;
+            o->id = operand_info.value()["name"];
+            c->op = o;
+        }
+        else{
+            Const* constant = new Const;
+            constant->num = operand_info.value();
+            c->op = constant;
+        }
+
+        return c;
     }
     else if(key == "Gep"){
+        Gep* g = new Gep;
+        g->lhs = body["lhs"]["name"];
+        g->src = body["src"]["name"];
 
+        json::iterator idx_info = body["idx"].begin();
+
+        if(idx_info.key() == "Var"){
+            Var* o = new Var;
+            o->id = idx_info.value()["name"];
+            g->idx = o;
+        }
+        else{
+            Const* constant = new Const;
+            constant->num = idx_info.value();
+            g->idx = constant;
+        }
+        return g;
     }
     else if(key == "Gfp"){
-
+        Gfp* g = new Gfp;
+        g->lhs = body["lhs"]["name"];
+        g->src = body["src"]["name"];
+        g->field = body["field"]["name"];
+        return g;
     }
     else if(key == "Load"){
-
+        Load* l = new Load;
+        l->lhs = body["lhs"]["name"];
+        l->src = body["src"]["name"];
+        return l;
     }
     else{
+        Store* s = new Store;
+        s->dst = body["dst"]["name"];
 
+        json::iterator op_info = body["op"].begin();
+
+        if(op_info.key() == "Var"){
+            Var* o = new Var;
+            o->id = op_info.value()["name"];
+            s->op = o;
+        }
+        else{
+            Const* constant = new Const;
+            constant->num = op_info.value();
+            s->op = constant;
+        }
+        return s;
     }
-
-    return li;
 }
 
+Ptr* handle_Ptr(json data){
+    Ptr* ptr = new Ptr;
 
-// TODO :
-Ptr handle_Ptr(json data){
-    Ptr ptr;
-    if(data == "Int"){  // base case
-        ptr.ref = new Int;
+    if(data == nullptr || data.empty()){
+        ptr->ref = new Any;
         return ptr;
     }
-    else {
+    else if(data == "Int"){
+        ptr->ref = new Int;
+        return ptr;
+    }
+    else{
         auto it = data.begin();
         if(it.key() == "Ptr"){
             Ptr* pointer = new Ptr;
-            *pointer = handle_Ptr(data["Ptr"]);
-            ptr.ref = pointer;
+            pointer = handle_Ptr(it.value());
+            ptr->ref = pointer;
+            return ptr;
         }
         else if(it.key() == "Struct"){
             StructType* s = new StructType;
-            s->name = data["Struct"];
-            ptr.ref = s;
-
-            //std::cout << data["Struct"] << std::endl;
+            s->name = it.value();
+            ptr->ref = s;
+            return ptr;
         }
-
-
-        // TODO : implement logic for initializing types for PARAMETERS and RETURN TYPE
-        else if(it.key() == "Fn"){
+        else{
             Fn* f = new Fn;
-            for(auto param : data["Fn"]["param_ty"]){
-                if(param == "Int"){
-                    f->prms.push_back(new Int);
-                }
-                else{
-                    f->prms.push_back(new Any);
-                }
-                // else{
-                //     Type* temp = new Type;
-                //     *temp = handle_Ptr(param);
-                //     f->prms.push_back(temp);
-                // }
+            for(auto param : it.value()["param_ty"]){
+                Type* temp = new Type;
+                temp = get_type_object(param);
+                f->prms.push_back(temp);
             }
-            if(data["Fn"]["ret_ty"] == "Int"){
-                f->ret = new Int;
-            }
-            else{
-                f->ret = new Any;
-            }
-            //std::cout << data << std::endl;
-            ptr.ref = f;
+            Type* temp = new Type;
+            temp = get_type_object(it.value()["ret_ty"]);
+            f->ret = temp;
+            ptr->ref = f;
+            return ptr;
         }
-        
     }
-
-
-    return ptr;
+}
+Type* get_type_object(json data){
+    if(data == nullptr || data.empty()){
+        return new Any;
+    }
+    else if(data == "Int"){
+        Int* i = new Int;
+        return i;
+    }
+    else {
+        Ptr* temp = new Ptr;
+        temp = handle_Ptr(data["Ptr"]);
+        return temp;
+    }
 }
 
 void copy_globals(Program* prog, json globals){
@@ -204,138 +390,97 @@ void copy_globals(Program* prog, json globals){
 
     for(auto d: globals){
         string name = d["name"];
-        if(d["typ"] == "Int"){
-            Int* temp = new Int;
-            globals_map[name] = temp;
-        }
-        else {
-            Ptr* temp = new Ptr;
-            *temp = handle_Ptr(d["typ"]["Ptr"]);
-            globals_map[name] = temp;
-        }
+        Type* temp = new Type;
+
+        temp = get_type_object(d["typ"]);
+
+        // if(d["typ"] == "Int"){
+        //     Int* temp = new Int;
+        //     globals_map[name] = temp;
+        // }
+        // else {
+        //     Ptr* temp = new Ptr;
+        //     *temp = handle_Ptr(d["typ"]["Ptr"]);
+        //     globals_map[name] = temp;
+        // }
+
+        globals_map[name] = temp;
     }
     prog->globals = globals_map;
 
 }
-
-// TODO :
 void copy_structs(Program* prog, json structs){
     map<StructId, map<FieldId, Type*>> structs_map;  
     for (json::iterator it = structs.begin(); it != structs.end(); ++it) {
         string key = it.key();
-        //std::cout << key << std::endl;
         for(auto field : it.value()){
-            //std::cout << field["name"] << std::endl;
-
-            // TODO : Get Type object of "field["typ"]"
-            structs_map[key][field["name"]] = new Any;
+            Type* t = new Type;
+            t = get_type_object(field["typ"]);
+            structs_map[key][field["name"]] = t;
         }
     }
     prog->structs = structs_map;
 }
-
-// TODO :
 void copy_externs(Program* prog, json externs){
     map<FuncId, Type*> externs_map;  
     for (json::iterator it = externs.begin(); it != externs.end(); ++it) {
         string key = it.key();
-        //std::cout << key << std::endl;
-
-        // TODO : implement logic for initializing types for PARAMETERS and RETURN TYPE
         Fn* f = new Fn;
-        for(auto param : it.value()["param_ty"]){
-            if(param == "Int"){
-                f->prms.push_back(new Int);
-            }
-            else{
-                f->prms.push_back(new Any);
-            }
-            // else{
-            //     Type* temp = new Type;
-            //     *temp = handle_Ptr(param);
-            //     f->prms.push_back(temp);
-            // }
+        for(auto param : it.value()["Fn"]["param_ty"]){
+            Type* temp = new Type;
+            temp = get_type_object(param);
+            f->prms.push_back(temp);
         }
-        if(it.value()["ret_ty"] == "Int"){
-            f->ret = new Int;
-        }
-        else{
-            f->ret = new Any;
-        }
-        //std::cout << data << std::endl;
+        Type* temp = new Type;
+        temp = get_type_object(it.value()["Fn"]["ret_ty"]);
+        f->ret = temp;
         externs_map[key] = f;
     }
     prog->externs = externs_map;
 }
-
-
 void copy_functions(Program* prog, json functions){
     map<FuncId, Function*> functions_map;
     for (json::iterator it = functions.begin(); it != functions.end(); ++it) {
         string key = it.key();
         Function* f = new Function;
-
         f->name = key;
-
-        // TODO : implement logic for initializing types for PARAMETERS and RETURN TYPE
         for(auto param : it.value()["params"]){
-            if(param == "Int"){
-                f->params.push_back(std::pair(param["name"], new Int));
-            }
-            else{
-                f->params.push_back(std::pair(param["name"], new Any));
-            }
+            Type* temp = new Type;
+            temp = get_type_object(param["typ"]);
+            f->params.push_back(std::pair(param["name"], temp));
         }
-        if(it.value()["ret_ty"] == "Int"){
-            f->rettyp = new Int;
-        }
-        else{
-            f->rettyp = new Any;
-        }
+        Type* temp = new Type;
+        temp = get_type_object(it.value()["ret_ty"]);
+        f->rettyp = temp;
 
         for(auto local : it.value()["locals"]){
-            if(local["typ"] == "Int"){
-                f->locals[local["name"]] = new Int;
-            }
-            else{
-                f->locals[local["name"]] = new Any;
-            }
+            Type* temp = new Type;
+            temp = get_type_object(local["typ"]);
+            f->locals[local["name"]] = temp;
         }
 
         for (json::iterator itr = it.value()["body"].begin(); itr != it.value()["body"].end(); ++itr) {
-            // Loop for each BASIC BLOCK
             string key = itr.key();
             json instructions = itr.value()["insts"];
-            
             BasicBlock* bb = new BasicBlock;
             bb->label = key;
 
-            // Loop for each INSTRUCTION
             for(auto inst : instructions) {
                 LirInst* lirInst = new LirInst;
                 lirInst = get_lir_instruction(inst);
                 bb->insts.push_back(lirInst);
             }
             
-            // Get Termnial
             json terminal = itr.value()["term"]; 
             Terminal* termInst = new Terminal;
             termInst = get_terminal_instruction(terminal);
             bb->term = termInst;
-
             f->body[key] = bb;
         }
-
         functions_map[key] = f;
     }
-
-
-
-
     prog->functions = functions_map;
 }   
-
-
 
 Program initialize_prog(json data){
     Program prog;
@@ -349,11 +494,8 @@ Program initialize_prog(json data){
     copy_externs(&prog, externs);
     copy_functions(&prog, functions);
 
-
-
     return prog;
 }  
-
 
 int main(int argc, char* argv[]) {
 
@@ -377,15 +519,7 @@ int main(int argc, char* argv[]) {
     // std::cout << data.dump(2) << std::endl; 
 
     Program prog = initialize_prog(data);
-
-    
-    
-    
-
-
     std::cout << prog;
-    
- 
     
     return 0;
 }

@@ -67,16 +67,16 @@ struct ArithmeticOp{
     }
 };
 struct Add : ArithmeticOp{
-    void print(std::ostream& os) const override { os << "Add"; }
+    void print(std::ostream& os) const override { os << "add"; }
 };
 struct Sub : ArithmeticOp{
-    void print(std::ostream& os) const override { os << "Sub"; }
+    void print(std::ostream& os) const override { os << "sub"; }
 };
 struct Mul : ArithmeticOp{
-    void print(std::ostream& os) const override { os << "Mul"; }
+    void print(std::ostream& os) const override { os << "mul"; }
 };
 struct Div : ArithmeticOp{
-    void print(std::ostream& os) const override { os << "Div"; }
+    void print(std::ostream& os) const override { os << "div"; }
 };
 
 struct ComparisonOp{
@@ -87,22 +87,22 @@ struct ComparisonOp{
     }
 };
 struct Equal : ComparisonOp{
-    void print(std::ostream& os) const override { os << "Equal"; }
+    void print(std::ostream& os) const override { os << "eq"; }
 };
 struct NotEq : ComparisonOp{ 
-    void print(std::ostream& os) const override { os << "NotEq"; }
+    void print(std::ostream& os) const override { os << "neq"; }
 };
 struct Lt : ComparisonOp{
-    void print(std::ostream& os) const override { os << "Lt"; }
+    void print(std::ostream& os) const override { os << "lt"; }
 };
 struct Lte : ComparisonOp{
-    void print(std::ostream& os) const override { os << "Lte"; }
+    void print(std::ostream& os) const override { os << "lte"; }
 };
 struct Gt : ComparisonOp{
-    void print(std::ostream& os) const override { os << "Gt"; }
+    void print(std::ostream& os) const override { os << "gt"; }
 };
 struct Gte : ComparisonOp{
-    void print(std::ostream& os) const override { os << "Gte"; }
+    void print(std::ostream& os) const override { os << "gte"; }
 };
 
 struct Operand{
@@ -216,11 +216,11 @@ struct CallExt : LirInst{
 };
 struct Cmp : LirInst{
     VarId lhs;
-    ComparisonOp* aop;
+    ComparisonOp* cop;
     Operand* left;
     Operand* right;
     void print(std::ostream& os) const override {
-        os << "Cmp(" << lhs << ", " << *aop << ", " << *left << ", " << *right << ")" << endl;
+        os << "Cmp(" << lhs << ", " << *cop << ", " << *left << ", " << *right << ")" << endl;
     }
 };
 struct Copy : LirInst{
@@ -235,7 +235,7 @@ struct Gep : LirInst{
     VarId src;
     Operand* idx;
     void print(std::ostream& os) const override {
-        // TODO : override print 
+        os << "Gep(" << lhs << ", " << src << ", " << *idx << ")" << endl;
     }
 };
 struct Gfp : LirInst{
@@ -243,7 +243,7 @@ struct Gfp : LirInst{
     VarId src;
     string field;
     void print(std::ostream& os) const override {
-        // TODO : override print 
+        os << "Gfp(" << lhs << ", " << src << ", " << field << ")" << endl;
     }
 };
 struct Load : LirInst{
@@ -267,11 +267,11 @@ struct BasicBlock{
     Terminal* term;
 
     friend std::ostream& operator<<(std::ostream& os, const BasicBlock& bb) {
-        os << bb.label << endl;
+        os << bb.label  << ":" << endl;
         for(int i = 0; i < bb.insts.size(); i++){
-            os << "    " << "INST" << *bb.insts[i] << endl;
+            os << "    " << *bb.insts[i];
         }
-        os << "    " << *bb.term << endl;
+        os << "    " << *bb.term;
         return os;
     }
 };
@@ -298,9 +298,12 @@ struct Function{
             os << local.first << " : " << *local.second << endl;
         }
         os << endl;
-        
-        for(auto bb : func.body){
-            os << "  " << *bb.second;
+    
+        for (auto it = func.body.begin(); it != func.body.end(); ++it) {
+            os << "  " << *it->second;
+            if (std::next(it) != func.body.end()) {
+                os << endl;
+            }
         }
         os << "}" << endl;
         return os;
@@ -325,7 +328,6 @@ struct Program{
             os << endl;
         }
         
-
         os << "Externs" << endl;
         for(auto e: prog.externs){
             os << "  " << e.first << " : " << *e.second << endl;
@@ -340,7 +342,6 @@ struct Program{
 
         for(auto f: prog.functions){
             os << *f.second << endl;
-            os << endl;
         }
         
         return os;
