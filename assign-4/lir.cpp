@@ -156,7 +156,7 @@ struct CallIndirect : Terminal{
     vector<Operand*> args;
     BbId next_bb;
     void print(std::ostream& os) const override {
-        os << "CallDirect(" << lhs << ", " << callee << ", [";
+        os << "CallIndirect(" << lhs << ", " << callee << ", [";
         for (int i = 0; i < args.size(); i++) {
             os << *(args[i]);
             if (i != args.size() - 1) os << ", ";
