@@ -9,7 +9,7 @@ SRCS_MAIN = main.cpp
 SRCS_LIR = lir.cpp
 
 # Executable names
-EXEC_LIR = lir
+EXEC_LIR = codegen
 
 # Default target
 all: $(EXEC_LIR)

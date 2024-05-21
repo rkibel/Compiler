@@ -1,0 +1,179 @@
+Struct str
+  a : Int
+  y : Ptr(Fn([Int], Int))
+
+Externs
+  exfun : Fn([Int], Int)
+
+Globals
+  compConst : Ptr(Fn([Int], Int))
+  compGlobal : Ptr(Fn([Int], Int))
+  compLocal : Ptr(Fn([], Int))
+  compParam : Ptr(Fn([Int, Int], Int))
+  f : Ptr(Fn([Int, Int, Int], Int))
+  g : Int
+  h1 : Ptr(Fn([Int], Ptr(Fn([Int], Int))))
+  h2 : Ptr(Fn([Int], Ptr(Fn([Int], Int))))
+  i : Ptr(Fn([], Int))
+  j : Ptr(Fn([Ptr(Struct(s)), Int, Int], Ptr(Struct(s))))
+  j2 : Ptr(Fn([Ptr(Struct(s)), Int, Int], Ptr(Struct(s))))
+  k : Ptr(Fn([Int], Int))
+  l : Ptr(Fn([], Int))
+  m : Ptr(Fn([], Ptr(Int)))
+  n : Ptr(Fn([], Ptr(Fn([Int], Int))))
+  p : Ptr(Fn([], Int))
+  pt : Ptr(Int)
+  ptf : Ptr(Fn([Int], Int))
+  pts : Ptr(Struct(s))
+
+Function compConst(a:Int) -> Int {
+  Locals
+    _t1 : Int
+
+  entry:
+    Cmp(_t1, lte, 2, 1)
+    Ret(_t1)
+}
+
+Function compGlobal(b:Int) -> Int {
+  Locals
+    _t1 : Int
+
+  entry:
+    Cmp(_t1, lte, 2, g)
+    Ret(_t1)
+}
+
+Function compLocal() -> Int {
+  Locals
+    _t1 : Int
+    a : Int
+    b : Int
+
+  entry:
+    Cmp(_t1, lte, a, b)
+    Copy(a, _t1)
+    Ret(2)
+}
+
+Function compParam(a:Int, b:Int) -> Int {
+  Locals
+    _t1 : Int
+
+  entry:
+    Cmp(_t1, lte, b, 2)
+    Ret(_t1)
+}
+
+Function f(a1:Int, a2:Int, a3:Int) -> Int {
+  Locals
+    _t1 : Int
+    _t2 : Int
+    _t3 : Int
+    b : Int
+    d : Int
+    e : Int
+
+  entry:
+    Arith(_t1, add, 1, e)
+    Copy(b, _t1)
+    Arith(_t2, add, 1, 2)
+    Copy(b, _t2)
+    Arith(_t3, add, 2, 2)
+    Copy(b, _t3)
+    Ret(a2)
+}
+
+Function h1(a:Int) -> Ptr(Fn([Int], Int)) {
+  Locals
+    a : Int
+    b : Int
+    k : Ptr(Fn([Int], Int))
+
+  entry:
+    Ret(k)
+}
+
+Function h2(a:Int) -> Ptr(Fn([Int], Int)) {
+  Locals
+
+  entry:
+    Ret(k)
+}
+
+Function i() -> Int {
+  Locals
+
+  entry:
+    Ret(0)
+}
+
+Function j(a1:Ptr(Struct(s)), a2:Int, a3:Int) -> Ptr(Struct(s)) {
+  Locals
+
+  entry:
+    Ret(a1)
+}
+
+Function j2(a1:Ptr(Struct(s)), a2:Int, a3:Int) -> Ptr(Struct(s)) {
+  Locals
+
+  entry:
+    Ret(pts)
+}
+
+Function k(a:Int) -> Int {
+  Locals
+    _t1 : Int
+    a : Int
+    b : Int
+
+  entry:
+    Arith(_t1, add, 1, 1)
+    Copy(a, _t1)
+    Ret(2)
+}
+
+Function l() -> Int {
+  Locals
+    _t1 : Int
+
+  entry:
+    CallExt(_t1, exfun, [1])
+    Ret(_t1)
+}
+
+Function m() -> Ptr(Int) {
+  Locals
+
+  entry:
+    Ret(pt)
+}
+
+Function main() -> Int {
+  Locals
+    x : Int
+    y : Int
+
+  entry:
+    Copy(x, 42)
+    Copy(g, x)
+    Ret(g)
+}
+
+Function n() -> Ptr(Fn([Int], Int)) {
+  Locals
+
+  entry:
+    Ret(ptf)
+}
+
+Function p() -> Int {
+  Locals
+    _t1 : Int
+
+  entry:
+    Cmp(_t1, gt, 1, 2)
+    Ret(_t1)
+}
+

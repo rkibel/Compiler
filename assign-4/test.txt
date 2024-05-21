@@ -1,0 +1,66 @@
+let g:int;
+let pt:&int;
+let pts:&s;
+struct str{a:int, y:&(int)->int}
+let ptf:&(int)->int;
+extern exfun:(int) -> int;
+fn f(a1:int, a2:int, a3:int) -> int {
+    let b:int, d:int, e:int;
+    b = 1+e;
+    b = 1+2;
+    b = 2+2;
+    return a2;
+}
+fn h2(a:int) -> &(int)->int {
+    return k;
+}
+fn h1(a:int) -> &(int)->int {
+    let a:int, b:int, k: &(int)->int;
+    return k;
+}
+fn i() -> int {
+    return 0;
+}
+fn j(a1:&s, a2:int, a3:int) -> &s {
+    return a1;
+}
+fn j2(a1:&s, a2:int, a3:int) -> &s {
+    return pts;
+}
+fn k(a:int) -> int {
+    let a:int, b:int;
+    a = 1+1;
+    return 2;
+}
+fn l() -> int {
+    return exfun(1);
+}
+fn m() -> &int {
+    return pt;
+}
+fn n() -> &(int)->int {
+    return ptf;
+}
+fn p() -> int {
+    return 1>2;
+}
+fn compConst(a:int) -> int {
+    return 2<=1;
+}
+fn compLocal() -> int {
+    let a:int, b:int;
+    a = a<=b;
+    return 2;
+}
+fn compParam(a:int, b:int) -> int {
+    return b<=2;
+}
+fn compGlobal(b:int) -> int {
+    return 2<=g;
+}
+fn main() -> int {
+    let x:int, y:int;
+    x = 42;
+    g = x;
+    return g;
+}

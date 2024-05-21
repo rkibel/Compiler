@@ -1,0 +1,663 @@
+{
+  "globals": [
+    {
+      "name": "g",
+      "typ": "Int"
+    },
+    {
+      "name": "pt",
+      "typ": {
+        "Ptr": "Int"
+      }
+    },
+    {
+      "name": "pts",
+      "typ": {
+        "Ptr": {
+          "Struct": "s"
+        }
+      }
+    },
+    {
+      "name": "ptf",
+      "typ": {
+        "Ptr": {
+          "Fn": {
+            "prms": [
+              "Int"
+            ],
+            "ret": "Int"
+          }
+        }
+      }
+    }
+  ],
+  "structs": [
+    {
+      "name": "str",
+      "fields": [
+        {
+          "name": "a",
+          "typ": "Int"
+        },
+        {
+          "name": "y",
+          "typ": {
+            "Ptr": {
+              "Fn": {
+                "prms": [
+                  "Int"
+                ],
+                "ret": "Int"
+              }
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "externs": [
+    {
+      "name": "exfun",
+      "typ": {
+        "Fn": {
+          "prms": [
+            "Int"
+          ],
+          "ret": "Int"
+        }
+      }
+    }
+  ],
+  "functions": [
+    {
+      "name": "f",
+      "params": [
+        {
+          "name": "a1",
+          "typ": "Int"
+        },
+        {
+          "name": "a2",
+          "typ": "Int"
+        },
+        {
+          "name": "a3",
+          "typ": "Int"
+        }
+      ],
+      "rettyp": "Int",
+      "locals": [
+        [
+          {
+            "name": "b",
+            "typ": "Int"
+          },
+          null
+        ],
+        [
+          {
+            "name": "d",
+            "typ": "Int"
+          },
+          null
+        ],
+        [
+          {
+            "name": "e",
+            "typ": "Int"
+          },
+          null
+        ]
+      ],
+      "stmts": [
+        {
+          "Assign": {
+            "lhs": {
+              "Id": "b"
+            },
+            "rhs": {
+              "RhsExp": {
+                "BinOp": {
+                  "op": "Add",
+                  "left": {
+                    "Num": 1
+                  },
+                  "right": {
+                    "Id": "e"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "Assign": {
+            "lhs": {
+              "Id": "b"
+            },
+            "rhs": {
+              "RhsExp": {
+                "BinOp": {
+                  "op": "Add",
+                  "left": {
+                    "Num": 1
+                  },
+                  "right": {
+                    "Num": 2
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "Assign": {
+            "lhs": {
+              "Id": "b"
+            },
+            "rhs": {
+              "RhsExp": {
+                "BinOp": {
+                  "op": "Add",
+                  "left": {
+                    "Num": 2
+                  },
+                  "right": {
+                    "Num": 2
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "Return": {
+            "Id": "a2"
+          }
+        }
+      ]
+    },
+    {
+      "name": "h2",
+      "params": [
+        {
+          "name": "a",
+          "typ": "Int"
+        }
+      ],
+      "rettyp": {
+        "Ptr": {
+          "Fn": {
+            "prms": [
+              "Int"
+            ],
+            "ret": "Int"
+          }
+        }
+      },
+      "locals": [],
+      "stmts": [
+        {
+          "Return": {
+            "Id": "k"
+          }
+        }
+      ]
+    },
+    {
+      "name": "h1",
+      "params": [
+        {
+          "name": "a",
+          "typ": "Int"
+        }
+      ],
+      "rettyp": {
+        "Ptr": {
+          "Fn": {
+            "prms": [
+              "Int"
+            ],
+            "ret": "Int"
+          }
+        }
+      },
+      "locals": [
+        [
+          {
+            "name": "a",
+            "typ": "Int"
+          },
+          null
+        ],
+        [
+          {
+            "name": "b",
+            "typ": "Int"
+          },
+          null
+        ],
+        [
+          {
+            "name": "k",
+            "typ": {
+              "Ptr": {
+                "Fn": {
+                  "prms": [
+                    "Int"
+                  ],
+                  "ret": "Int"
+                }
+              }
+            }
+          },
+          null
+        ]
+      ],
+      "stmts": [
+        {
+          "Return": {
+            "Id": "k"
+          }
+        }
+      ]
+    },
+    {
+      "name": "i",
+      "params": [],
+      "rettyp": "Int",
+      "locals": [],
+      "stmts": [
+        {
+          "Return": {
+            "Num": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "j",
+      "params": [
+        {
+          "name": "a1",
+          "typ": {
+            "Ptr": {
+              "Struct": "s"
+            }
+          }
+        },
+        {
+          "name": "a2",
+          "typ": "Int"
+        },
+        {
+          "name": "a3",
+          "typ": "Int"
+        }
+      ],
+      "rettyp": {
+        "Ptr": {
+          "Struct": "s"
+        }
+      },
+      "locals": [],
+      "stmts": [
+        {
+          "Return": {
+            "Id": "a1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "j2",
+      "params": [
+        {
+          "name": "a1",
+          "typ": {
+            "Ptr": {
+              "Struct": "s"
+            }
+          }
+        },
+        {
+          "name": "a2",
+          "typ": "Int"
+        },
+        {
+          "name": "a3",
+          "typ": "Int"
+        }
+      ],
+      "rettyp": {
+        "Ptr": {
+          "Struct": "s"
+        }
+      },
+      "locals": [],
+      "stmts": [
+        {
+          "Return": {
+            "Id": "pts"
+          }
+        }
+      ]
+    },
+    {
+      "name": "k",
+      "params": [
+        {
+          "name": "a",
+          "typ": "Int"
+        }
+      ],
+      "rettyp": "Int",
+      "locals": [
+        [
+          {
+            "name": "a",
+            "typ": "Int"
+          },
+          null
+        ],
+        [
+          {
+            "name": "b",
+            "typ": "Int"
+          },
+          null
+        ]
+      ],
+      "stmts": [
+        {
+          "Assign": {
+            "lhs": {
+              "Id": "a"
+            },
+            "rhs": {
+              "RhsExp": {
+                "BinOp": {
+                  "op": "Add",
+                  "left": {
+                    "Num": 1
+                  },
+                  "right": {
+                    "Num": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "Return": {
+            "Num": 2
+          }
+        }
+      ]
+    },
+    {
+      "name": "l",
+      "params": [],
+      "rettyp": "Int",
+      "locals": [],
+      "stmts": [
+        {
+          "Return": {
+            "Call": {
+              "callee": {
+                "Id": "exfun"
+              },
+              "args": [
+                {
+                  "Num": 1
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "m",
+      "params": [],
+      "rettyp": {
+        "Ptr": "Int"
+      },
+      "locals": [],
+      "stmts": [
+        {
+          "Return": {
+            "Id": "pt"
+          }
+        }
+      ]
+    },
+    {
+      "name": "n",
+      "params": [],
+      "rettyp": {
+        "Ptr": {
+          "Fn": {
+            "prms": [
+              "Int"
+            ],
+            "ret": "Int"
+          }
+        }
+      },
+      "locals": [],
+      "stmts": [
+        {
+          "Return": {
+            "Id": "ptf"
+          }
+        }
+      ]
+    },
+    {
+      "name": "p",
+      "params": [],
+      "rettyp": "Int",
+      "locals": [],
+      "stmts": [
+        {
+          "Return": {
+            "BinOp": {
+              "op": "Gt",
+              "left": {
+                "Num": 1
+              },
+              "right": {
+                "Num": 2
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "compConst",
+      "params": [
+        {
+          "name": "a",
+          "typ": "Int"
+        }
+      ],
+      "rettyp": "Int",
+      "locals": [],
+      "stmts": [
+        {
+          "Return": {
+            "BinOp": {
+              "op": "Lte",
+              "left": {
+                "Num": 2
+              },
+              "right": {
+                "Num": 1
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "compLocal",
+      "params": [],
+      "rettyp": "Int",
+      "locals": [
+        [
+          {
+            "name": "a",
+            "typ": "Int"
+          },
+          null
+        ],
+        [
+          {
+            "name": "b",
+            "typ": "Int"
+          },
+          null
+        ]
+      ],
+      "stmts": [
+        {
+          "Assign": {
+            "lhs": {
+              "Id": "a"
+            },
+            "rhs": {
+              "RhsExp": {
+                "BinOp": {
+                  "op": "Lte",
+                  "left": {
+                    "Id": "a"
+                  },
+                  "right": {
+                    "Id": "b"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "Return": {
+            "Num": 2
+          }
+        }
+      ]
+    },
+    {
+      "name": "compParam",
+      "params": [
+        {
+          "name": "a",
+          "typ": "Int"
+        },
+        {
+          "name": "b",
+          "typ": "Int"
+        }
+      ],
+      "rettyp": "Int",
+      "locals": [],
+      "stmts": [
+        {
+          "Return": {
+            "BinOp": {
+              "op": "Lte",
+              "left": {
+                "Id": "b"
+              },
+              "right": {
+                "Num": 2
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "compGlobal",
+      "params": [
+        {
+          "name": "b",
+          "typ": "Int"
+        }
+      ],
+      "rettyp": "Int",
+      "locals": [],
+      "stmts": [
+        {
+          "Return": {
+            "BinOp": {
+              "op": "Lte",
+              "left": {
+                "Num": 2
+              },
+              "right": {
+                "Id": "g"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "main",
+      "params": [],
+      "rettyp": "Int",
+      "locals": [
+        [
+          {
+            "name": "x",
+            "typ": "Int"
+          },
+          null
+        ],
+        [
+          {
+            "name": "y",
+            "typ": "Int"
+          },
+          null
+        ]
+      ],
+      "stmts": [
+        {
+          "Assign": {
+            "lhs": {
+              "Id": "x"
+            },
+            "rhs": {
+              "RhsExp": {
+                "Num": 42
+              }
+            }
+          }
+        },
+        {
+          "Assign": {
+            "lhs": {
+              "Id": "g"
+            },
+            "rhs": {
+              "RhsExp": {
+                "Id": "x"
+              }
+            }
+          }
+        },
+        {
+          "Return": {
+            "Id": "g"
+          }
+        }
+      ]
+    }
+  ]
+}

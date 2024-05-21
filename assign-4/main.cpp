@@ -14,6 +14,7 @@ using json = nlohmann::json;
 Type* get_type_object(json data);
 
 Terminal* get_terminal_instruction(json terminal){
+    //std::cout << "In get terminal\n";
     json::iterator term = terminal.begin();
     string key = term.key();
     json body = term.value();
@@ -178,29 +179,34 @@ LirInst* get_lir_instruction(json instruction){
         return a;
     }
     else if(key == "CallExt"){
+        //std::cout << "In callext\n";
         CallExt* cext = new CallExt;
         cext->callee = body["ext_callee"];
+        //std::cout << "After callee\n";
         if(body["lhs"] == nullptr){
             cext->lhs = "_";
         }
         else{
-            cext->lhs = body["lhs"];
+            cext->lhs = body["lhs"]["name"];
         }
-
+        //std::cout << "Starting args loop\n";
         vector<Operand*> arguments;
         for(auto a : body["args"]){
             json::iterator arg_type = a.begin();
             if(arg_type.key() == "Var"){
+                //std::cout << "In var\n";
                 Var* o = new Var;
                 o->id = arg_type.value()["name"];
                 arguments.push_back(o);
             }
             else{
+                //std::cout << "In const\n";
                 Const* c = new Const;
                 c->num = arg_type.value();
                 arguments.push_back(c);
             }
         }
+        //std::cout << "After args loop\n";
         cext->args = arguments;
         return cext;
     }
@@ -442,6 +448,7 @@ void copy_functions(Program* prog, json functions){
     map<FuncId, Function*> functions_map;
     for (json::iterator it = functions.begin(); it != functions.end(); ++it) {
         string key = it.key();
+        //std::cout << "On function " + key + "\n\n";
         Function* f = new Function;
         f->name = key;
         for(auto param : it.value()["params"]){
@@ -464,13 +471,14 @@ void copy_functions(Program* prog, json functions){
             json instructions = itr.value()["insts"];
             BasicBlock* bb = new BasicBlock;
             bb->label = key;
-
+            //std::cout << "Before instruction loop\n\n";
             for(auto inst : instructions) {
                 LirInst* lirInst = new LirInst;
                 lirInst = get_lir_instruction(inst);
+                //std::cout << "After get_lir\n";
                 bb->insts.push_back(lirInst);
             }
-            
+            //std::cout << "After instruction loop\n\n";
             json terminal = itr.value()["term"]; 
             Terminal* termInst = new Terminal;
             termInst = get_terminal_instruction(terminal);
@@ -517,9 +525,9 @@ int main(int argc, char* argv[]) {
 
     // std::cout << "Parsed JSON data:" << std::endl;
     // std::cout << data.dump(2) << std::endl; 
-
     Program prog = initialize_prog(data);
-    std::cout << prog;
+    // std::cout << prog;
+    std::cout << prog.cg();
     
     return 0;
 }

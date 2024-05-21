@@ -1,0 +1,421 @@
+.data
+
+.globl compConst_
+compConst_: .quad "compConst"
+
+
+.globl compGlobal_
+compGlobal_: .quad "compGlobal"
+
+
+.globl compLocal_
+compLocal_: .quad "compLocal"
+
+
+.globl compParam_
+compParam_: .quad "compParam"
+
+
+.globl f_
+f_: .quad "f"
+
+
+.globl g
+g: .zero 8
+
+
+.globl h1_
+h1_: .quad "h1"
+
+
+.globl h2_
+h2_: .quad "h2"
+
+
+.globl i_
+i_: .quad "i"
+
+
+.globl j_
+j_: .quad "j"
+
+
+.globl j2_
+j2_: .quad "j2"
+
+
+.globl k_
+k_: .quad "k"
+
+
+.globl l_
+l_: .quad "l"
+
+
+.globl m_
+m_: .quad "m"
+
+
+.globl n_
+n_: .quad "n"
+
+
+.globl p_
+p_: .quad "p"
+
+
+.globl pt
+pt: .zero 8
+
+
+.globl ptf
+ptf: .zero 8
+
+
+.globl pts
+pts: .zero 8
+
+
+out_of_bounds_msg: .string "out-of-bounds array access"
+invalid_alloc_msg: .string "invalid allocation amount"
+        
+.text
+
+.globl compConst
+compConst:
+  pushq %rbp
+  movq %rsp, %rbp
+  subq $16, %rsp
+  movq $0, -8(%rbp)
+  jmp compConst_entry
+
+compConst_entry:
+  movq $2, %r8
+  cmpq $1, %r8
+  movq $0, %r8
+  setle %r8b
+  movq %r8, -8(%rbp)
+  movq -8(%rbp), %rax
+  jmp compConst_epilogue
+
+compConst_epilogue:
+  movq %rbp, %rsp
+  popq %rbp
+  ret
+
+.globl compGlobal
+compGlobal:
+  pushq %rbp
+  movq %rsp, %rbp
+  subq $16, %rsp
+  movq $0, -8(%rbp)
+  jmp compGlobal_entry
+
+compGlobal_entry:
+  movq $2, %r8
+  cmpq g(%rip), %r8
+  movq $0, %r8
+  setle %r8b
+  movq %r8, -8(%rbp)
+  movq -8(%rbp), %rax
+  jmp compGlobal_epilogue
+
+compGlobal_epilogue:
+  movq %rbp, %rsp
+  popq %rbp
+  ret
+
+.globl compLocal
+compLocal:
+  pushq %rbp
+  movq %rsp, %rbp
+  subq $32, %rsp
+  movq $0, -8(%rbp)
+  movq $0, -16(%rbp)
+  movq $0, -24(%rbp)
+  jmp compLocal_entry
+
+compLocal_entry:
+  movq -16(%rbp), %r8
+  cmpq -24(%rbp), %r8
+  movq $0, %r8
+  setle %r8b
+  movq %r8, -8(%rbp)
+  movq -8(%rbp), %r8
+  movq %r8, -16(%rbp)
+  movq $2, %rax
+  jmp compLocal_epilogue
+
+compLocal_epilogue:
+  movq %rbp, %rsp
+  popq %rbp
+  ret
+
+.globl compParam
+compParam:
+  pushq %rbp
+  movq %rsp, %rbp
+  subq $16, %rsp
+  movq $0, -8(%rbp)
+  jmp compParam_entry
+
+compParam_entry:
+  cmpq $2, 24(%rbp)
+  movq $0, %r8
+  setle %r8b
+  movq %r8, -8(%rbp)
+  movq -8(%rbp), %rax
+  jmp compParam_epilogue
+
+compParam_epilogue:
+  movq %rbp, %rsp
+  popq %rbp
+  ret
+
+.globl f
+f:
+  pushq %rbp
+  movq %rsp, %rbp
+  subq $48, %rsp
+  movq $0, -8(%rbp)
+  movq $0, -16(%rbp)
+  movq $0, -24(%rbp)
+  movq $0, -32(%rbp)
+  movq $0, -40(%rbp)
+  movq $0, -48(%rbp)
+  jmp f_entry
+
+f_entry:
+  movq $1, %r8
+  addq -48(%rbp), %r8
+  movq %r8, -8(%rbp)
+  movq -8(%rbp), %r8
+  movq %r8, -32(%rbp)
+  movq $1, %r8
+  addq $2, %r8
+  movq %r8, -16(%rbp)
+  movq -16(%rbp), %r8
+  movq %r8, -32(%rbp)
+  movq $2, %r8
+  addq $2, %r8
+  movq %r8, -24(%rbp)
+  movq -24(%rbp), %r8
+  movq %r8, -32(%rbp)
+  movq 24(%rbp), %rax
+  jmp f_epilogue
+
+f_epilogue:
+  movq %rbp, %rsp
+  popq %rbp
+  ret
+
+.globl h1
+h1:
+  pushq %rbp
+  movq %rsp, %rbp
+  subq $32, %rsp
+  movq $0, -8(%rbp)
+  movq $0, -16(%rbp)
+  movq $0, -24(%rbp)
+  jmp h1_entry
+
+h1_entry:
+  movq -24(%rbp), %rax
+  jmp h1_epilogue
+
+h1_epilogue:
+  movq %rbp, %rsp
+  popq %rbp
+  ret
+
+.globl h2
+h2:
+  pushq %rbp
+  movq %rsp, %rbp
+  subq $0, %rsp
+  jmp h2_entry
+
+h2_entry:
+  movq k_(%rip), %rax
+  jmp h2_epilogue
+
+h2_epilogue:
+  movq %rbp, %rsp
+  popq %rbp
+  ret
+
+.globl i
+i:
+  pushq %rbp
+  movq %rsp, %rbp
+  subq $0, %rsp
+  jmp i_entry
+
+i_entry:
+  movq $0, %rax
+  jmp i_epilogue
+
+i_epilogue:
+  movq %rbp, %rsp
+  popq %rbp
+  ret
+
+.globl j
+j:
+  pushq %rbp
+  movq %rsp, %rbp
+  subq $0, %rsp
+  jmp j_entry
+
+j_entry:
+  movq 16(%rbp), %rax
+  jmp j_epilogue
+
+j_epilogue:
+  movq %rbp, %rsp
+  popq %rbp
+  ret
+
+.globl j2
+j2:
+  pushq %rbp
+  movq %rsp, %rbp
+  subq $0, %rsp
+  jmp j2_entry
+
+j2_entry:
+  movq pts(%rip), %rax
+  jmp j2_epilogue
+
+j2_epilogue:
+  movq %rbp, %rsp
+  popq %rbp
+  ret
+
+.globl k
+k:
+  pushq %rbp
+  movq %rsp, %rbp
+  subq $32, %rsp
+  movq $0, -8(%rbp)
+  movq $0, -16(%rbp)
+  movq $0, -24(%rbp)
+  jmp k_entry
+
+k_entry:
+  movq $1, %r8
+  addq $1, %r8
+  movq %r8, -8(%rbp)
+  movq -8(%rbp), %r8
+  movq %r8, -16(%rbp)
+  movq $2, %rax
+  jmp k_epilogue
+
+k_epilogue:
+  movq %rbp, %rsp
+  popq %rbp
+  ret
+
+.globl l
+l:
+  pushq %rbp
+  movq %rsp, %rbp
+  subq $16, %rsp
+  movq $0, -8(%rbp)
+  jmp l_entry
+
+l_entry:
+  movq $1, %rdi
+  call exfun
+  movq %rax, -8(%rbp)
+  movq -8(%rbp), %rax
+  jmp l_epilogue
+
+l_epilogue:
+  movq %rbp, %rsp
+  popq %rbp
+  ret
+
+.globl m
+m:
+  pushq %rbp
+  movq %rsp, %rbp
+  subq $0, %rsp
+  jmp m_entry
+
+m_entry:
+  movq pt(%rip), %rax
+  jmp m_epilogue
+
+m_epilogue:
+  movq %rbp, %rsp
+  popq %rbp
+  ret
+
+.globl main
+main:
+  pushq %rbp
+  movq %rsp, %rbp
+  subq $16, %rsp
+  movq $0, -8(%rbp)
+  movq $0, -16(%rbp)
+  jmp main_entry
+
+main_entry:
+  movq $42, -8(%rbp)
+  movq -8(%rbp), %r8
+  movq %r8, g(%rip)
+  movq g(%rip), %rax
+  jmp main_epilogue
+
+main_epilogue:
+  movq %rbp, %rsp
+  popq %rbp
+  ret
+
+.globl n
+n:
+  pushq %rbp
+  movq %rsp, %rbp
+  subq $0, %rsp
+  jmp n_entry
+
+n_entry:
+  movq ptf(%rip), %rax
+  jmp n_epilogue
+
+n_epilogue:
+  movq %rbp, %rsp
+  popq %rbp
+  ret
+
+.globl p
+p:
+  pushq %rbp
+  movq %rsp, %rbp
+  subq $16, %rsp
+  movq $0, -8(%rbp)
+  jmp p_entry
+
+p_entry:
+  movq $1, %r8
+  cmpq $2, %r8
+  movq $0, %r8
+  setg %r8b
+  movq %r8, -8(%rbp)
+  movq -8(%rbp), %rax
+  jmp p_epilogue
+
+p_epilogue:
+  movq %rbp, %rsp
+  popq %rbp
+  ret
+
+.out_of_bounds:
+  lea out_of_bounds_msg(%rip), %rdi
+  call _cflat_panic
+
+.invalid_alloc_length:
+  lea invalid_alloc_msg(%rip), %rdi
+  call _cflat_panic
+        
