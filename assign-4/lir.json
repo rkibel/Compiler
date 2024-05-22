@@ -55,56 +55,6 @@
         }
       },
       "scope": null
-    },
-    {
-      "name": "returnArith",
-      "typ": {
-        "Ptr": {
-          "Fn": {
-            "ret_ty": "Int",
-            "param_ty": []
-          }
-        }
-      },
-      "scope": null
-    },
-    {
-      "name": "returnConst",
-      "typ": {
-        "Ptr": {
-          "Fn": {
-            "ret_ty": "Int",
-            "param_ty": []
-          }
-        }
-      },
-      "scope": null
-    },
-    {
-      "name": "returnLocal",
-      "typ": {
-        "Ptr": {
-          "Fn": {
-            "ret_ty": "Int",
-            "param_ty": []
-          }
-        }
-      },
-      "scope": null
-    },
-    {
-      "name": "returnParam",
-      "typ": {
-        "Ptr": {
-          "Fn": {
-            "ret_ty": "Int",
-            "param_ty": [
-              "Int"
-            ]
-          }
-        }
-      },
-      "scope": null
     }
   ],
   "functions": {
@@ -112,28 +62,31 @@
       "id": "main",
       "ret_ty": "Int",
       "params": [],
-      "locals": [],
-      "body": {
-        "entry": {
-          "id": "entry",
-          "insts": [],
-          "term": {
-            "Ret": {
-              "CInt": 1
-            }
-          }
-        }
-      }
-    },
-    "returnArith": {
-      "id": "returnArith",
-      "ret_ty": "Int",
-      "params": [],
       "locals": [
         {
           "name": "_t1",
           "typ": "Int",
-          "scope": "returnArith"
+          "scope": "main"
+        },
+        {
+          "name": "_t2",
+          "typ": "Int",
+          "scope": "main"
+        },
+        {
+          "name": "x",
+          "typ": "Int",
+          "scope": "main"
+        },
+        {
+          "name": "y",
+          "typ": "Int",
+          "scope": "main"
+        },
+        {
+          "name": "z",
+          "typ": "Int",
+          "scope": "main"
         }
       ],
       "body": {
@@ -141,100 +94,166 @@
           "id": "entry",
           "insts": [
             {
-              "Arith": {
+              "Copy": {
+                "lhs": {
+                  "name": "x",
+                  "typ": "Int",
+                  "scope": "main"
+                },
+                "op": {
+                  "CInt": 11
+                }
+              }
+            },
+            {
+              "Copy": {
+                "lhs": {
+                  "name": "y",
+                  "typ": "Int",
+                  "scope": "main"
+                },
+                "op": {
+                  "CInt": 12
+                }
+              }
+            },
+            {
+              "CallExt": {
+                "lhs": null,
+                "ext_callee": "exfun",
+                "args": [
+                  {
+                    "Var": {
+                      "name": "x",
+                      "typ": "Int",
+                      "scope": "main"
+                    }
+                  },
+                  {
+                    "CInt": 2
+                  },
+                  {
+                    "CInt": 3
+                  },
+                  {
+                    "Var": {
+                      "name": "y",
+                      "typ": "Int",
+                      "scope": "main"
+                    }
+                  },
+                  {
+                    "CInt": 5
+                  },
+                  {
+                    "CInt": 6
+                  },
+                  {
+                    "Var": {
+                      "name": "z",
+                      "typ": "Int",
+                      "scope": "main"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "Copy": {
+                "lhs": {
+                  "name": "x",
+                  "typ": "Int",
+                  "scope": "main"
+                },
+                "op": {
+                  "CInt": 33
+                }
+              }
+            },
+            {
+              "CallExt": {
                 "lhs": {
                   "name": "_t1",
                   "typ": "Int",
-                  "scope": "returnArith"
+                  "scope": "main"
                 },
-                "aop": "Add",
-                "op1": {
-                  "CInt": 1
+                "ext_callee": "exfun2",
+                "args": [
+                  {
+                    "CInt": 1
+                  }
+                ]
+              }
+            },
+            {
+              "Copy": {
+                "lhs": {
+                  "name": "x",
+                  "typ": "Int",
+                  "scope": "main"
                 },
-                "op2": {
-                  "CInt": 2
+                "op": {
+                  "Var": {
+                    "name": "_t1",
+                    "typ": "Int",
+                    "scope": "main"
+                  }
+                }
+              }
+            },
+            {
+              "Copy": {
+                "lhs": {
+                  "name": "x",
+                  "typ": "Int",
+                  "scope": "main"
+                },
+                "op": {
+                  "CInt": 22
+                }
+              }
+            },
+            {
+              "CallExt": {
+                "lhs": {
+                  "name": "_t2",
+                  "typ": "Int",
+                  "scope": "main"
+                },
+                "ext_callee": "exfun3",
+                "args": [
+                  {
+                    "CInt": 1
+                  },
+                  {
+                    "CInt": 2
+                  },
+                  {
+                    "CInt": 3
+                  }
+                ]
+              }
+            },
+            {
+              "Copy": {
+                "lhs": {
+                  "name": "y",
+                  "typ": "Int",
+                  "scope": "main"
+                },
+                "op": {
+                  "Var": {
+                    "name": "_t2",
+                    "typ": "Int",
+                    "scope": "main"
+                  }
                 }
               }
             }
           ],
           "term": {
             "Ret": {
-              "Var": {
-                "name": "_t1",
-                "typ": "Int",
-                "scope": "returnArith"
-              }
-            }
-          }
-        }
-      }
-    },
-    "returnConst": {
-      "id": "returnConst",
-      "ret_ty": "Int",
-      "params": [],
-      "locals": [],
-      "body": {
-        "entry": {
-          "id": "entry",
-          "insts": [],
-          "term": {
-            "Ret": {
               "CInt": 1
-            }
-          }
-        }
-      }
-    },
-    "returnLocal": {
-      "id": "returnLocal",
-      "ret_ty": "Int",
-      "params": [],
-      "locals": [
-        {
-          "name": "x",
-          "typ": "Int",
-          "scope": "returnLocal"
-        }
-      ],
-      "body": {
-        "entry": {
-          "id": "entry",
-          "insts": [],
-          "term": {
-            "Ret": {
-              "Var": {
-                "name": "x",
-                "typ": "Int",
-                "scope": "returnLocal"
-              }
-            }
-          }
-        }
-      }
-    },
-    "returnParam": {
-      "id": "returnParam",
-      "ret_ty": "Int",
-      "params": [
-        {
-          "name": "x",
-          "typ": "Int",
-          "scope": "returnParam"
-        }
-      ],
-      "locals": [],
-      "body": {
-        "entry": {
-          "id": "entry",
-          "insts": [],
-          "term": {
-            "Ret": {
-              "Var": {
-                "name": "x",
-                "typ": "Int",
-                "scope": "returnParam"
-              }
             }
           }
         }
@@ -246,6 +265,30 @@
       "Fn": {
         "ret_ty": "Int",
         "param_ty": [
+          "Int",
+          "Int",
+          "Int",
+          "Int",
+          "Int",
+          "Int",
+          "Int"
+        ]
+      }
+    },
+    "exfun2": {
+      "Fn": {
+        "ret_ty": "Int",
+        "param_ty": [
+          "Int"
+        ]
+      }
+    },
+    "exfun3": {
+      "Fn": {
+        "ret_ty": "Int",
+        "param_ty": [
+          "Int",
+          "Int",
           "Int"
         ]
       }

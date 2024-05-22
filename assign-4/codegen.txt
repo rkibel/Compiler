@@ -16,22 +16,6 @@ ptf: .zero 8
 pts: .zero 8
 
 
-.globl returnArith_
-returnArith_: .quad "returnArith"
-
-
-.globl returnConst_
-returnConst_: .quad "returnConst"
-
-
-.globl returnLocal_
-returnLocal_: .quad "returnLocal"
-
-
-.globl returnParam_
-returnParam_: .quad "returnParam"
-
-
 out_of_bounds_msg: .string "out-of-bounds array access"
 invalid_alloc_msg: .string "invalid allocation amount"
 
@@ -41,83 +25,45 @@ invalid_alloc_msg: .string "invalid allocation amount"
 main:
   pushq %rbp
   movq %rsp, %rbp
-  subq $0, %rsp
+  subq $48, %rsp
+  movq $0, -8(%rbp)
+  movq $0, -16(%rbp)
+  movq $0, -24(%rbp)
+  movq $0, -32(%rbp)
+  movq $0, -40(%rbp)
   jmp main_entry
 
 main_entry:
+  movq $11, -24(%rbp)
+  movq $12, -32(%rbp)
+  movq -24(%rbp), %rdi
+  movq $2, %rsi
+  movq $3, %rdx
+  movq -32(%rbp), %rcx
+  movq $5, %r8
+  movq $6, %r9
+  pushq -40(%rbp)
+  subq $8, %rsp
+  call exfun
+  addq $16, %rsp
+  movq $33, -24(%rbp)
+  movq $1, %rdi
+  call exfun2
+  movq %rax, -8(%rbp)
+  movq -8(%rbp), %r8
+  movq %r8, -24(%rbp)
+  movq $22, -24(%rbp)
+  movq $1, %rdi
+  movq $2, %rsi
+  movq $3, %rdx
+  call exfun3
+  movq %rax, -16(%rbp)
+  movq -16(%rbp), %r8
+  movq %r8, -32(%rbp)
   movq $1, %rax
   jmp main_epilogue
 
 main_epilogue:
-  movq %rbp, %rsp
-  popq %rbp
-  ret
-
-.globl returnArith
-returnArith:
-  pushq %rbp
-  movq %rsp, %rbp
-  subq $16, %rsp
-  movq $0, -8(%rbp)
-  jmp returnArith_entry
-
-returnArith_entry:
-  movq $1, %r8
-  addq $2, %r8
-  movq %r8, -8(%rbp)
-  movq -8(%rbp), %rax
-  jmp returnArith_epilogue
-
-returnArith_epilogue:
-  movq %rbp, %rsp
-  popq %rbp
-  ret
-
-.globl returnConst
-returnConst:
-  pushq %rbp
-  movq %rsp, %rbp
-  subq $0, %rsp
-  jmp returnConst_entry
-
-returnConst_entry:
-  movq $1, %rax
-  jmp returnConst_epilogue
-
-returnConst_epilogue:
-  movq %rbp, %rsp
-  popq %rbp
-  ret
-
-.globl returnLocal
-returnLocal:
-  pushq %rbp
-  movq %rsp, %rbp
-  subq $16, %rsp
-  movq $0, -8(%rbp)
-  jmp returnLocal_entry
-
-returnLocal_entry:
-  movq -8(%rbp), %rax
-  jmp returnLocal_epilogue
-
-returnLocal_epilogue:
-  movq %rbp, %rsp
-  popq %rbp
-  ret
-
-.globl returnParam
-returnParam:
-  pushq %rbp
-  movq %rsp, %rbp
-  subq $0, %rsp
-  jmp returnParam_entry
-
-returnParam_entry:
-  movq 16(%rbp), %rax
-  jmp returnParam_epilogue
-
-returnParam_epilogue:
   movq %rbp, %rsp
   popq %rbp
   ret

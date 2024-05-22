@@ -3,53 +3,34 @@ Struct str
   y : Ptr(Fn([Int], Int))
 
 Externs
-  exfun : Fn([Int], Int)
+  exfun : Fn([Int, Int, Int, Int, Int, Int, Int], Int)
+  exfun2 : Fn([Int], Int)
+  exfun3 : Fn([Int, Int, Int], Int)
 
 Globals
   g : Int
   pt : Ptr(Int)
   ptf : Ptr(Fn([Int], Int))
   pts : Ptr(Struct(s))
-  returnArith : Ptr(Fn([], Int))
-  returnConst : Ptr(Fn([], Int))
-  returnLocal : Ptr(Fn([], Int))
-  returnParam : Ptr(Fn([Int], Int))
 
 Function main() -> Int {
   Locals
-
-  entry:
-    Ret(1)
-}
-
-Function returnArith() -> Int {
-  Locals
     _t1 : Int
-
-  entry:
-    Arith(_t1, add, 1, 2)
-    Ret(_t1)
-}
-
-Function returnConst() -> Int {
-  Locals
-
-  entry:
-    Ret(1)
-}
-
-Function returnLocal() -> Int {
-  Locals
+    _t2 : Int
     x : Int
+    y : Int
+    z : Int
 
   entry:
-    Ret(x)
-}
-
-Function returnParam(x:Int) -> Int {
-  Locals
-
-  entry:
-    Ret(x)
+    Copy(x, 11)
+    Copy(y, 12)
+    CallExt(_, exfun, [x, 2, 3, y, 5, 6, z])
+    Copy(x, 33)
+    CallExt(_t1, exfun2, [1])
+    Copy(x, _t1)
+    Copy(x, 22)
+    CallExt(_t2, exfun3, [1, 2, 3])
+    Copy(y, _t2)
+    Ret(1)
 }
 

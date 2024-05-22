@@ -66,26 +66,13 @@ struct Any : Type {
 };
 
 inline string getMemory(const string& id, const vector<string>& local_ids, const vector<string>& param_ids) {
-    // cout << "Id given to getMemory: " << id << "\n";
-    // cout << "Locals\n";
-    // for (string s: local_ids) {
-    //     cout << s + " ";
-    // }
-    // cout << "\n";
-    // cout << "Params\n";
-    // for (string s: param_ids) {
-    //     cout << s + " ";
-    // }
-    // cout << "\n";
     auto local_it = find(local_ids.begin(), local_ids.end(), id);
     auto param_it = find(param_ids.begin(), param_ids.end(), id);
     auto function_it = find(function_ids.begin(), function_ids.end(), id);
     if (local_it != local_ids.end()) { //local
-        // cout << "In locals\n";
         size_t index = distance(local_ids.begin(), local_it);
         return "-" + to_string((index+1)*8) + "(%rbp)";
     } else if (param_it != param_ids.end()) { //parameter
-        // cout << "In param\n";
         size_t index = distance(param_ids.begin(), param_it);
         return to_string((index+2)*8) + "(%rbp)"; //+2 because parameters start at 16
     } else if (function_it != function_ids.end()) { //function global
@@ -94,6 +81,7 @@ inline string getMemory(const string& id, const vector<string>& local_ids, const
         return id + "(%rip)";
     }
 }
+
 struct ArithmeticOp{
     virtual void print(std::ostream& os) const {}
     friend std::ostream& operator<<(std::ostream& os, const ArithmeticOp& ao) {
@@ -281,6 +269,14 @@ struct Var : Operand{
     }
 };
 
+inline string getMemoryOperand(Operand*& op, const vector<string>& local_ids, const vector<string>& param_ids) {
+    if (Const* c = dynamic_cast<Const*>(op)) {
+        return "$" + to_string(c->num);
+    } else {
+        return getMemory(static_cast<Var*>(op)->id, local_ids, param_ids);
+    }
+}
+
 struct Terminal{
     virtual void print(std::ostream& os) const {}
     friend std::ostream& operator<<(std::ostream& os, const Terminal& t) {
@@ -353,13 +349,8 @@ struct Ret : Terminal{
     }
     //TO-DO
     string cg(const vector<string>& local_ids, const vector<string>& param_ids, map<BbId, BasicBlock*>& blocks, const string& func_name, map<string, string>& labels_map) override {
-        string res, ret_mem;
-        if (Const* c = dynamic_cast<Const*>(op)) {
-            ret_mem = "$" + to_string(c->num);
-        } else {
-            ret_mem = getMemory(dynamic_cast<Var*>(op)->id, local_ids, param_ids);
-        }
-        res += "  movq " + ret_mem + ", %rax\n  jmp " + func_name + "_epilogue\n\n";
+        string res;
+        res += "  movq " + getMemoryOperand(op, local_ids, param_ids) + ", %rax\n  jmp " + func_name + "_epilogue\n\n";
         return res;
     }
 };
@@ -397,26 +388,9 @@ struct Arith : LirInst{
     }
     //TO-DO
     string cg(const vector<string>& local_ids, const vector<string>& param_ids) override {
-        string lhs_mem, left_mem, right_mem;
-        lhs_mem = getMemory(lhs, local_ids, param_ids);
-        // cout << "lhs mem" << lhs_mem << "\n";
-        if (Const* c = dynamic_cast<Const*>(left)) {
-            // cout << "Constant\n" << endl;
-            // cout << "left_mem num " << c->num << "\n";
-            left_mem = "$" + to_string(c->num);
-        } else {
-            // cout << "Var\n" << endl;
-            // Var* varLeft = dynamic_cast<Var*>(left);
-            // cout << dynamic_cast<Var*>(left)->id << "\n\n";
-            left_mem = getMemory(dynamic_cast<Var*>(left)->id, local_ids, param_ids);
-        }
-        if (Const* c = dynamic_cast<Const*>(right)) {
-            right_mem = "$" + to_string(c->num);
-        } else {
-            right_mem = getMemory(static_cast<Var*>(right)->id, local_ids, param_ids);
-        }
-        // cout << "Arith lhs: " << lhs << "\n";
-        // cout << "lhs_mem: " << lhs_mem << " left_mem: " << left_mem << " right_mem: " << right_mem << "\n";
+        string lhs_mem = getMemory(lhs, local_ids, param_ids);
+        string left_mem = getMemoryOperand(left, local_ids, param_ids);
+        string right_mem = getMemoryOperand(right, local_ids, param_ids);
         return aop->cg(lhs_mem, left_mem, right_mem, local_ids, param_ids);
     }
 };
@@ -434,7 +408,24 @@ struct CallExt : LirInst{
     }
     //TO-DO
     string cg(const vector<string>& local_ids, const vector<string>& param_ids) override {
-        return "";
+        string res;
+        vector<string> six_args{"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"};
+        int numPushed = 0;
+        for (unsigned int i = 0; i < args.size(); i++) {
+            if (i < 6) { 
+                res += "  movq " + getMemoryOperand(args[i], local_ids, param_ids) + ", " + six_args[i] + "\n";
+            } else {
+                res += "  pushq " +  getMemoryOperand(args[i], local_ids, param_ids) + "\n";
+                numPushed++;
+            }
+        }
+        if ( (args.size() + 1 + numPushed) % 2 != 0 ) { res += "  subq $8, %rsp\n"; numPushed++; }
+        res += "  call " + callee + "\n";
+        if (numPushed > 0) { res += "  addq $" + to_string(numPushed*8) +", %rsp\n"; }
+        if (lhs != "_") {
+            res += "  movq %rax, " + getMemory(lhs, local_ids, param_ids) + "\n";
+        }
+        return res;
     }
 };
 struct Cmp : LirInst{
@@ -448,22 +439,9 @@ struct Cmp : LirInst{
     //TO-DO
     string cg(const vector<string>& local_ids, const vector<string>& param_ids) override {
         // cout << "COMPARISON\n";
-        string lhs_mem, left_mem, right_mem;
-        lhs_mem = getMemory(lhs, local_ids, param_ids);
-        if (Const* c = dynamic_cast<Const*>(left)) {
-            // cout << "Constant with value " << c->num << endl;
-            left_mem = "$" + to_string(c->num);
-        } else {
-            // cout << "Var\n" << endl;
-            left_mem = getMemory(static_cast<Var*>(left)->id, local_ids, param_ids);
-        }
-        if (Const* c = dynamic_cast<Const*>(right)) {
-            // cout << "Constant with value " << c->num << endl;
-            right_mem = "$" + to_string(c->num);
-        } else {
-            // cout << "Var\n" << endl;
-            right_mem = getMemory(static_cast<Var*>(right)->id, local_ids, param_ids);
-        }
+        string lhs_mem = getMemory(lhs, local_ids, param_ids);
+        string left_mem = getMemoryOperand(left, local_ids, param_ids);
+        string right_mem = getMemoryOperand(right, local_ids, param_ids);
         return cop->cg(lhs_mem, left_mem, right_mem, local_ids, param_ids);
     }
 };
@@ -478,13 +456,15 @@ struct Copy : LirInst{
         //Five cases for op(rhs): copying a const, local, param, global (non func), global function
         //Three cases for lhs: a local, param, global (non-func)
         //For non-constant, we use a helper function to tell us what string to print
-        string res;
-        if (Const* c = dynamic_cast<Const*>(op)) { // movq $1, -8(%rbp)
-            res += "  movq $" + to_string(c->num) + ", " + getMemory(lhs, local_ids, param_ids) + "\n";
-        } else { //movq -16(%rbp), %r8 /n   movq %r8, -8(%rbp)
-            res += "  movq " + getMemory(static_cast<Var*>(op)->id, local_ids, param_ids) + ", %r8\n";
-            res += "  movq %r8, " + getMemory(lhs, local_ids, param_ids) + "\n";
-        }
+        string op_mem = getMemoryOperand(op, local_ids, param_ids);
+        string res = "  movq " + op_mem + ", ";
+        res += (op_mem[0] == '$') ? getMemory(lhs, local_ids, param_ids) + "\n" : "%r8\n  movq %r8, " + getMemory(lhs, local_ids, param_ids) + "\n";
+        // if (Const* c = dynamic_cast<Const*>(op)) { // movq $1, -8(%rbp)
+        //     res += "  movq $" + to_string(c->num) + ", " + getMemory(lhs, local_ids, param_ids) + "\n";
+        // } else { //movq -16(%rbp), %r8 /n   movq %r8, -8(%rbp)
+        //     res += "  movq " + getMemory(static_cast<Var*>(op)->id, local_ids, param_ids) + ", %r8\n";
+        //     res += "  movq %r8, " + getMemory(lhs, local_ids, param_ids) + "\n";
+        // }
         return res;
     }
 };

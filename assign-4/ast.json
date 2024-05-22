@@ -62,6 +62,36 @@
       "typ": {
         "Fn": {
           "prms": [
+            "Int",
+            "Int",
+            "Int",
+            "Int",
+            "Int",
+            "Int",
+            "Int"
+          ],
+          "ret": "Int"
+        }
+      }
+    },
+    {
+      "name": "exfun2",
+      "typ": {
+        "Fn": {
+          "prms": [
+            "Int"
+          ],
+          "ret": "Int"
+        }
+      }
+    },
+    {
+      "name": "exfun3",
+      "typ": {
+        "Fn": {
+          "prms": [
+            "Int",
+            "Int",
             "Int"
           ],
           "ret": "Int"
@@ -71,38 +101,7 @@
   ],
   "functions": [
     {
-      "name": "returnConst",
-      "params": [],
-      "rettyp": "Int",
-      "locals": [],
-      "stmts": [
-        {
-          "Return": {
-            "Num": 1
-          }
-        }
-      ]
-    },
-    {
-      "name": "returnParam",
-      "params": [
-        {
-          "name": "x",
-          "typ": "Int"
-        }
-      ],
-      "rettyp": "Int",
-      "locals": [],
-      "stmts": [
-        {
-          "Return": {
-            "Id": "x"
-          }
-        }
-      ]
-    },
-    {
-      "name": "returnLocal",
+      "name": "main",
       "params": [],
       "rettyp": "Int",
       "locals": [
@@ -112,43 +111,149 @@
             "typ": "Int"
           },
           null
+        ],
+        [
+          {
+            "name": "y",
+            "typ": "Int"
+          },
+          null
+        ],
+        [
+          {
+            "name": "z",
+            "typ": "Int"
+          },
+          null
         ]
       ],
       "stmts": [
         {
-          "Return": {
-            "Id": "x"
-          }
-        }
-      ]
-    },
-    {
-      "name": "returnArith",
-      "params": [],
-      "rettyp": "Int",
-      "locals": [],
-      "stmts": [
-        {
-          "Return": {
-            "BinOp": {
-              "op": "Add",
-              "left": {
-                "Num": 1
-              },
-              "right": {
-                "Num": 2
+          "Assign": {
+            "lhs": {
+              "Id": "x"
+            },
+            "rhs": {
+              "RhsExp": {
+                "Num": 11
               }
             }
           }
-        }
-      ]
-    },
-    {
-      "name": "main",
-      "params": [],
-      "rettyp": "Int",
-      "locals": [],
-      "stmts": [
+        },
+        {
+          "Assign": {
+            "lhs": {
+              "Id": "y"
+            },
+            "rhs": {
+              "RhsExp": {
+                "Num": 12
+              }
+            }
+          }
+        },
+        {
+          "Call": {
+            "callee": {
+              "Id": "exfun"
+            },
+            "args": [
+              {
+                "Id": "x"
+              },
+              {
+                "Num": 2
+              },
+              {
+                "Num": 3
+              },
+              {
+                "Id": "y"
+              },
+              {
+                "Num": 5
+              },
+              {
+                "Num": 6
+              },
+              {
+                "Id": "z"
+              }
+            ]
+          }
+        },
+        {
+          "Assign": {
+            "lhs": {
+              "Id": "x"
+            },
+            "rhs": {
+              "RhsExp": {
+                "Num": 33
+              }
+            }
+          }
+        },
+        {
+          "Assign": {
+            "lhs": {
+              "Id": "x"
+            },
+            "rhs": {
+              "RhsExp": {
+                "Call": {
+                  "callee": {
+                    "Id": "exfun2"
+                  },
+                  "args": [
+                    {
+                      "Num": 1
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "Assign": {
+            "lhs": {
+              "Id": "x"
+            },
+            "rhs": {
+              "RhsExp": {
+                "Num": 22
+              }
+            }
+          }
+        },
+        {
+          "Assign": {
+            "lhs": {
+              "Id": "y"
+            },
+            "rhs": {
+              "RhsExp": {
+                "Call": {
+                  "callee": {
+                    "Id": "exfun3"
+                  },
+                  "args": [
+                    {
+                      "Num": 1
+                    },
+                    {
+                      "Num": 2
+                    },
+                    {
+                      "Num": 3
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
         {
           "Return": {
             "Num": 1
