@@ -22,258 +22,8 @@
   },
   "globals": [
     {
-      "name": "compConst",
-      "typ": {
-        "Ptr": {
-          "Fn": {
-            "ret_ty": "Int",
-            "param_ty": [
-              "Int"
-            ]
-          }
-        }
-      },
-      "scope": null
-    },
-    {
-      "name": "compGlobal",
-      "typ": {
-        "Ptr": {
-          "Fn": {
-            "ret_ty": "Int",
-            "param_ty": [
-              "Int"
-            ]
-          }
-        }
-      },
-      "scope": null
-    },
-    {
-      "name": "compLocal",
-      "typ": {
-        "Ptr": {
-          "Fn": {
-            "ret_ty": "Int",
-            "param_ty": []
-          }
-        }
-      },
-      "scope": null
-    },
-    {
-      "name": "compParam",
-      "typ": {
-        "Ptr": {
-          "Fn": {
-            "ret_ty": "Int",
-            "param_ty": [
-              "Int",
-              "Int"
-            ]
-          }
-        }
-      },
-      "scope": null
-    },
-    {
-      "name": "f",
-      "typ": {
-        "Ptr": {
-          "Fn": {
-            "ret_ty": "Int",
-            "param_ty": [
-              "Int",
-              "Int",
-              "Int"
-            ]
-          }
-        }
-      },
-      "scope": null
-    },
-    {
       "name": "g",
       "typ": "Int",
-      "scope": null
-    },
-    {
-      "name": "h1",
-      "typ": {
-        "Ptr": {
-          "Fn": {
-            "ret_ty": {
-              "Ptr": {
-                "Fn": {
-                  "ret_ty": "Int",
-                  "param_ty": [
-                    "Int"
-                  ]
-                }
-              }
-            },
-            "param_ty": [
-              "Int"
-            ]
-          }
-        }
-      },
-      "scope": null
-    },
-    {
-      "name": "h2",
-      "typ": {
-        "Ptr": {
-          "Fn": {
-            "ret_ty": {
-              "Ptr": {
-                "Fn": {
-                  "ret_ty": "Int",
-                  "param_ty": [
-                    "Int"
-                  ]
-                }
-              }
-            },
-            "param_ty": [
-              "Int"
-            ]
-          }
-        }
-      },
-      "scope": null
-    },
-    {
-      "name": "i",
-      "typ": {
-        "Ptr": {
-          "Fn": {
-            "ret_ty": "Int",
-            "param_ty": []
-          }
-        }
-      },
-      "scope": null
-    },
-    {
-      "name": "j",
-      "typ": {
-        "Ptr": {
-          "Fn": {
-            "ret_ty": {
-              "Ptr": {
-                "Struct": "s"
-              }
-            },
-            "param_ty": [
-              {
-                "Ptr": {
-                  "Struct": "s"
-                }
-              },
-              "Int",
-              "Int"
-            ]
-          }
-        }
-      },
-      "scope": null
-    },
-    {
-      "name": "j2",
-      "typ": {
-        "Ptr": {
-          "Fn": {
-            "ret_ty": {
-              "Ptr": {
-                "Struct": "s"
-              }
-            },
-            "param_ty": [
-              {
-                "Ptr": {
-                  "Struct": "s"
-                }
-              },
-              "Int",
-              "Int"
-            ]
-          }
-        }
-      },
-      "scope": null
-    },
-    {
-      "name": "k",
-      "typ": {
-        "Ptr": {
-          "Fn": {
-            "ret_ty": "Int",
-            "param_ty": [
-              "Int"
-            ]
-          }
-        }
-      },
-      "scope": null
-    },
-    {
-      "name": "l",
-      "typ": {
-        "Ptr": {
-          "Fn": {
-            "ret_ty": "Int",
-            "param_ty": []
-          }
-        }
-      },
-      "scope": null
-    },
-    {
-      "name": "m",
-      "typ": {
-        "Ptr": {
-          "Fn": {
-            "ret_ty": {
-              "Ptr": "Int"
-            },
-            "param_ty": []
-          }
-        }
-      },
-      "scope": null
-    },
-    {
-      "name": "n",
-      "typ": {
-        "Ptr": {
-          "Fn": {
-            "ret_ty": {
-              "Ptr": {
-                "Fn": {
-                  "ret_ty": "Int",
-                  "param_ty": [
-                    "Int"
-                  ]
-                }
-              }
-            },
-            "param_ty": []
-          }
-        }
-      },
-      "scope": null
-    },
-    {
-      "name": "p",
-      "typ": {
-        "Ptr": {
-          "Fn": {
-            "ret_ty": "Int",
-            "param_ty": []
-          }
-        }
-      },
       "scope": null
     },
     {
@@ -305,859 +55,174 @@
         }
       },
       "scope": null
+    },
+    {
+      "name": "returnArith",
+      "typ": {
+        "Ptr": {
+          "Fn": {
+            "ret_ty": "Int",
+            "param_ty": []
+          }
+        }
+      },
+      "scope": null
+    },
+    {
+      "name": "returnConst",
+      "typ": {
+        "Ptr": {
+          "Fn": {
+            "ret_ty": "Int",
+            "param_ty": []
+          }
+        }
+      },
+      "scope": null
+    },
+    {
+      "name": "returnLocal",
+      "typ": {
+        "Ptr": {
+          "Fn": {
+            "ret_ty": "Int",
+            "param_ty": []
+          }
+        }
+      },
+      "scope": null
+    },
+    {
+      "name": "returnParam",
+      "typ": {
+        "Ptr": {
+          "Fn": {
+            "ret_ty": "Int",
+            "param_ty": [
+              "Int"
+            ]
+          }
+        }
+      },
+      "scope": null
     }
   ],
   "functions": {
-    "compConst": {
-      "id": "compConst",
-      "ret_ty": "Int",
-      "params": [
-        {
-          "name": "a",
-          "typ": "Int",
-          "scope": "compConst"
-        }
-      ],
-      "locals": [
-        {
-          "name": "_t1",
-          "typ": "Int",
-          "scope": "compConst"
-        }
-      ],
-      "body": {
-        "entry": {
-          "id": "entry",
-          "insts": [
-            {
-              "Cmp": {
-                "lhs": {
-                  "name": "_t1",
-                  "typ": "Int",
-                  "scope": "compConst"
-                },
-                "rop": "LessEq",
-                "op1": {
-                  "CInt": 2
-                },
-                "op2": {
-                  "CInt": 1
-                }
-              }
-            }
-          ],
-          "term": {
-            "Ret": {
-              "Var": {
-                "name": "_t1",
-                "typ": "Int",
-                "scope": "compConst"
-              }
-            }
-          }
-        }
-      }
-    },
-    "compGlobal": {
-      "id": "compGlobal",
-      "ret_ty": "Int",
-      "params": [
-        {
-          "name": "b",
-          "typ": "Int",
-          "scope": "compGlobal"
-        }
-      ],
-      "locals": [
-        {
-          "name": "_t1",
-          "typ": "Int",
-          "scope": "compGlobal"
-        }
-      ],
-      "body": {
-        "entry": {
-          "id": "entry",
-          "insts": [
-            {
-              "Cmp": {
-                "lhs": {
-                  "name": "_t1",
-                  "typ": "Int",
-                  "scope": "compGlobal"
-                },
-                "rop": "LessEq",
-                "op1": {
-                  "CInt": 2
-                },
-                "op2": {
-                  "Var": {
-                    "name": "g",
-                    "typ": "Int",
-                    "scope": null
-                  }
-                }
-              }
-            }
-          ],
-          "term": {
-            "Ret": {
-              "Var": {
-                "name": "_t1",
-                "typ": "Int",
-                "scope": "compGlobal"
-              }
-            }
-          }
-        }
-      }
-    },
-    "compLocal": {
-      "id": "compLocal",
-      "ret_ty": "Int",
-      "params": [],
-      "locals": [
-        {
-          "name": "_t1",
-          "typ": "Int",
-          "scope": "compLocal"
-        },
-        {
-          "name": "a",
-          "typ": "Int",
-          "scope": "compLocal"
-        },
-        {
-          "name": "b",
-          "typ": "Int",
-          "scope": "compLocal"
-        }
-      ],
-      "body": {
-        "entry": {
-          "id": "entry",
-          "insts": [
-            {
-              "Cmp": {
-                "lhs": {
-                  "name": "_t1",
-                  "typ": "Int",
-                  "scope": "compLocal"
-                },
-                "rop": "LessEq",
-                "op1": {
-                  "Var": {
-                    "name": "a",
-                    "typ": "Int",
-                    "scope": "compLocal"
-                  }
-                },
-                "op2": {
-                  "Var": {
-                    "name": "b",
-                    "typ": "Int",
-                    "scope": "compLocal"
-                  }
-                }
-              }
-            },
-            {
-              "Copy": {
-                "lhs": {
-                  "name": "a",
-                  "typ": "Int",
-                  "scope": "compLocal"
-                },
-                "op": {
-                  "Var": {
-                    "name": "_t1",
-                    "typ": "Int",
-                    "scope": "compLocal"
-                  }
-                }
-              }
-            }
-          ],
-          "term": {
-            "Ret": {
-              "CInt": 2
-            }
-          }
-        }
-      }
-    },
-    "compParam": {
-      "id": "compParam",
-      "ret_ty": "Int",
-      "params": [
-        {
-          "name": "a",
-          "typ": "Int",
-          "scope": "compParam"
-        },
-        {
-          "name": "b",
-          "typ": "Int",
-          "scope": "compParam"
-        }
-      ],
-      "locals": [
-        {
-          "name": "_t1",
-          "typ": "Int",
-          "scope": "compParam"
-        }
-      ],
-      "body": {
-        "entry": {
-          "id": "entry",
-          "insts": [
-            {
-              "Cmp": {
-                "lhs": {
-                  "name": "_t1",
-                  "typ": "Int",
-                  "scope": "compParam"
-                },
-                "rop": "LessEq",
-                "op1": {
-                  "Var": {
-                    "name": "b",
-                    "typ": "Int",
-                    "scope": "compParam"
-                  }
-                },
-                "op2": {
-                  "CInt": 2
-                }
-              }
-            }
-          ],
-          "term": {
-            "Ret": {
-              "Var": {
-                "name": "_t1",
-                "typ": "Int",
-                "scope": "compParam"
-              }
-            }
-          }
-        }
-      }
-    },
-    "f": {
-      "id": "f",
-      "ret_ty": "Int",
-      "params": [
-        {
-          "name": "a1",
-          "typ": "Int",
-          "scope": "f"
-        },
-        {
-          "name": "a2",
-          "typ": "Int",
-          "scope": "f"
-        },
-        {
-          "name": "a3",
-          "typ": "Int",
-          "scope": "f"
-        }
-      ],
-      "locals": [
-        {
-          "name": "_t1",
-          "typ": "Int",
-          "scope": "f"
-        },
-        {
-          "name": "_t2",
-          "typ": "Int",
-          "scope": "f"
-        },
-        {
-          "name": "_t3",
-          "typ": "Int",
-          "scope": "f"
-        },
-        {
-          "name": "b",
-          "typ": "Int",
-          "scope": "f"
-        },
-        {
-          "name": "d",
-          "typ": "Int",
-          "scope": "f"
-        },
-        {
-          "name": "e",
-          "typ": "Int",
-          "scope": "f"
-        }
-      ],
-      "body": {
-        "entry": {
-          "id": "entry",
-          "insts": [
-            {
-              "Arith": {
-                "lhs": {
-                  "name": "_t1",
-                  "typ": "Int",
-                  "scope": "f"
-                },
-                "aop": "Add",
-                "op1": {
-                  "CInt": 1
-                },
-                "op2": {
-                  "Var": {
-                    "name": "e",
-                    "typ": "Int",
-                    "scope": "f"
-                  }
-                }
-              }
-            },
-            {
-              "Copy": {
-                "lhs": {
-                  "name": "b",
-                  "typ": "Int",
-                  "scope": "f"
-                },
-                "op": {
-                  "Var": {
-                    "name": "_t1",
-                    "typ": "Int",
-                    "scope": "f"
-                  }
-                }
-              }
-            },
-            {
-              "Arith": {
-                "lhs": {
-                  "name": "_t2",
-                  "typ": "Int",
-                  "scope": "f"
-                },
-                "aop": "Add",
-                "op1": {
-                  "CInt": 1
-                },
-                "op2": {
-                  "CInt": 2
-                }
-              }
-            },
-            {
-              "Copy": {
-                "lhs": {
-                  "name": "b",
-                  "typ": "Int",
-                  "scope": "f"
-                },
-                "op": {
-                  "Var": {
-                    "name": "_t2",
-                    "typ": "Int",
-                    "scope": "f"
-                  }
-                }
-              }
-            },
-            {
-              "Arith": {
-                "lhs": {
-                  "name": "_t3",
-                  "typ": "Int",
-                  "scope": "f"
-                },
-                "aop": "Add",
-                "op1": {
-                  "CInt": 2
-                },
-                "op2": {
-                  "CInt": 2
-                }
-              }
-            },
-            {
-              "Copy": {
-                "lhs": {
-                  "name": "b",
-                  "typ": "Int",
-                  "scope": "f"
-                },
-                "op": {
-                  "Var": {
-                    "name": "_t3",
-                    "typ": "Int",
-                    "scope": "f"
-                  }
-                }
-              }
-            }
-          ],
-          "term": {
-            "Ret": {
-              "Var": {
-                "name": "a2",
-                "typ": "Int",
-                "scope": "f"
-              }
-            }
-          }
-        }
-      }
-    },
-    "h1": {
-      "id": "h1",
-      "ret_ty": {
-        "Ptr": {
-          "Fn": {
-            "ret_ty": "Int",
-            "param_ty": [
-              "Int"
-            ]
-          }
-        }
-      },
-      "params": [
-        {
-          "name": "a",
-          "typ": "Int",
-          "scope": "h1"
-        }
-      ],
-      "locals": [
-        {
-          "name": "a",
-          "typ": "Int",
-          "scope": "h1"
-        },
-        {
-          "name": "b",
-          "typ": "Int",
-          "scope": "h1"
-        },
-        {
-          "name": "k",
-          "typ": {
-            "Ptr": {
-              "Fn": {
-                "ret_ty": "Int",
-                "param_ty": [
-                  "Int"
-                ]
-              }
-            }
-          },
-          "scope": "h1"
-        }
-      ],
-      "body": {
-        "entry": {
-          "id": "entry",
-          "insts": [],
-          "term": {
-            "Ret": {
-              "Var": {
-                "name": "k",
-                "typ": {
-                  "Ptr": {
-                    "Fn": {
-                      "ret_ty": "Int",
-                      "param_ty": [
-                        "Int"
-                      ]
-                    }
-                  }
-                },
-                "scope": "h1"
-              }
-            }
-          }
-        }
-      }
-    },
-    "h2": {
-      "id": "h2",
-      "ret_ty": {
-        "Ptr": {
-          "Fn": {
-            "ret_ty": "Int",
-            "param_ty": [
-              "Int"
-            ]
-          }
-        }
-      },
-      "params": [
-        {
-          "name": "a",
-          "typ": "Int",
-          "scope": "h2"
-        }
-      ],
-      "locals": [],
-      "body": {
-        "entry": {
-          "id": "entry",
-          "insts": [],
-          "term": {
-            "Ret": {
-              "Var": {
-                "name": "k",
-                "typ": {
-                  "Ptr": {
-                    "Fn": {
-                      "ret_ty": "Int",
-                      "param_ty": [
-                        "Int"
-                      ]
-                    }
-                  }
-                },
-                "scope": null
-              }
-            }
-          }
-        }
-      }
-    },
-    "i": {
-      "id": "i",
-      "ret_ty": "Int",
-      "params": [],
-      "locals": [],
-      "body": {
-        "entry": {
-          "id": "entry",
-          "insts": [],
-          "term": {
-            "Ret": {
-              "CInt": 0
-            }
-          }
-        }
-      }
-    },
-    "j": {
-      "id": "j",
-      "ret_ty": {
-        "Ptr": {
-          "Struct": "s"
-        }
-      },
-      "params": [
-        {
-          "name": "a1",
-          "typ": {
-            "Ptr": {
-              "Struct": "s"
-            }
-          },
-          "scope": "j"
-        },
-        {
-          "name": "a2",
-          "typ": "Int",
-          "scope": "j"
-        },
-        {
-          "name": "a3",
-          "typ": "Int",
-          "scope": "j"
-        }
-      ],
-      "locals": [],
-      "body": {
-        "entry": {
-          "id": "entry",
-          "insts": [],
-          "term": {
-            "Ret": {
-              "Var": {
-                "name": "a1",
-                "typ": {
-                  "Ptr": {
-                    "Struct": "s"
-                  }
-                },
-                "scope": "j"
-              }
-            }
-          }
-        }
-      }
-    },
-    "j2": {
-      "id": "j2",
-      "ret_ty": {
-        "Ptr": {
-          "Struct": "s"
-        }
-      },
-      "params": [
-        {
-          "name": "a1",
-          "typ": {
-            "Ptr": {
-              "Struct": "s"
-            }
-          },
-          "scope": "j2"
-        },
-        {
-          "name": "a2",
-          "typ": "Int",
-          "scope": "j2"
-        },
-        {
-          "name": "a3",
-          "typ": "Int",
-          "scope": "j2"
-        }
-      ],
-      "locals": [],
-      "body": {
-        "entry": {
-          "id": "entry",
-          "insts": [],
-          "term": {
-            "Ret": {
-              "Var": {
-                "name": "pts",
-                "typ": {
-                  "Ptr": {
-                    "Struct": "s"
-                  }
-                },
-                "scope": null
-              }
-            }
-          }
-        }
-      }
-    },
-    "k": {
-      "id": "k",
-      "ret_ty": "Int",
-      "params": [
-        {
-          "name": "a",
-          "typ": "Int",
-          "scope": "k"
-        }
-      ],
-      "locals": [
-        {
-          "name": "_t1",
-          "typ": "Int",
-          "scope": "k"
-        },
-        {
-          "name": "a",
-          "typ": "Int",
-          "scope": "k"
-        },
-        {
-          "name": "b",
-          "typ": "Int",
-          "scope": "k"
-        }
-      ],
-      "body": {
-        "entry": {
-          "id": "entry",
-          "insts": [
-            {
-              "Arith": {
-                "lhs": {
-                  "name": "_t1",
-                  "typ": "Int",
-                  "scope": "k"
-                },
-                "aop": "Add",
-                "op1": {
-                  "CInt": 1
-                },
-                "op2": {
-                  "CInt": 1
-                }
-              }
-            },
-            {
-              "Copy": {
-                "lhs": {
-                  "name": "a",
-                  "typ": "Int",
-                  "scope": "k"
-                },
-                "op": {
-                  "Var": {
-                    "name": "_t1",
-                    "typ": "Int",
-                    "scope": "k"
-                  }
-                }
-              }
-            }
-          ],
-          "term": {
-            "Ret": {
-              "CInt": 2
-            }
-          }
-        }
-      }
-    },
-    "l": {
-      "id": "l",
-      "ret_ty": "Int",
-      "params": [],
-      "locals": [
-        {
-          "name": "_t1",
-          "typ": "Int",
-          "scope": "l"
-        }
-      ],
-      "body": {
-        "entry": {
-          "id": "entry",
-          "insts": [
-            {
-              "CallExt": {
-                "lhs": {
-                  "name": "_t1",
-                  "typ": "Int",
-                  "scope": "l"
-                },
-                "ext_callee": "exfun",
-                "args": [
-                  {
-                    "CInt": 1
-                  }
-                ]
-              }
-            }
-          ],
-          "term": {
-            "Ret": {
-              "Var": {
-                "name": "_t1",
-                "typ": "Int",
-                "scope": "l"
-              }
-            }
-          }
-        }
-      }
-    },
-    "m": {
-      "id": "m",
-      "ret_ty": {
-        "Ptr": "Int"
-      },
-      "params": [],
-      "locals": [],
-      "body": {
-        "entry": {
-          "id": "entry",
-          "insts": [],
-          "term": {
-            "Ret": {
-              "Var": {
-                "name": "pt",
-                "typ": {
-                  "Ptr": "Int"
-                },
-                "scope": null
-              }
-            }
-          }
-        }
-      }
-    },
     "main": {
       "id": "main",
+      "ret_ty": "Int",
+      "params": [],
+      "locals": [],
+      "body": {
+        "entry": {
+          "id": "entry",
+          "insts": [],
+          "term": {
+            "Ret": {
+              "CInt": 1
+            }
+          }
+        }
+      }
+    },
+    "returnArith": {
+      "id": "returnArith",
+      "ret_ty": "Int",
+      "params": [],
+      "locals": [
+        {
+          "name": "_t1",
+          "typ": "Int",
+          "scope": "returnArith"
+        }
+      ],
+      "body": {
+        "entry": {
+          "id": "entry",
+          "insts": [
+            {
+              "Arith": {
+                "lhs": {
+                  "name": "_t1",
+                  "typ": "Int",
+                  "scope": "returnArith"
+                },
+                "aop": "Add",
+                "op1": {
+                  "CInt": 1
+                },
+                "op2": {
+                  "CInt": 2
+                }
+              }
+            }
+          ],
+          "term": {
+            "Ret": {
+              "Var": {
+                "name": "_t1",
+                "typ": "Int",
+                "scope": "returnArith"
+              }
+            }
+          }
+        }
+      }
+    },
+    "returnConst": {
+      "id": "returnConst",
+      "ret_ty": "Int",
+      "params": [],
+      "locals": [],
+      "body": {
+        "entry": {
+          "id": "entry",
+          "insts": [],
+          "term": {
+            "Ret": {
+              "CInt": 1
+            }
+          }
+        }
+      }
+    },
+    "returnLocal": {
+      "id": "returnLocal",
       "ret_ty": "Int",
       "params": [],
       "locals": [
         {
           "name": "x",
           "typ": "Int",
-          "scope": "main"
-        },
-        {
-          "name": "y",
-          "typ": "Int",
-          "scope": "main"
+          "scope": "returnLocal"
         }
       ],
       "body": {
         "entry": {
           "id": "entry",
-          "insts": [
-            {
-              "Copy": {
-                "lhs": {
-                  "name": "x",
-                  "typ": "Int",
-                  "scope": "main"
-                },
-                "op": {
-                  "CInt": 42
-                }
-              }
-            },
-            {
-              "Copy": {
-                "lhs": {
-                  "name": "g",
-                  "typ": "Int",
-                  "scope": null
-                },
-                "op": {
-                  "Var": {
-                    "name": "x",
-                    "typ": "Int",
-                    "scope": "main"
-                  }
-                }
-              }
-            }
-          ],
+          "insts": [],
           "term": {
             "Ret": {
               "Var": {
-                "name": "g",
+                "name": "x",
                 "typ": "Int",
-                "scope": null
+                "scope": "returnLocal"
               }
             }
           }
         }
       }
     },
-    "n": {
-      "id": "n",
-      "ret_ty": {
-        "Ptr": {
-          "Fn": {
-            "ret_ty": "Int",
-            "param_ty": [
-              "Int"
-            ]
-          }
+    "returnParam": {
+      "id": "returnParam",
+      "ret_ty": "Int",
+      "params": [
+        {
+          "name": "x",
+          "typ": "Int",
+          "scope": "returnParam"
         }
-      },
-      "params": [],
+      ],
       "locals": [],
       "body": {
         "entry": {
@@ -1166,62 +231,9 @@
           "term": {
             "Ret": {
               "Var": {
-                "name": "ptf",
-                "typ": {
-                  "Ptr": {
-                    "Fn": {
-                      "ret_ty": "Int",
-                      "param_ty": [
-                        "Int"
-                      ]
-                    }
-                  }
-                },
-                "scope": null
-              }
-            }
-          }
-        }
-      }
-    },
-    "p": {
-      "id": "p",
-      "ret_ty": "Int",
-      "params": [],
-      "locals": [
-        {
-          "name": "_t1",
-          "typ": "Int",
-          "scope": "p"
-        }
-      ],
-      "body": {
-        "entry": {
-          "id": "entry",
-          "insts": [
-            {
-              "Cmp": {
-                "lhs": {
-                  "name": "_t1",
-                  "typ": "Int",
-                  "scope": "p"
-                },
-                "rop": "Greater",
-                "op1": {
-                  "CInt": 1
-                },
-                "op2": {
-                  "CInt": 2
-                }
-              }
-            }
-          ],
-          "term": {
-            "Ret": {
-              "Var": {
-                "name": "_t1",
+                "name": "x",
                 "typ": "Int",
-                "scope": "p"
+                "scope": "returnParam"
               }
             }
           }

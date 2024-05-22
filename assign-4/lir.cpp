@@ -15,6 +15,11 @@ using FuncId = string;
 using VarId = string;
 using FieldId = string;
 using BbId = string;
+struct BasicBlock;
+
+//Globals
+inline vector<string> function_ids;
+inline map<string, string> functions_res; //map of function name to the result (res) text (to sort alphabetically)
 
 struct Type {
     virtual void print(std::ostream& os) const {}
@@ -60,14 +65,27 @@ struct Any : Type {
     }
 };
 
-string getMemory(const string& id, const vector<string>& local_ids, const vector<string>& param_ids, const vector<string>& function_ids) {
+inline string getMemory(const string& id, const vector<string>& local_ids, const vector<string>& param_ids) {
+    // cout << "Id given to getMemory: " << id << "\n";
+    // cout << "Locals\n";
+    // for (string s: local_ids) {
+    //     cout << s + " ";
+    // }
+    // cout << "\n";
+    // cout << "Params\n";
+    // for (string s: param_ids) {
+    //     cout << s + " ";
+    // }
+    // cout << "\n";
     auto local_it = find(local_ids.begin(), local_ids.end(), id);
     auto param_it = find(param_ids.begin(), param_ids.end(), id);
     auto function_it = find(function_ids.begin(), function_ids.end(), id);
     if (local_it != local_ids.end()) { //local
+        // cout << "In locals\n";
         size_t index = distance(local_ids.begin(), local_it);
         return "-" + to_string((index+1)*8) + "(%rbp)";
     } else if (param_it != param_ids.end()) { //parameter
+        // cout << "In param\n";
         size_t index = distance(param_ids.begin(), param_it);
         return to_string((index+2)*8) + "(%rbp)"; //+2 because parameters start at 16
     } else if (function_it != function_ids.end()) { //function global
@@ -83,17 +101,17 @@ struct ArithmeticOp{
         return os;
     }
     //TO-DO
-    virtual string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, const vector<string>& local_ids, const vector<string>& param_ids, const vector<string>& function_ids) {
+    virtual string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, const vector<string>& local_ids, const vector<string>& param_ids) {
         return "";
     }
 };
 struct Add : ArithmeticOp{
     void print(std::ostream& os) const override { os << "add"; }
     //TO-DO
-    string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, const vector<string>& local_ids, const vector<string>& param_ids, const vector<string>& function_ids) override {
+    string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, const vector<string>& local_ids, const vector<string>& param_ids) override {
         string res;
-        res += "  movq " + left_mem + ", r8\n";
-        res += "  addq " + right_mem + ", r8\n";
+        res += "  movq " + left_mem + ", %r8\n";
+        res += "  addq " + right_mem + ", %r8\n";
         res += "  movq %r8, " + lhs_mem + "\n";
         return res;
     }
@@ -101,10 +119,10 @@ struct Add : ArithmeticOp{
 struct Sub : ArithmeticOp{
     void print(std::ostream& os) const override { os << "sub"; }
     //TO-DO
-    string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, const vector<string>& local_ids, const vector<string>& param_ids, const vector<string>& function_ids) override {
+    string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, const vector<string>& local_ids, const vector<string>& param_ids) override {
         string res;
-        res += "  movq " + left_mem + ", r8\n";
-        res += "  subq " + right_mem + ", r8\n";
+        res += "  movq " + left_mem + ", %r8\n";
+        res += "  subq " + right_mem + ", %r8\n";
         res += "  movq %r8, " + lhs_mem + "\n";
         return res;
     }
@@ -112,10 +130,10 @@ struct Sub : ArithmeticOp{
 struct Mul : ArithmeticOp{
     void print(std::ostream& os) const override { os << "mul"; }
     //TO-DO
-    string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, const vector<string>& local_ids, const vector<string>& param_ids, const vector<string>& function_ids) override {
+    string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, const vector<string>& local_ids, const vector<string>& param_ids) override {
         string res;
-        res += "  movq " + left_mem + ", r8\n";
-        res += "  imulq " + right_mem + ", r8\n";
+        res += "  movq " + left_mem + ", %r8\n";
+        res += "  imulq " + right_mem + ", %r8\n";
         res += "  movq %r8, " + lhs_mem + "\n";
         return res;
     }
@@ -123,10 +141,11 @@ struct Mul : ArithmeticOp{
 struct Div : ArithmeticOp{
     void print(std::ostream& os) const override { os << "div"; }
     //TO-DO
-    string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, const vector<string>& local_ids, const vector<string>& param_ids, const vector<string>& function_ids) override {
+    string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, const vector<string>& local_ids, const vector<string>& param_ids) override {
         string res;
-        res += "  movq " + left_mem + ", %rax\ncqo\n";
-        res += "  movq " + right_mem + ", %r8\n  idivq r8\n";
+        res += "  movq " + left_mem + ", %rax\n  cqo\n";
+        res += (right_mem[0] == '$') ? "  movq " + right_mem + ", %r8\n  idivq %r8\n" : "  idivq " + right_mem + "\n";
+        // res += "  movq " + right_mem + ", %r8\n  idivq %r8\n";
         res += "  movq %rax, " + lhs_mem + "\n";
         return res;
     }
@@ -139,94 +158,97 @@ struct ComparisonOp{
         return os;
     }
     //TO-DO
-    virtual string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, const vector<string>& local_ids, const vector<string>& param_ids, const vector<string>& function_ids) {
+    virtual string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, const vector<string>& local_ids, const vector<string>& param_ids) {
         return "";
     }
 };
 struct Equal : ComparisonOp{
     void print(std::ostream& os) const override { os << "eq"; }
     //TO-DO
-    string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, const vector<string>& local_ids, const vector<string>& param_ids, const vector<string>& function_ids) override {
+    string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, const vector<string>& local_ids, const vector<string>& param_ids) override {
         string res;
-        if (left_mem[0] == '$') {
+        if (right_mem[0] == '$' && left_mem[0] != '$') {
+            res += "  cmpq " + right_mem + ", " + left_mem + "\n";
+        } else {
             res += "  movq " + left_mem + ", %r8\n";
             res += "  cmpq " + right_mem + ", %r8\n";
-        } else {
-            res += "  cmpq " + right_mem + ", " + left_mem + "\n";
         }
-        res += "  movq $0, %r8\n  sete %r8b\n";
-        res += "  movq %r8, " + lhs_mem + "\n";
+        res += "  movq $0, %r8\n  sete %r8b\n  movq %r8, -8(%rbp)\n";
         return res;
     }
 };
 struct NotEq : ComparisonOp{ 
     void print(std::ostream& os) const override { os << "neq"; }
     //TO-DO
-    string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, const vector<string>& local_ids, const vector<string>& param_ids, const vector<string>& function_ids) override {
+    string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, const vector<string>& local_ids, const vector<string>& param_ids) override {
         string res;
-        if (left_mem[0] == '$') {
+        if (right_mem[0] == '$' && left_mem[0] != '$') {
+            res += "  cmpq " + right_mem + ", " + left_mem + "\n";
+        } else {
             res += "  movq " + left_mem + ", %r8\n";
             res += "  cmpq " + right_mem + ", %r8\n";
-        } else {
-            res += "  cmpq " + right_mem + ", " + left_mem + "\n";
         }
-        res += "  movq $0, %r8\n  setne %r8b\n";
-        res += "  movq %r8, " + lhs_mem + "\n";
+        res += "  movq $0, %r8\n  setne %r8b\n  movq %r8, -8(%rbp)\n";
         return res;
     }
 };
 struct Lt : ComparisonOp{
     void print(std::ostream& os) const override { os << "lt"; }
     //TO-DO
-    string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, const vector<string>& local_ids, const vector<string>& param_ids, const vector<string>& function_ids) override {
+    string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, const vector<string>& local_ids, const vector<string>& param_ids) override {
         string res;
-        if (left_mem[0] == '$') {
+        if (right_mem[0] == '$' && left_mem[0] != '$') {
+            res += "  cmpq " + right_mem + ", " + left_mem + "\n";
+        } else {
             res += "  movq " + left_mem + ", %r8\n";
             res += "  cmpq " + right_mem + ", %r8\n";
-        } else {
-            res += "  cmpq " + right_mem + ", " + left_mem + "\n";
         }
-        res += "  movq $0, %r8\n  setl %r8b\n";
-        res += "  movq %r8, " + lhs_mem + "\n";
+        res += "  movq $0, %r8\n  setl %r8b\n  movq %r8, -8(%rbp)\n";
         return res;
     }
 };
 struct Lte : ComparisonOp{
     void print(std::ostream& os) const override { os << "lte"; }
     //TO-DO
-    string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, const vector<string>& local_ids, const vector<string>& param_ids, const vector<string>& function_ids) override {
-        return "";
+    string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, const vector<string>& local_ids, const vector<string>& param_ids) override {
+        string res;
+        if (right_mem[0] == '$' && left_mem[0] != '$') {
+            res += "  cmpq " + right_mem + ", " + left_mem + "\n";
+        } else {
+            res += "  movq " + left_mem + ", %r8\n";
+            res += "  cmpq " + right_mem + ", %r8\n";
+        }
+        res += "  movq $0, %r8\n  setle %r8b\n  movq %r8, -8(%rbp)\n";
+        return res;
     }
 };
 struct Gt : ComparisonOp{
     void print(std::ostream& os) const override { os << "gt"; }
     //TO-DO
-    string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, const vector<string>& local_ids, const vector<string>& param_ids, const vector<string>& function_ids) override {
+    string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, const vector<string>& local_ids, const vector<string>& param_ids) override {
         string res;
-        if (left_mem[0] == '$') {
+        if (right_mem[0] == '$' && left_mem[0] != '$') {
+            res += "  cmpq " + right_mem + ", " + left_mem + "\n";
+        } else {
             res += "  movq " + left_mem + ", %r8\n";
             res += "  cmpq " + right_mem + ", %r8\n";
-        } else {
-            res += "  cmpq " + right_mem + ", " + left_mem + "\n";
         }
-        res += "  movq $0, %r8\n  setg %r8b\n";
-        res += "  movq %r8, " + lhs_mem + "\n";
+        res += "  movq $0, %r8\n  setg %r8b\n  movq %r8, -8(%rbp)\n";
         return res;
     }
 };
 struct Gte : ComparisonOp{
     void print(std::ostream& os) const override { os << "gte"; }
     //TO-DO
-    string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, const vector<string>& local_ids, const vector<string>& param_ids, const vector<string>& function_ids) override {
+    string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, const vector<string>& local_ids, const vector<string>& param_ids) override {
         string res;
-        if (left_mem[0] == '$') {
+        if (right_mem[0] == '$' && left_mem[0] != '$') {
+            res += "  cmpq " + right_mem + ", " + left_mem + "\n";
+        } else {
             res += "  movq " + left_mem + ", %r8\n";
             res += "  cmpq " + right_mem + ", %r8\n";
-        } else {
-            res += "  cmpq " + right_mem + ", " + left_mem + "\n";
         }
-        res += "  movq $0, %r8\n  setle %r8b\n";
-        res += "  movq %r8, " + lhs_mem + "\n";
+        res += "  movq $0, %r8\n  setge %r8b\n  movq %r8, -8(%rbp)\n";
         return res;
     }
 };
@@ -238,7 +260,7 @@ struct Operand{
         return os;
     }
     //TO-DO
-    virtual string cg(const vector<string>& local_ids, const vector<string>& param_ids, const vector<string>& function_ids) {
+    virtual string cg(const vector<string>& local_ids, const vector<string>& param_ids) {
         return "";
     }
 };
@@ -246,7 +268,7 @@ struct Const : Operand{
     int32_t num;
     void print(std::ostream& os) const override { os << num; }
     //TO-DO
-    string cg(const vector<string>& local_ids, const vector<string>& param_ids, const vector<string>& function_ids) override {
+    string cg(const vector<string>& local_ids, const vector<string>& param_ids) override {
         return "";
     }
 };
@@ -254,7 +276,7 @@ struct Var : Operand{
     VarId id;
     void print(std::ostream& os) const override { os << id; }
     //TO-DO
-    string cg(const vector<string>& local_ids, const vector<string>& param_ids, const vector<string>& function_ids) override {
+    string cg(const vector<string>& local_ids, const vector<string>& param_ids) override {
         return "";
     }
 };
@@ -266,7 +288,7 @@ struct Terminal{
         return os;
     }
     //TO-DO
-    virtual string cg(const vector<string>& local_ids, const vector<string>& param_ids, const vector<string>& function_ids) {
+    virtual string cg(const vector<string>& local_ids, const vector<string>& param_ids, map<BbId, BasicBlock*>& blocks, const string& func_name, map<string, string>& labels_map) {
         return "";
     }
 };
@@ -278,9 +300,7 @@ struct Branch : Terminal{
         os << "Branch(" << *guard << ", " << tt << ", " << ff << ")" << endl;
     }
     //TO-DO
-    string cg(const vector<string>& local_ids, const vector<string>& param_ids, const vector<string>& function_ids) override {
-        return "";
-    }
+    string cg(const vector<string>& local_ids, const vector<string>& param_ids, map<BbId, BasicBlock*>& blocks, const string& func_name, map<string, string>& labels_map) override;
 };
 struct CallDirect : Terminal{
     VarId lhs;
@@ -296,7 +316,7 @@ struct CallDirect : Terminal{
         os << "], " << next_bb << ")" << endl;
     }
     //TO-DO
-    string cg(const vector<string>& local_ids, const vector<string>& param_ids, const vector<string>& function_ids) override {
+    string cg(const vector<string>& local_ids, const vector<string>& param_ids, map<BbId, BasicBlock*>& blocks, const string& func_name, map<string, string>& labels_map) override {
         return "";
     }
 };
@@ -314,7 +334,7 @@ struct CallIndirect : Terminal{
         os << "], " << next_bb << ")" << endl;
     }
     //TO-DO
-    string cg(const vector<string>& local_ids, const vector<string>& param_ids, const vector<string>& function_ids) override {
+    string cg(const vector<string>& local_ids, const vector<string>& param_ids, map<BbId, BasicBlock*>& blocks, const string& func_name, map<string, string>& labels_map) override {
         return "";
     }
 };
@@ -324,9 +344,7 @@ struct Jump : Terminal{
         os << "Jump(" << next_bb << ")" << endl;
     }
     //TO-DO
-    string cg(const vector<string>& local_ids, const vector<string>& param_ids, const vector<string>& function_ids) override {
-        return "";
-    }
+    string cg(const vector<string>& local_ids, const vector<string>& param_ids, map<BbId, BasicBlock*>& blocks, const string& func_name, map<string, string>& labels_map) override;
 };
 struct Ret : Terminal{
     Operand* op;
@@ -334,9 +352,15 @@ struct Ret : Terminal{
         os << "Ret(" << *op << ")" << endl;
     }
     //TO-DO
-    string cg(const vector<string>& local_ids, const vector<string>& param_ids, const vector<string>& function_ids) override {
-        return "";
-        // "  jmp " + name + "_epilogue\n\n" + 
+    string cg(const vector<string>& local_ids, const vector<string>& param_ids, map<BbId, BasicBlock*>& blocks, const string& func_name, map<string, string>& labels_map) override {
+        string res, ret_mem;
+        if (Const* c = dynamic_cast<Const*>(op)) {
+            ret_mem = "$" + to_string(c->num);
+        } else {
+            ret_mem = getMemory(dynamic_cast<Var*>(op)->id, local_ids, param_ids);
+        }
+        res += "  movq " + ret_mem + ", %rax\n  jmp " + func_name + "_epilogue\n\n";
+        return res;
     }
 };
 
@@ -348,7 +372,7 @@ struct LirInst{
         return os;
     }
     //TO-DO
-    virtual string cg(const vector<string>& local_ids, const vector<string>& param_ids, const vector<string>& function_ids) {
+    virtual string cg(const vector<string>& local_ids, const vector<string>& param_ids) {
         return "";
     }
 };
@@ -359,7 +383,7 @@ struct Alloc : LirInst{
         os << "Alloc(" << lhs << ", " << *num << ")" << endl;
     }
     //TO-DO
-    string cg(const vector<string>& local_ids, const vector<string>& param_ids, const vector<string>& function_ids) override {
+    string cg(const vector<string>& local_ids, const vector<string>& param_ids) override {
         return "";
     }
 };
@@ -372,20 +396,28 @@ struct Arith : LirInst{
         os << "Arith(" << lhs << ", " << *aop << ", " << *left << ", " << *right << ")" << endl;
     }
     //TO-DO
-    string cg(const vector<string>& local_ids, const vector<string>& param_ids, const vector<string>& function_ids) override {
+    string cg(const vector<string>& local_ids, const vector<string>& param_ids) override {
         string lhs_mem, left_mem, right_mem;
-        lhs_mem = getMemory(lhs, local_ids, param_ids, function_ids);
+        lhs_mem = getMemory(lhs, local_ids, param_ids);
+        // cout << "lhs mem" << lhs_mem << "\n";
         if (Const* c = dynamic_cast<Const*>(left)) {
-            left_mem = "$" + c->num;
+            // cout << "Constant\n" << endl;
+            // cout << "left_mem num " << c->num << "\n";
+            left_mem = "$" + to_string(c->num);
         } else {
-            left_mem = getMemory(static_cast<Var*>(left)->id, local_ids, param_ids, function_ids);
+            // cout << "Var\n" << endl;
+            // Var* varLeft = dynamic_cast<Var*>(left);
+            // cout << dynamic_cast<Var*>(left)->id << "\n\n";
+            left_mem = getMemory(dynamic_cast<Var*>(left)->id, local_ids, param_ids);
         }
         if (Const* c = dynamic_cast<Const*>(right)) {
-            right_mem = "$" + c->num;
+            right_mem = "$" + to_string(c->num);
         } else {
-            right_mem = getMemory(static_cast<Var*>(right)->id, local_ids, param_ids, function_ids);
+            right_mem = getMemory(static_cast<Var*>(right)->id, local_ids, param_ids);
         }
-        return aop->cg(lhs_mem, left_mem, right_mem, local_ids, param_ids, function_ids);
+        // cout << "Arith lhs: " << lhs << "\n";
+        // cout << "lhs_mem: " << lhs_mem << " left_mem: " << left_mem << " right_mem: " << right_mem << "\n";
+        return aop->cg(lhs_mem, left_mem, right_mem, local_ids, param_ids);
     }
 };
 struct CallExt : LirInst{
@@ -401,7 +433,7 @@ struct CallExt : LirInst{
         os << "]" << ")" << endl; 
     }
     //TO-DO
-    string cg(const vector<string>& local_ids, const vector<string>& param_ids, const vector<string>& function_ids) override {
+    string cg(const vector<string>& local_ids, const vector<string>& param_ids) override {
         return "";
     }
 };
@@ -414,20 +446,25 @@ struct Cmp : LirInst{
         os << "Cmp(" << lhs << ", " << *cop << ", " << *left << ", " << *right << ")" << endl;
     }
     //TO-DO
-    string cg(const vector<string>& local_ids, const vector<string>& param_ids, const vector<string>& function_ids) override {
+    string cg(const vector<string>& local_ids, const vector<string>& param_ids) override {
+        // cout << "COMPARISON\n";
         string lhs_mem, left_mem, right_mem;
-        lhs_mem = getMemory(lhs, local_ids, param_ids, function_ids);
+        lhs_mem = getMemory(lhs, local_ids, param_ids);
         if (Const* c = dynamic_cast<Const*>(left)) {
-            left_mem = "$" + c->num;
+            // cout << "Constant with value " << c->num << endl;
+            left_mem = "$" + to_string(c->num);
         } else {
-            left_mem = getMemory(static_cast<Var*>(left)->id, local_ids, param_ids, function_ids);
+            // cout << "Var\n" << endl;
+            left_mem = getMemory(static_cast<Var*>(left)->id, local_ids, param_ids);
         }
         if (Const* c = dynamic_cast<Const*>(right)) {
-            right_mem = "$" + c->num;
+            // cout << "Constant with value " << c->num << endl;
+            right_mem = "$" + to_string(c->num);
         } else {
-            right_mem = getMemory(static_cast<Var*>(right)->id, local_ids, param_ids, function_ids);
+            // cout << "Var\n" << endl;
+            right_mem = getMemory(static_cast<Var*>(right)->id, local_ids, param_ids);
         }
-        return cop->cg(lhs_mem, left_mem, right_mem, local_ids, param_ids, function_ids);
+        return cop->cg(lhs_mem, left_mem, right_mem, local_ids, param_ids);
     }
 };
 struct Copy : LirInst{
@@ -437,16 +474,16 @@ struct Copy : LirInst{
         os << "Copy(" << lhs << ", " << *op << ")" << endl;
     }
     //TO-DO
-    string cg(const vector<string>& local_ids, const vector<string>& param_ids, const vector<string>& function_ids) override {
+    string cg(const vector<string>& local_ids, const vector<string>& param_ids) override {
         //Five cases for op(rhs): copying a const, local, param, global (non func), global function
         //Three cases for lhs: a local, param, global (non-func)
         //For non-constant, we use a helper function to tell us what string to print
         string res;
         if (Const* c = dynamic_cast<Const*>(op)) { // movq $1, -8(%rbp)
-            res += "movq $" + to_string(c->num) + ", " + getMemory(lhs, local_ids, param_ids, function_ids) + "\n";
-        } else { //movq -16(%rbp), %r8 /n movq %r8, -8(%rbp)
-            res += "movq " + getMemory(static_cast<Var*>(op)->id, local_ids, param_ids, function_ids) + ", r8\n";
-            res += "movq %r8, " + getMemory(lhs, local_ids, param_ids, function_ids) + "\n";
+            res += "  movq $" + to_string(c->num) + ", " + getMemory(lhs, local_ids, param_ids) + "\n";
+        } else { //movq -16(%rbp), %r8 /n   movq %r8, -8(%rbp)
+            res += "  movq " + getMemory(static_cast<Var*>(op)->id, local_ids, param_ids) + ", %r8\n";
+            res += "  movq %r8, " + getMemory(lhs, local_ids, param_ids) + "\n";
         }
         return res;
     }
@@ -459,7 +496,7 @@ struct Gep : LirInst{
         os << "Gep(" << lhs << ", " << src << ", " << *idx << ")" << endl;
     }
     //TO-DO
-    string cg(const vector<string>& local_ids, const vector<string>& param_ids, const vector<string>& function_ids) override {
+    string cg(const vector<string>& local_ids, const vector<string>& param_ids) override {
         return "";
     }
 };
@@ -471,7 +508,7 @@ struct Gfp : LirInst{
         os << "Gfp(" << lhs << ", " << src << ", " << field << ")" << endl;
     }
     //TO-DO
-    string cg(const vector<string>& local_ids, const vector<string>& param_ids, const vector<string>& function_ids) override {
+    string cg(const vector<string>& local_ids, const vector<string>& param_ids) override {
         return "";
     }
 };
@@ -482,7 +519,7 @@ struct Load : LirInst{
         os << "Load(" << lhs << ", " << src << ")" << endl;
     }
     //TO-DO
-    string cg(const vector<string>& local_ids, const vector<string>& param_ids, const vector<string>& function_ids) override {
+    string cg(const vector<string>& local_ids, const vector<string>& param_ids) override {
         return "";
     }
 };
@@ -493,7 +530,7 @@ struct Store : LirInst{
         os << "Store(" << dst << ", " << *op << ")" << endl;
     }
     //TO-DO
-    string cg(const vector<string>& local_ids, const vector<string>& param_ids, const vector<string>& function_ids) override {
+    string cg(const vector<string>& local_ids, const vector<string>& param_ids) override {
         return "";
     }
 };
@@ -512,23 +549,21 @@ struct BasicBlock{
         return os;
     }
     //TO-DO
-    string cg(const vector<string>& local_ids, const vector<string>& param_ids, const vector<string>& function_ids) {
-        string res;
+    void cg(const vector<string>& local_ids, const vector<string>& param_ids, map<BbId, BasicBlock*>& blocks, const string& func_name, map<string, string>& labels_map) {
+        string res = func_name + "_" + label + ":\n";
         for (LirInst* lir : insts) {
-            res += lir->cg(param_ids, local_ids, function_ids);
+            res += lir->cg(local_ids, param_ids);
         }
-        res += term->cg(param_ids, local_ids, function_ids);
-        return res;
+        res += term->cg(local_ids, param_ids, blocks, func_name, labels_map);
+        labels_map[label] = res;
     }
 };
 
 template<typename T>
-vector<string> getKeys(const std::map<string, T>& myMap) {
-    vector<string> keys;
+void getKeys(const map<string, T>& myMap, vector<string>& keys) {
     for (const auto& pair : myMap) {
         keys.push_back(pair.first);
     }
-    return keys;
 }
 
 struct Function{
@@ -564,25 +599,30 @@ struct Function{
         return os;
     }
 
-    string cg(vector<string> function_ids) {
+    void cg() {
         vector<string> param_ids;
             for (const auto& param : params) {
             param_ids.push_back(param.first);
         }
-        vector<string> local_ids = getKeys(locals);
+        vector<string> local_ids; 
+        getKeys(locals, local_ids);
         string res;
         res += ".globl " + name + "\n" + name + ":\n  pushq %rbp\n  movq %rsp, %rbp\n";
         int stack_space = (local_ids.size() % 2 == 0) ? local_ids.size() : local_ids.size() + 1;
         res += "  subq $" + to_string(stack_space * 8) + ", %rsp\n";
-        for (int i = 1; i < stack_space+1; i++) {
+        for (unsigned int i = 1; i < local_ids.size() + 1; i++) {
             res += "  movq $0, -" + to_string(i*8) + "(%rbp)\n";
         }
-        res += "  jmp " + name + "_entry\n\n" + name + "_entry:\n";
+        res += "  jmp " + name + "_entry\n\n";
+        map<string, string> labels_map;
         for (const auto& [bbId, bb]: body) {
-            res += bb->cg(local_ids, param_ids, function_ids);
+            bb->cg(local_ids, param_ids, body, name, labels_map);
+        }
+        for (const auto& [label_name, label_res] : labels_map) {
+            res += label_res;
         }
         res += name + "_epilogue:\n  movq %rbp, %rsp\n  popq %rbp\n  ret\n\n";
-        return res;
+        functions_res[name] = res;
     }
 };
 
@@ -634,14 +674,36 @@ struct Program{
         res += "out_of_bounds_msg: .string \"out-of-bounds array access\"\n";
         res += "invalid_alloc_msg: .string \"invalid allocation amount\"\n";
         res += "\n.text\n\n";
-        vector<string> function_ids = getKeys(functions);
+        getKeys(functions, function_ids);
         for (const auto& [funcId, func] : functions) {
-            res += func->cg(function_ids);
+            func->cg();
         }
-       res += ".out_of_bounds:\n  lea out_of_bounds_msg(%rip), %rdi\n  call _cflat_panic\n\n";
-       res += ".invalid_alloc_length:\n  lea invalid_alloc_msg(%rip), %rdi\n  call _cflat_panic\n\n";
-       return res;
+        for (const auto& [func_name, func_res] : functions_res) {
+            res += func_res;
+        }
+        res += ".out_of_bounds:\n  lea out_of_bounds_msg(%rip), %rdi\n  call _cflat_panic\n\n";
+        res += ".invalid_alloc_length:\n  lea invalid_alloc_msg(%rip), %rdi\n  call _cflat_panic\n\n";
+        return res;
     }    
 };
 
 
+//cg functions which rely on later definitions
+inline string Jump::cg(const vector<string>& local_ids, const vector<string>& param_ids, map<BbId, BasicBlock*>& blocks, const string& func_name, map<string, string>& labels_map) {
+    string res = "  $jmp " + func_name + "_" + next_bb + "\n\n";
+    blocks[next_bb]->cg(local_ids, param_ids, blocks, func_name, labels_map);
+    return res;
+}
+
+inline string Branch::cg(const vector<string>& local_ids, const vector<string>& param_ids, map<BbId, BasicBlock*>& blocks, const string& func_name, map<string, string>& labels_map) {
+    string res;
+    if (Const* c = dynamic_cast<Const*>(guard)) {
+        res += "  movq " + to_string(c->num) + ", %r8\n  cmpq $0, %r8\n";
+    } else {
+        res += "  cmpq $0, " + getMemory(dynamic_cast<Var*>(guard)->id, local_ids, param_ids) + "\n";
+    }
+    res += "  jne " + func_name + "_" + tt + "\n  jmp " + func_name + "_" + ff + "\n\n";
+    blocks[tt]->cg(local_ids, param_ids, blocks, func_name, labels_map);
+    blocks[ff]->cg(local_ids, param_ids, blocks, func_name, labels_map);
+    return res;
+}
