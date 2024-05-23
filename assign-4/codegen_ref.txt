@@ -1,5 +1,17 @@
 .data
 
+.globl fun_
+fun_: .quad "fun"
+
+
+.globl fun2_
+fun2_: .quad "fun2"
+
+
+.globl fun3_
+fun3_: .quad "fun3"
+
+
 .globl g
 g: .zero 8
 
@@ -21,6 +33,54 @@ invalid_alloc_msg: .string "invalid allocation amount"
         
 .text
 
+.globl fun
+fun:
+  pushq %rbp
+  movq %rsp, %rbp
+  subq $0, %rsp
+  jmp fun_entry
+
+fun_entry:
+  movq $100, %rax
+  jmp fun_epilogue
+
+fun_epilogue:
+  movq %rbp, %rsp
+  popq %rbp
+  ret
+
+.globl fun2
+fun2:
+  pushq %rbp
+  movq %rsp, %rbp
+  subq $0, %rsp
+  jmp fun2_entry
+
+fun2_entry:
+  movq $101, %rax
+  jmp fun2_epilogue
+
+fun2_epilogue:
+  movq %rbp, %rsp
+  popq %rbp
+  ret
+
+.globl fun3
+fun3:
+  pushq %rbp
+  movq %rsp, %rbp
+  subq $0, %rsp
+  jmp fun3_entry
+
+fun3_entry:
+  movq $102, %rax
+  jmp fun3_epilogue
+
+fun3_epilogue:
+  movq %rbp, %rsp
+  popq %rbp
+  ret
+
 .globl main
 main:
   pushq %rbp
@@ -36,30 +96,41 @@ main:
 main_entry:
   movq $11, -24(%rbp)
   movq $12, -32(%rbp)
-  movq -24(%rbp), %rdi
-  movq $2, %rsi
-  movq $3, %rdx
-  movq -32(%rbp), %rcx
-  movq $5, %r8
-  movq $6, %r9
-  pushq $9
-  pushq $8
-  pushq -40(%rbp)
   subq $8, %rsp
-  call exfun
-  addq $32, %rsp
+  pushq -40(%rbp)
+  pushq $6
+  pushq $5
+  pushq -32(%rbp)
+  pushq $3
+  pushq $2
+  pushq -24(%rbp)
+  call fun
+  addq $64, %rsp
+  jmp main_lbl1
+
+main_lbl1:
   movq $33, -24(%rbp)
-  movq $1, %rdi
-  call exfun2
+  subq $8, %rsp
+  pushq $1
+  call fun2
   movq %rax, -8(%rbp)
+  addq $16, %rsp
+  jmp main_lbl2
+
+main_lbl2:
   movq -8(%rbp), %r8
   movq %r8, -24(%rbp)
   movq $22, -24(%rbp)
-  movq $1, %rdi
-  movq $2, %rsi
-  movq $3, %rdx
-  call exfun3
+  subq $8, %rsp
+  pushq $3
+  pushq $2
+  pushq $1
+  call fun3
   movq %rax, -16(%rbp)
+  addq $32, %rsp
+  jmp main_lbl3
+
+main_lbl3:
   movq -16(%rbp), %r8
   movq %r8, -32(%rbp)
   movq $1, %rax

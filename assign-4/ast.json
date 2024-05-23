@@ -56,52 +56,94 @@
       ]
     }
   ],
-  "externs": [
-    {
-      "name": "exfun",
-      "typ": {
-        "Fn": {
-          "prms": [
-            "Int",
-            "Int",
-            "Int",
-            "Int",
-            "Int",
-            "Int",
-            "Int",
-            "Int",
-            "Int"
-          ],
-          "ret": "Int"
-        }
-      }
-    },
-    {
-      "name": "exfun2",
-      "typ": {
-        "Fn": {
-          "prms": [
-            "Int"
-          ],
-          "ret": "Int"
-        }
-      }
-    },
-    {
-      "name": "exfun3",
-      "typ": {
-        "Fn": {
-          "prms": [
-            "Int",
-            "Int",
-            "Int"
-          ],
-          "ret": "Int"
-        }
-      }
-    }
-  ],
+  "externs": [],
   "functions": [
+    {
+      "name": "fun",
+      "params": [
+        {
+          "name": "a",
+          "typ": "Int"
+        },
+        {
+          "name": "b",
+          "typ": "Int"
+        },
+        {
+          "name": "c",
+          "typ": "Int"
+        },
+        {
+          "name": "d",
+          "typ": "Int"
+        },
+        {
+          "name": "e",
+          "typ": "Int"
+        },
+        {
+          "name": "f",
+          "typ": "Int"
+        },
+        {
+          "name": "g",
+          "typ": "Int"
+        }
+      ],
+      "rettyp": "Int",
+      "locals": [],
+      "stmts": [
+        {
+          "Return": {
+            "Num": 100
+          }
+        }
+      ]
+    },
+    {
+      "name": "fun2",
+      "params": [
+        {
+          "name": "a",
+          "typ": "Int"
+        }
+      ],
+      "rettyp": "Int",
+      "locals": [],
+      "stmts": [
+        {
+          "Return": {
+            "Num": 101
+          }
+        }
+      ]
+    },
+    {
+      "name": "fun3",
+      "params": [
+        {
+          "name": "a",
+          "typ": "Int"
+        },
+        {
+          "name": "b",
+          "typ": "Int"
+        },
+        {
+          "name": "c",
+          "typ": "Int"
+        }
+      ],
+      "rettyp": "Int",
+      "locals": [],
+      "stmts": [
+        {
+          "Return": {
+            "Num": 102
+          }
+        }
+      ]
+    },
     {
       "name": "main",
       "params": [],
@@ -157,7 +199,7 @@
         {
           "Call": {
             "callee": {
-              "Id": "exfun"
+              "Id": "fun"
             },
             "args": [
               {
@@ -180,12 +222,6 @@
               },
               {
                 "Id": "z"
-              },
-              {
-                "Num": 8
-              },
-              {
-                "Num": 9
               }
             ]
           }
@@ -211,7 +247,7 @@
               "RhsExp": {
                 "Call": {
                   "callee": {
-                    "Id": "exfun2"
+                    "Id": "fun2"
                   },
                   "args": [
                     {
@@ -244,7 +280,7 @@
               "RhsExp": {
                 "Call": {
                   "callee": {
-                    "Id": "exfun3"
+                    "Id": "fun3"
                   },
                   "args": [
                     {

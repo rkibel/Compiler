@@ -690,8 +690,8 @@ inline string CallDirect::cg(const vector<string>& local_ids, const vector<strin
     string res;
     int numPushed = 0;
     if ( args.size() % 2 != 0 ) { res += "  subq $8, %rsp\n"; numPushed++; }
-    for (Operand* op: args) {
-        res += "  pushq " + getMemoryOperand(op, local_ids, param_ids) + "\n";
+    for (int i = args.size() - 1; i >= 0; i--) {
+        res += "  pushq " + getMemoryOperand(args[i], local_ids, param_ids) + "\n";
         numPushed++;
     }
     res += "  call " + callee + "\n";

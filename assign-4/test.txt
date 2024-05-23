@@ -3,17 +3,23 @@ let pt:&int;
 let pts:&s;
 struct str{a:int, y:&(int)->int}
 let ptf:&(int)->int;
-extern exfun:(int, int, int, int, int, int, int, int, int) -> int;
-extern exfun2:(int) -> int;
-extern exfun3:(int, int, int) -> int;
+fn fun(a:int, b:int, c:int, d:int, e:int, f:int, g:int) -> int {
+    return 100;
+}
+fn fun2(a:int) -> int {
+    return 101;
+}
+fn fun3(a:int, b:int, c:int) -> int {
+    return 102;
+}
 fn main() -> int {
     let x:int, y:int, z:int;
     x = 11;
     y = 12;
-    exfun(x, 2, 3, y, 5, 6, z, 8, 9);
+    fun(x, 2, 3, y, 5, 6, z);
     x = 33;
-    x = exfun2(1);
+    x = fun2(1);
     x = 22;
-    y = exfun3(1, 2, 3);
+    y = fun3(1, 2, 3);
     return 1;
 }
