@@ -1,0 +1,42 @@
+Externs
+  e : Fn([Int, Int], Int)
+
+Globals
+  a : Int
+  f : Ptr(Fn([Int, Int, Int, Int], Int))
+
+Function f(a:Int, b:Int, c:Int, d:Int) -> Int {
+  Locals
+    x : Int
+    y : Int
+
+  entry:
+    Copy(y, 2)
+    Ret(3)
+}
+
+Function main() -> Int {
+  Locals
+    _t1 : Int
+    _t2 : Int
+    ind1 : Ptr(Fn([Int], Int))
+    ind2 : Ptr(Fn([Int], Int))
+    ind3 : Ptr(Fn([Int, Int, Int, Int], Int))
+    x : Int
+
+  entry:
+    Copy(ind3, f)
+    CallIndirect(_t1, ind1, [a], lbl1)
+
+  lbl1:
+    Copy(x, _t1)
+    CallIndirect(_, ind2, [55], lbl2)
+
+  lbl2:
+    CallIndirect(_t2, ind3, [56, 57, 58, x], lbl3)
+
+  lbl3:
+    Copy(x, _t2)
+    Ret(0)
+}
+

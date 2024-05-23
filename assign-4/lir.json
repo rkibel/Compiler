@@ -1,0 +1,370 @@
+{
+  "structs": {},
+  "globals": [
+    {
+      "name": "a",
+      "typ": "Int",
+      "scope": null
+    },
+    {
+      "name": "f",
+      "typ": {
+        "Ptr": {
+          "Fn": {
+            "ret_ty": "Int",
+            "param_ty": [
+              "Int",
+              "Int",
+              "Int",
+              "Int"
+            ]
+          }
+        }
+      },
+      "scope": null
+    }
+  ],
+  "functions": {
+    "f": {
+      "id": "f",
+      "ret_ty": "Int",
+      "params": [
+        {
+          "name": "a",
+          "typ": "Int",
+          "scope": "f"
+        },
+        {
+          "name": "b",
+          "typ": "Int",
+          "scope": "f"
+        },
+        {
+          "name": "c",
+          "typ": "Int",
+          "scope": "f"
+        },
+        {
+          "name": "d",
+          "typ": "Int",
+          "scope": "f"
+        }
+      ],
+      "locals": [
+        {
+          "name": "x",
+          "typ": "Int",
+          "scope": "f"
+        },
+        {
+          "name": "y",
+          "typ": "Int",
+          "scope": "f"
+        }
+      ],
+      "body": {
+        "entry": {
+          "id": "entry",
+          "insts": [
+            {
+              "Copy": {
+                "lhs": {
+                  "name": "y",
+                  "typ": "Int",
+                  "scope": "f"
+                },
+                "op": {
+                  "CInt": 2
+                }
+              }
+            }
+          ],
+          "term": {
+            "Ret": {
+              "CInt": 3
+            }
+          }
+        }
+      }
+    },
+    "main": {
+      "id": "main",
+      "ret_ty": "Int",
+      "params": [],
+      "locals": [
+        {
+          "name": "_t1",
+          "typ": "Int",
+          "scope": "main"
+        },
+        {
+          "name": "_t2",
+          "typ": "Int",
+          "scope": "main"
+        },
+        {
+          "name": "ind1",
+          "typ": {
+            "Ptr": {
+              "Fn": {
+                "ret_ty": "Int",
+                "param_ty": [
+                  "Int"
+                ]
+              }
+            }
+          },
+          "scope": "main"
+        },
+        {
+          "name": "ind2",
+          "typ": {
+            "Ptr": {
+              "Fn": {
+                "ret_ty": "Int",
+                "param_ty": [
+                  "Int"
+                ]
+              }
+            }
+          },
+          "scope": "main"
+        },
+        {
+          "name": "ind3",
+          "typ": {
+            "Ptr": {
+              "Fn": {
+                "ret_ty": "Int",
+                "param_ty": [
+                  "Int",
+                  "Int",
+                  "Int",
+                  "Int"
+                ]
+              }
+            }
+          },
+          "scope": "main"
+        },
+        {
+          "name": "x",
+          "typ": "Int",
+          "scope": "main"
+        }
+      ],
+      "body": {
+        "entry": {
+          "id": "entry",
+          "insts": [
+            {
+              "Copy": {
+                "lhs": {
+                  "name": "ind3",
+                  "typ": {
+                    "Ptr": {
+                      "Fn": {
+                        "ret_ty": "Int",
+                        "param_ty": [
+                          "Int",
+                          "Int",
+                          "Int",
+                          "Int"
+                        ]
+                      }
+                    }
+                  },
+                  "scope": "main"
+                },
+                "op": {
+                  "Var": {
+                    "name": "f",
+                    "typ": {
+                      "Ptr": {
+                        "Fn": {
+                          "ret_ty": "Int",
+                          "param_ty": [
+                            "Int",
+                            "Int",
+                            "Int",
+                            "Int"
+                          ]
+                        }
+                      }
+                    },
+                    "scope": null
+                  }
+                }
+              }
+            }
+          ],
+          "term": {
+            "CallIndirect": {
+              "lhs": {
+                "name": "_t1",
+                "typ": "Int",
+                "scope": "main"
+              },
+              "callee": {
+                "name": "ind1",
+                "typ": {
+                  "Ptr": {
+                    "Fn": {
+                      "ret_ty": "Int",
+                      "param_ty": [
+                        "Int"
+                      ]
+                    }
+                  }
+                },
+                "scope": "main"
+              },
+              "args": [
+                {
+                  "Var": {
+                    "name": "a",
+                    "typ": "Int",
+                    "scope": null
+                  }
+                }
+              ],
+              "next_bb": "lbl1"
+            }
+          }
+        },
+        "lbl1": {
+          "id": "lbl1",
+          "insts": [
+            {
+              "Copy": {
+                "lhs": {
+                  "name": "x",
+                  "typ": "Int",
+                  "scope": "main"
+                },
+                "op": {
+                  "Var": {
+                    "name": "_t1",
+                    "typ": "Int",
+                    "scope": "main"
+                  }
+                }
+              }
+            }
+          ],
+          "term": {
+            "CallIndirect": {
+              "lhs": null,
+              "callee": {
+                "name": "ind2",
+                "typ": {
+                  "Ptr": {
+                    "Fn": {
+                      "ret_ty": "Int",
+                      "param_ty": [
+                        "Int"
+                      ]
+                    }
+                  }
+                },
+                "scope": "main"
+              },
+              "args": [
+                {
+                  "CInt": 55
+                }
+              ],
+              "next_bb": "lbl2"
+            }
+          }
+        },
+        "lbl2": {
+          "id": "lbl2",
+          "insts": [],
+          "term": {
+            "CallIndirect": {
+              "lhs": {
+                "name": "_t2",
+                "typ": "Int",
+                "scope": "main"
+              },
+              "callee": {
+                "name": "ind3",
+                "typ": {
+                  "Ptr": {
+                    "Fn": {
+                      "ret_ty": "Int",
+                      "param_ty": [
+                        "Int",
+                        "Int",
+                        "Int",
+                        "Int"
+                      ]
+                    }
+                  }
+                },
+                "scope": "main"
+              },
+              "args": [
+                {
+                  "CInt": 56
+                },
+                {
+                  "CInt": 57
+                },
+                {
+                  "CInt": 58
+                },
+                {
+                  "Var": {
+                    "name": "x",
+                    "typ": "Int",
+                    "scope": "main"
+                  }
+                }
+              ],
+              "next_bb": "lbl3"
+            }
+          }
+        },
+        "lbl3": {
+          "id": "lbl3",
+          "insts": [
+            {
+              "Copy": {
+                "lhs": {
+                  "name": "x",
+                  "typ": "Int",
+                  "scope": "main"
+                },
+                "op": {
+                  "Var": {
+                    "name": "_t2",
+                    "typ": "Int",
+                    "scope": "main"
+                  }
+                }
+              }
+            }
+          ],
+          "term": {
+            "Ret": {
+              "CInt": 0
+            }
+          }
+        }
+      }
+    }
+  },
+  "externs": {
+    "e": {
+      "Fn": {
+        "ret_ty": "Int",
+        "param_ty": [
+          "Int",
+          "Int"
+        ]
+      }
+    }
+  }
+}

@@ -1,16 +1,17 @@
 extern e:(int, int) -> int;
-fn f(fval:int) -> int { 
+fn f(a:int, b:int, c:int, d:int) -> int { 
     let x:int;
     let y:int = 2;
     return 3; 
 }
 let a:int;
 fn main() -> int {
-    let x:int = 0;
-    let y:int = 0;
-    let if:&(int)->int = f;
-    let ih:&(int)->int = f;
-    x = if(a);
-    h(55);
+    let x:int;
+    let ind1:&(int)->int;
+    let ind2:&(int)->int;
+    let ind3:&(int, int, int, int)->int = f;
+    x = ind1(a);
+    ind2(55);
+    x = ind3(56, 57, 58, x);
     return 0;
 }

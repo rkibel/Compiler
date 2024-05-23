@@ -1,1 +1,209 @@
-parse error at token 64
+{
+  "globals": [
+    {
+      "name": "a",
+      "typ": "Int"
+    }
+  ],
+  "structs": [],
+  "externs": [
+    {
+      "name": "e",
+      "typ": {
+        "Fn": {
+          "prms": [
+            "Int",
+            "Int"
+          ],
+          "ret": "Int"
+        }
+      }
+    }
+  ],
+  "functions": [
+    {
+      "name": "f",
+      "params": [
+        {
+          "name": "a",
+          "typ": "Int"
+        },
+        {
+          "name": "b",
+          "typ": "Int"
+        },
+        {
+          "name": "c",
+          "typ": "Int"
+        },
+        {
+          "name": "d",
+          "typ": "Int"
+        }
+      ],
+      "rettyp": "Int",
+      "locals": [
+        [
+          {
+            "name": "x",
+            "typ": "Int"
+          },
+          null
+        ],
+        [
+          {
+            "name": "y",
+            "typ": "Int"
+          },
+          {
+            "Num": 2
+          }
+        ]
+      ],
+      "stmts": [
+        {
+          "Return": {
+            "Num": 3
+          }
+        }
+      ]
+    },
+    {
+      "name": "main",
+      "params": [],
+      "rettyp": "Int",
+      "locals": [
+        [
+          {
+            "name": "x",
+            "typ": "Int"
+          },
+          null
+        ],
+        [
+          {
+            "name": "ind1",
+            "typ": {
+              "Ptr": {
+                "Fn": {
+                  "prms": [
+                    "Int"
+                  ],
+                  "ret": "Int"
+                }
+              }
+            }
+          },
+          null
+        ],
+        [
+          {
+            "name": "ind2",
+            "typ": {
+              "Ptr": {
+                "Fn": {
+                  "prms": [
+                    "Int"
+                  ],
+                  "ret": "Int"
+                }
+              }
+            }
+          },
+          null
+        ],
+        [
+          {
+            "name": "ind3",
+            "typ": {
+              "Ptr": {
+                "Fn": {
+                  "prms": [
+                    "Int",
+                    "Int",
+                    "Int",
+                    "Int"
+                  ],
+                  "ret": "Int"
+                }
+              }
+            }
+          },
+          {
+            "Id": "f"
+          }
+        ]
+      ],
+      "stmts": [
+        {
+          "Assign": {
+            "lhs": {
+              "Id": "x"
+            },
+            "rhs": {
+              "RhsExp": {
+                "Call": {
+                  "callee": {
+                    "Id": "ind1"
+                  },
+                  "args": [
+                    {
+                      "Id": "a"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "Call": {
+            "callee": {
+              "Id": "ind2"
+            },
+            "args": [
+              {
+                "Num": 55
+              }
+            ]
+          }
+        },
+        {
+          "Assign": {
+            "lhs": {
+              "Id": "x"
+            },
+            "rhs": {
+              "RhsExp": {
+                "Call": {
+                  "callee": {
+                    "Id": "ind3"
+                  },
+                  "args": [
+                    {
+                      "Num": 56
+                    },
+                    {
+                      "Num": 57
+                    },
+                    {
+                      "Num": 58
+                    },
+                    {
+                      "Id": "x"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "Return": {
+            "Num": 0
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -74,7 +74,7 @@ Terminal* get_terminal_instruction(json terminal){
         else{
             cid->lhs = body["lhs"]["name"];
         }
-        cid->callee = body["callee"];
+        cid->callee = body["callee"]["name"];
         cid->next_bb = body["next_bb"];
         vector<Operand*> arguments;
 

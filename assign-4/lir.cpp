@@ -328,9 +328,7 @@ struct CallIndirect : Terminal{
         os << "], " << next_bb << ")" << endl;
     }
     //TO-DO
-    string cg(const vector<string>& local_ids, const vector<string>& param_ids, map<BbId, BasicBlock*>& blocks, const string& func_name, map<string, string>& labels_map) override {
-        return "";
-    }
+    string cg(const vector<string>& local_ids, const vector<string>& param_ids, map<BbId, BasicBlock*>& blocks, const string& func_name, map<string, string>& labels_map) override;
 };
 struct Jump : Terminal{
     BbId next_bb;
@@ -701,3 +699,20 @@ inline string CallDirect::cg(const vector<string>& local_ids, const vector<strin
     blocks[next_bb]->cg(local_ids, param_ids, blocks, func_name, labels_map);
     return res;
 }
+
+inline string CallIndirect::cg(const vector<string>& local_ids, const vector<string>& param_ids, map<BbId, BasicBlock*>& blocks, const string& func_name, map<string, string>& labels_map) {
+    string res;
+    int numPushed = 0;
+    if ( args.size() % 2 != 0 ) { res += "  subq $8, %rsp\n"; numPushed++; }
+    for (int i = args.size() - 1; i >= 0; i--) {
+        res += "  pushq " + getMemoryOperand(args[i], local_ids, param_ids) + "\n";
+        numPushed++;
+    }
+    res += "  call *" + getMemory(callee, local_ids, param_ids) + "\n";
+    if (lhs != "_") { res += "  movq %rax, " + getMemory(lhs, local_ids, param_ids) + "\n"; }
+    if (numPushed > 0) { res += "  addq $" + to_string(numPushed*8) +", %rsp\n"; }
+    res += "  jmp " + func_name + "_" + next_bb + "\n\n";
+    blocks[next_bb]->cg(local_ids, param_ids, blocks, func_name, labels_map);
+    return res;
+}
+
