@@ -1,5 +1,4 @@
 Externs
-  e : Fn([Int, Int], Int)
 
 Globals
   a : Int

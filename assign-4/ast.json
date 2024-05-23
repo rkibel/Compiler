@@ -6,20 +6,7 @@
     }
   ],
   "structs": [],
-  "externs": [
-    {
-      "name": "e",
-      "typ": {
-        "Fn": {
-          "prms": [
-            "Int",
-            "Int"
-          ],
-          "ret": "Int"
-        }
-      }
-    }
-  ],
+  "externs": [],
   "functions": [
     {
       "name": "f",

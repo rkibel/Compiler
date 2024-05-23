@@ -1,14 +1,3 @@
-Extern
-Id(e)
-Colon
-OpenParen
-Int
-Comma
-Int
-CloseParen
-Arrow
-Int
-Semicolon
 Fn
 Id(f)
 OpenParen

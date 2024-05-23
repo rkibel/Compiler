@@ -15,6 +15,7 @@ using FuncId = string;
 using VarId = string;
 using FieldId = string;
 using BbId = string;
+struct Function;
 struct BasicBlock;
 
 //Globals
@@ -65,20 +66,10 @@ struct Any : Type {
     }
 };
 
-inline string getMemory(const string& id, const vector<string>& local_ids, const vector<string>& param_ids) {
-    auto local_it = find(local_ids.begin(), local_ids.end(), id);
-    auto param_it = find(param_ids.begin(), param_ids.end(), id);
-    auto function_it = find(function_ids.begin(), function_ids.end(), id);
-    if (local_it != local_ids.end()) { //local
-        size_t index = distance(local_ids.begin(), local_it);
-        return "-" + to_string((index+1)*8) + "(%rbp)";
-    } else if (param_it != param_ids.end()) { //parameter
-        size_t index = distance(param_ids.begin(), param_it);
-        return to_string((index+2)*8) + "(%rbp)"; //+2 because parameters start at 16
-    } else if (function_it != function_ids.end()) { //function global
-        return id + "_(%rip)";
-    } else { // non-function global
-        return id + "(%rip)";
+template<typename T>
+void getKeys(const map<string, T>& input_map, vector<string>& output_vector) {
+    for (const auto& pair : input_map) {
+        output_vector.push_back(pair.first);
     }
 }
 
@@ -89,14 +80,14 @@ struct ArithmeticOp{
         return os;
     }
     //TO-DO
-    virtual string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, const vector<string>& local_ids, const vector<string>& param_ids) {
+    virtual string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, Function*& f) {
         return "";
     }
 };
 struct Add : ArithmeticOp{
     void print(std::ostream& os) const override { os << "add"; }
     //TO-DO
-    string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, const vector<string>& local_ids, const vector<string>& param_ids) override {
+    string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, Function*& f) override {
         string res;
         res += "  movq " + left_mem + ", %r8\n";
         res += "  addq " + right_mem + ", %r8\n";
@@ -107,7 +98,7 @@ struct Add : ArithmeticOp{
 struct Sub : ArithmeticOp{
     void print(std::ostream& os) const override { os << "sub"; }
     //TO-DO
-    string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, const vector<string>& local_ids, const vector<string>& param_ids) override {
+    string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, Function*& f) override {
         string res;
         res += "  movq " + left_mem + ", %r8\n";
         res += "  subq " + right_mem + ", %r8\n";
@@ -118,7 +109,7 @@ struct Sub : ArithmeticOp{
 struct Mul : ArithmeticOp{
     void print(std::ostream& os) const override { os << "mul"; }
     //TO-DO
-    string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, const vector<string>& local_ids, const vector<string>& param_ids) override {
+    string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, Function*& f) override {
         string res;
         res += "  movq " + left_mem + ", %r8\n";
         res += "  imulq " + right_mem + ", %r8\n";
@@ -129,7 +120,7 @@ struct Mul : ArithmeticOp{
 struct Div : ArithmeticOp{
     void print(std::ostream& os) const override { os << "div"; }
     //TO-DO
-    string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, const vector<string>& local_ids, const vector<string>& param_ids) override {
+    string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, Function*& f) override {
         string res;
         res += "  movq " + left_mem + ", %rax\n  cqo\n";
         res += (right_mem[0] == '$') ? "  movq " + right_mem + ", %r8\n  idivq %r8\n" : "  idivq " + right_mem + "\n";
@@ -146,14 +137,14 @@ struct ComparisonOp{
         return os;
     }
     //TO-DO
-    virtual string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, const vector<string>& local_ids, const vector<string>& param_ids) {
+    virtual string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, Function*& f) {
         return "";
     }
 };
 struct Equal : ComparisonOp{
     void print(std::ostream& os) const override { os << "eq"; }
     //TO-DO
-    string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, const vector<string>& local_ids, const vector<string>& param_ids) override {
+    string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, Function*& f) override {
         string res;
         if (right_mem[0] == '$' && left_mem[0] != '$') {
             res += "  cmpq " + right_mem + ", " + left_mem + "\n";
@@ -168,7 +159,7 @@ struct Equal : ComparisonOp{
 struct NotEq : ComparisonOp{ 
     void print(std::ostream& os) const override { os << "neq"; }
     //TO-DO
-    string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, const vector<string>& local_ids, const vector<string>& param_ids) override {
+    string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, Function*& f) override {
         string res;
         if (right_mem[0] == '$' && left_mem[0] != '$') {
             res += "  cmpq " + right_mem + ", " + left_mem + "\n";
@@ -183,7 +174,7 @@ struct NotEq : ComparisonOp{
 struct Lt : ComparisonOp{
     void print(std::ostream& os) const override { os << "lt"; }
     //TO-DO
-    string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, const vector<string>& local_ids, const vector<string>& param_ids) override {
+    string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, Function*& f) override {
         string res;
         if (right_mem[0] == '$' && left_mem[0] != '$') {
             res += "  cmpq " + right_mem + ", " + left_mem + "\n";
@@ -198,7 +189,7 @@ struct Lt : ComparisonOp{
 struct Lte : ComparisonOp{
     void print(std::ostream& os) const override { os << "lte"; }
     //TO-DO
-    string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, const vector<string>& local_ids, const vector<string>& param_ids) override {
+    string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, Function*& f) override {
         string res;
         if (right_mem[0] == '$' && left_mem[0] != '$') {
             res += "  cmpq " + right_mem + ", " + left_mem + "\n";
@@ -213,7 +204,7 @@ struct Lte : ComparisonOp{
 struct Gt : ComparisonOp{
     void print(std::ostream& os) const override { os << "gt"; }
     //TO-DO
-    string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, const vector<string>& local_ids, const vector<string>& param_ids) override {
+    string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, Function*& f) override {
         string res;
         if (right_mem[0] == '$' && left_mem[0] != '$') {
             res += "  cmpq " + right_mem + ", " + left_mem + "\n";
@@ -228,7 +219,7 @@ struct Gt : ComparisonOp{
 struct Gte : ComparisonOp{
     void print(std::ostream& os) const override { os << "gte"; }
     //TO-DO
-    string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, const vector<string>& local_ids, const vector<string>& param_ids) override {
+    string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, Function*& f) override {
         string res;
         if (right_mem[0] == '$' && left_mem[0] != '$') {
             res += "  cmpq " + right_mem + ", " + left_mem + "\n";
@@ -248,7 +239,7 @@ struct Operand{
         return os;
     }
     //TO-DO
-    virtual string cg(const vector<string>& local_ids, const vector<string>& param_ids) {
+    virtual string cg(Function*& f) {
         return "";
     }
 };
@@ -256,7 +247,7 @@ struct Const : Operand{
     int32_t num;
     void print(std::ostream& os) const override { os << num; }
     //TO-DO
-    string cg(const vector<string>& local_ids, const vector<string>& param_ids) override {
+    string cg(Function*& f) override {
         return "";
     }
 };
@@ -264,18 +255,10 @@ struct Var : Operand{
     VarId id;
     void print(std::ostream& os) const override { os << id; }
     //TO-DO
-    string cg(const vector<string>& local_ids, const vector<string>& param_ids) override {
+    string cg(Function*& f) override {
         return "";
     }
 };
-
-inline string getMemoryOperand(Operand*& op, const vector<string>& local_ids, const vector<string>& param_ids) {
-    if (Const* c = dynamic_cast<Const*>(op)) {
-        return "$" + to_string(c->num);
-    } else {
-        return getMemory(static_cast<Var*>(op)->id, local_ids, param_ids);
-    }
-}
 
 struct Terminal{
     virtual void print(std::ostream& os) const {}
@@ -284,7 +267,7 @@ struct Terminal{
         return os;
     }
     //TO-DO
-    virtual string cg(const vector<string>& local_ids, const vector<string>& param_ids, map<BbId, BasicBlock*>& blocks, const string& func_name, map<string, string>& labels_map) {
+    virtual string cg(Function*& f, map<string, string>& labels_map) {
         return "";
     }
 };
@@ -296,7 +279,7 @@ struct Branch : Terminal{
         os << "Branch(" << *guard << ", " << tt << ", " << ff << ")" << endl;
     }
     //TO-DO
-    string cg(const vector<string>& local_ids, const vector<string>& param_ids, map<BbId, BasicBlock*>& blocks, const string& func_name, map<string, string>& labels_map) override;
+    string cg(Function*& f, map<string, string>& labels_map) override;
 };
 struct CallDirect : Terminal{
     VarId lhs;
@@ -312,7 +295,7 @@ struct CallDirect : Terminal{
         os << "], " << next_bb << ")" << endl;
     }
     //TO-DO
-    string cg(const vector<string>& local_ids, const vector<string>& param_ids, map<BbId, BasicBlock*>& blocks, const string& func_name, map<string, string>& labels_map) override;
+    string cg(Function*& f, map<string, string>& labels_map) override;
 };
 struct CallIndirect : Terminal{
     VarId lhs;
@@ -328,7 +311,7 @@ struct CallIndirect : Terminal{
         os << "], " << next_bb << ")" << endl;
     }
     //TO-DO
-    string cg(const vector<string>& local_ids, const vector<string>& param_ids, map<BbId, BasicBlock*>& blocks, const string& func_name, map<string, string>& labels_map) override;
+    string cg(Function*& f, map<string, string>& labels_map) override;
 };
 struct Jump : Terminal{
     BbId next_bb;
@@ -336,7 +319,7 @@ struct Jump : Terminal{
         os << "Jump(" << next_bb << ")" << endl;
     }
     //TO-DO
-    string cg(const vector<string>& local_ids, const vector<string>& param_ids, map<BbId, BasicBlock*>& blocks, const string& func_name, map<string, string>& labels_map) override;
+    string cg(Function*& f, map<string, string>& labels_map) override;
 };
 struct Ret : Terminal{
     Operand* op;
@@ -344,11 +327,7 @@ struct Ret : Terminal{
         os << "Ret(" << *op << ")" << endl;
     }
     //TO-DO
-    string cg(const vector<string>& local_ids, const vector<string>& param_ids, map<BbId, BasicBlock*>& blocks, const string& func_name, map<string, string>& labels_map) override {
-        string res;
-        res += "  movq " + getMemoryOperand(op, local_ids, param_ids) + ", %rax\n  jmp " + func_name + "_epilogue\n\n";
-        return res;
-    }
+    string cg(Function*& f, map<string, string>& labels_map) override;
 };
 
 
@@ -359,7 +338,7 @@ struct LirInst{
         return os;
     }
     //TO-DO
-    virtual string cg(const vector<string>& local_ids, const vector<string>& param_ids) {
+    virtual string cg(Function*& f) {
         return "";
     }
 };
@@ -370,9 +349,7 @@ struct Alloc : LirInst{
         os << "Alloc(" << lhs << ", " << *num << ")" << endl;
     }
     //TO-DO
-    string cg(const vector<string>& local_ids, const vector<string>& param_ids) override {
-        return "";
-    }
+    string cg(Function*& f) override;
 };
 struct Arith : LirInst{
     VarId lhs;
@@ -383,12 +360,7 @@ struct Arith : LirInst{
         os << "Arith(" << lhs << ", " << *aop << ", " << *left << ", " << *right << ")" << endl;
     }
     //TO-DO
-    string cg(const vector<string>& local_ids, const vector<string>& param_ids) override {
-        string lhs_mem = getMemory(lhs, local_ids, param_ids);
-        string left_mem = getMemoryOperand(left, local_ids, param_ids);
-        string right_mem = getMemoryOperand(right, local_ids, param_ids);
-        return aop->cg(lhs_mem, left_mem, right_mem, local_ids, param_ids);
-    }
+    string cg(Function*& f) override;
 };
 struct CallExt : LirInst{
     VarId lhs;
@@ -403,26 +375,7 @@ struct CallExt : LirInst{
         os << "]" << ")" << endl; 
     }
     //TO-DO
-    string cg(const vector<string>& local_ids, const vector<string>& param_ids) override {
-        string res;
-        vector<string> six_args{"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"};
-        int numPushed = 0;
-        for (unsigned int i = 0; i < args.size(); i++) {
-            if (i < 6) { 
-                res += "  movq " + getMemoryOperand(args[i], local_ids, param_ids) + ", " + six_args[i] + "\n";
-            } else {
-                res += "  pushq " +  getMemoryOperand(args[args.size()-1-(i-6)], local_ids, param_ids) + "\n";
-                numPushed++;
-            }
-        }
-        if ( args.size() > 6 && args.size() % 2 != 0 ) { res += "  subq $8, %rsp\n"; numPushed++; }
-        res += "  call " + callee + "\n";
-        if (numPushed > 0) { res += "  addq $" + to_string(numPushed*8) +", %rsp\n"; }
-        if (lhs != "_") {
-            res += "  movq %rax, " + getMemory(lhs, local_ids, param_ids) + "\n";
-        }
-        return res;
-    }
+    string cg(Function*& f) override;
 };
 struct Cmp : LirInst{
     VarId lhs;
@@ -433,13 +386,7 @@ struct Cmp : LirInst{
         os << "Cmp(" << lhs << ", " << *cop << ", " << *left << ", " << *right << ")" << endl;
     }
     //TO-DO
-    string cg(const vector<string>& local_ids, const vector<string>& param_ids) override {
-        // cout << "COMPARISON\n";
-        string lhs_mem = getMemory(lhs, local_ids, param_ids);
-        string left_mem = getMemoryOperand(left, local_ids, param_ids);
-        string right_mem = getMemoryOperand(right, local_ids, param_ids);
-        return cop->cg(lhs_mem, left_mem, right_mem, local_ids, param_ids);
-    }
+    string cg(Function*& f) override;
 };
 struct Copy : LirInst{
     VarId lhs;
@@ -448,21 +395,7 @@ struct Copy : LirInst{
         os << "Copy(" << lhs << ", " << *op << ")" << endl;
     }
     //TO-DO
-    string cg(const vector<string>& local_ids, const vector<string>& param_ids) override {
-        //Five cases for op(rhs): copying a const, local, param, global (non func), global function
-        //Three cases for lhs: a local, param, global (non-func)
-        //For non-constant, we use a helper function to tell us what string to print
-        string op_mem = getMemoryOperand(op, local_ids, param_ids);
-        string res = "  movq " + op_mem + ", ";
-        res += (op_mem[0] == '$') ? getMemory(lhs, local_ids, param_ids) + "\n" : "%r8\n  movq %r8, " + getMemory(lhs, local_ids, param_ids) + "\n";
-        // if (Const* c = dynamic_cast<Const*>(op)) { // movq $1, -8(%rbp)
-        //     res += "  movq $" + to_string(c->num) + ", " + getMemory(lhs, local_ids, param_ids) + "\n";
-        // } else { //movq -16(%rbp), %r8 /n   movq %r8, -8(%rbp)
-        //     res += "  movq " + getMemory(static_cast<Var*>(op)->id, local_ids, param_ids) + ", %r8\n";
-        //     res += "  movq %r8, " + getMemory(lhs, local_ids, param_ids) + "\n";
-        // }
-        return res;
-    }
+    string cg(Function*& f) override;
 };
 struct Gep : LirInst{
     VarId lhs;
@@ -472,7 +405,7 @@ struct Gep : LirInst{
         os << "Gep(" << lhs << ", " << src << ", " << *idx << ")" << endl;
     }
     //TO-DO
-    string cg(const vector<string>& local_ids, const vector<string>& param_ids) override {
+    string cg(Function*& f) override {
         return "";
     }
 };
@@ -484,7 +417,7 @@ struct Gfp : LirInst{
         os << "Gfp(" << lhs << ", " << src << ", " << field << ")" << endl;
     }
     //TO-DO
-    string cg(const vector<string>& local_ids, const vector<string>& param_ids) override {
+    string cg(Function*& f) override {
         return "";
     }
 };
@@ -495,9 +428,7 @@ struct Load : LirInst{
         os << "Load(" << lhs << ", " << src << ")" << endl;
     }
     //TO-DO
-    string cg(const vector<string>& local_ids, const vector<string>& param_ids) override {
-        return "";
-    }
+    string cg(Function*& f) override;
 };
 struct Store : LirInst{
     VarId dst;
@@ -506,9 +437,7 @@ struct Store : LirInst{
         os << "Store(" << dst << ", " << *op << ")" << endl;
     }
     //TO-DO
-    string cg(const vector<string>& local_ids, const vector<string>& param_ids) override {
-        return "";
-    }
+    string cg(Function*& f) override;
 };
 
 struct BasicBlock{
@@ -525,22 +454,8 @@ struct BasicBlock{
         return os;
     }
     //TO-DO
-    void cg(const vector<string>& local_ids, const vector<string>& param_ids, map<BbId, BasicBlock*>& blocks, const string& func_name, map<string, string>& labels_map) {
-        string res = func_name + "_" + label + ":\n";
-        for (LirInst* lir : insts) {
-            res += lir->cg(local_ids, param_ids);
-        }
-        res += term->cg(local_ids, param_ids, blocks, func_name, labels_map);
-        labels_map[label] = res;
-    }
+    void cg(Function*& f, map<string, string>& labels_map);
 };
-
-template<typename T>
-void getKeys(const map<string, T>& myMap, vector<string>& keys) {
-    for (const auto& pair : myMap) {
-        keys.push_back(pair.first);
-    }
-}
 
 struct Function{
     FuncId name;
@@ -551,7 +466,7 @@ struct Function{
 
     ~Function() { 
     }
-    friend std::ostream& operator<<(std::ostream& os, const Function& func) {
+    friend std::ostream& operator<<(std::ostream& os, Function& func) {
         os << "Function " << func.name << "(";
         for (unsigned int i = 0; i < func.params.size(); i++) {
             os << func.params[i].first << ":" << *func.params[i].second;
@@ -575,24 +490,18 @@ struct Function{
         return os;
     }
 
-    void cg() {
-        vector<string> param_ids;
-            for (const auto& param : params) {
-            param_ids.push_back(param.first);
-        }
-        vector<string> local_ids; 
-        getKeys(locals, local_ids);
+    void cg(Function*& f) {
         string res;
         res += ".globl " + name + "\n" + name + ":\n  pushq %rbp\n  movq %rsp, %rbp\n";
-        int stack_space = (local_ids.size() % 2 == 0) ? local_ids.size() : local_ids.size() + 1;
+        int stack_space = (f->locals.size() % 2 == 0) ? f->locals.size() : f->locals.size() + 1;
         res += "  subq $" + to_string(stack_space * 8) + ", %rsp\n";
-        for (unsigned int i = 1; i < local_ids.size() + 1; i++) {
+        for (unsigned int i = 1; i < f->locals.size() + 1; i++) {
             res += "  movq $0, -" + to_string(i*8) + "(%rbp)\n";
         }
         res += "  jmp " + name + "_entry\n\n";
         map<string, string> labels_map;
         for (const auto& [bbId, bb]: body) {
-            bb->cg(local_ids, param_ids, body, name, labels_map);
+            bb->cg(f, labels_map);
         }
         for (const auto& [label_name, label_res] : labels_map) {
             res += label_res;
@@ -651,8 +560,8 @@ struct Program{
         res += "invalid_alloc_msg: .string \"invalid allocation amount\"\n";
         res += "\n.text\n\n";
         getKeys(functions, function_ids);
-        for (const auto& [funcId, func] : functions) {
-            func->cg();
+        for (auto& [funcId, f] : functions) {
+            f->cg(f);
         }
         for (const auto& [func_name, func_res] : functions_res) {
             res += func_res;
@@ -665,54 +574,193 @@ struct Program{
 
 
 //cg functions which rely on later definitions
-inline string Jump::cg(const vector<string>& local_ids, const vector<string>& param_ids, map<BbId, BasicBlock*>& blocks, const string& func_name, map<string, string>& labels_map) {
-    string res = "  $jmp " + func_name + "_" + next_bb + "\n\n";
-    blocks[next_bb]->cg(local_ids, param_ids, blocks, func_name, labels_map);
+inline string getMemory(const string& id, Function*& f) {
+    vector<string> param_ids;
+        for (const auto& param : f->params) {
+        param_ids.push_back(param.first);
+    }
+    vector<string> local_ids; 
+    getKeys(f->locals, local_ids);
+    auto local_it = find(local_ids.begin(), local_ids.end(), id);
+    auto param_it = find(param_ids.begin(), param_ids.end(), id);
+    auto function_it = find(function_ids.begin(), function_ids.end(), id);
+    if (local_it != local_ids.end()) { //local
+        size_t index = distance(local_ids.begin(), local_it);
+        return "-" + to_string((index+1)*8) + "(%rbp)";
+    } else if (param_it != param_ids.end()) { //parameter
+        size_t index = distance(param_ids.begin(), param_it);
+        return to_string((index+2)*8) + "(%rbp)"; //+2 because parameters start at 16
+    } else if (function_it != function_ids.end()) { //function global
+        return id + "_(%rip)";
+    } else { // non-function global
+        return id + "(%rip)";
+    }
+}
+inline string getMemoryOperand(Operand*& op, Function*& f) {
+    if (Const* c = dynamic_cast<Const*>(op)) {
+        return "$" + to_string(c->num);
+    } else {
+        return getMemory(static_cast<Var*>(op)->id, f);
+    }
+}
+
+inline string Arith::cg(Function*& f) {
+        string lhs_mem = getMemory(lhs, f);
+        string left_mem = getMemoryOperand(left, f);
+        string right_mem = getMemoryOperand(right, f);
+        return aop->cg(lhs_mem, left_mem, right_mem, f);
+    }
+
+inline string Cmp::cg(Function*& f) {
+    // cout << "COMPARISON\n";
+    string lhs_mem = getMemory(lhs, f);
+    string left_mem = getMemoryOperand(left, f);
+    string right_mem = getMemoryOperand(right, f);
+    return cop->cg(lhs_mem, left_mem, right_mem, f);
+}
+
+inline string Copy::cg(Function*& f) {
+    //Five cases for op(rhs, f): copying a const, local, param, global (non func), global function
+    //Three cases for lhs: a local, param, global (non-func)
+    //For non-constant, we use a helper function to tell us what string to print
+    // cout << "In copy for lhs: " << lhs << "\n";
+    string op_mem = getMemoryOperand(op, f);
+    string res = "  movq " + op_mem + ", ";
+    res += (op_mem[0] == '$') ? getMemory(lhs, f) + "\n" : "%r8\n  movq %r8, " + getMemory(lhs, f) + "\n";
+    // if (Const* c = dynamic_cast<Const*>(op)) { // movq $1, -8(%rbp)
+    //     res += "  movq $" + to_string(c->num) + ", " + getMemory(lhs, f) + "\n";
+    // } else { //movq -16(%rbp), %r8 /n   movq %r8, -8(%rbp)
+    //     res += "  movq " + getMemory(static_cast<Var*>(op)->id) + ", %r8\n";
+    //     res += "  movq %r8, " + getMemory(lhs, f) + "\n";
+    // }
     return res;
 }
 
-inline string Branch::cg(const vector<string>& local_ids, const vector<string>& param_ids, map<BbId, BasicBlock*>& blocks, const string& func_name, map<string, string>& labels_map) {
+inline string Ret::cg(Function*& f, map<string, string>& labels_map) {
+    string res;
+    res += "  movq " + getMemoryOperand(op, f) + ", %rax\n  jmp " + f->name + "_epilogue\n\n";
+    return res;
+}
+
+inline string Load::cg(Function*& f) {
+    string res;
+    res += "  movq " + getMemory(src, f) + ", %r8\n  movq 0(%r8), %r9\n";
+    res += "  movq %r9, " + getMemory(lhs, f) + "\n";
+    return res;
+}
+
+inline string Store::cg(Function*& f) {
+    string res;
+    res += "  movq " + getMemoryOperand(op, f) + ", %r8\n";
+    res += "  movq " + getMemory(dst, f) + ", %r9\n  movq %r8, 0(%r9)\n";
+    return res;
+}
+
+inline void BasicBlock::cg(Function*& f, map<string, string>& labels_map) {
+    string res = f->name + "_" + label + ":\n";
+    for (LirInst* lir : insts) {
+        res += lir->cg(f);
+    }
+    res += term->cg(f, labels_map);
+    labels_map[label] = res;
+}
+
+inline string Jump::cg(Function*& f, map<string, string>& labels_map) {
+    string res = "  $jmp " + f->name + "_" + next_bb + "\n\n";
+    f->body[next_bb]->cg(f, labels_map);
+    return res;
+}
+
+inline string Branch::cg(Function*& f, map<string, string>& labels_map) {
     string res;
     if (Const* c = dynamic_cast<Const*>(guard)) {
         res += "  movq " + to_string(c->num) + ", %r8\n  cmpq $0, %r8\n";
     } else {
-        res += "  cmpq $0, " + getMemory(dynamic_cast<Var*>(guard)->id, local_ids, param_ids) + "\n";
+        res += "  cmpq $0, " + getMemory(static_cast<Var*>(guard)->id, f) + "\n";
     }
-    res += "  jne " + func_name + "_" + tt + "\n  jmp " + func_name + "_" + ff + "\n\n";
-    blocks[tt]->cg(local_ids, param_ids, blocks, func_name, labels_map);
-    blocks[ff]->cg(local_ids, param_ids, blocks, func_name, labels_map);
+    res += "  jne " + f->name + "_" + tt + "\n  jmp " + f->name + "_" + ff + "\n\n";
+    f->body[tt]->cg(f, labels_map);
+    f->body[ff]->cg(f, labels_map);
     return res;
 }
 
-inline string CallDirect::cg(const vector<string>& local_ids, const vector<string>& param_ids, map<BbId, BasicBlock*>& blocks, const string& func_name, map<string, string>& labels_map) {
+inline string CallDirect::cg(Function*& f, map<string, string>& labels_map) {
     string res;
     int numPushed = 0;
     if ( args.size() % 2 != 0 ) { res += "  subq $8, %rsp\n"; numPushed++; }
     for (int i = args.size() - 1; i >= 0; i--) {
-        res += "  pushq " + getMemoryOperand(args[i], local_ids, param_ids) + "\n";
+        res += "  pushq " + getMemoryOperand(args[i], f) + "\n";
         numPushed++;
     }
     res += "  call " + callee + "\n";
-    if (lhs != "_") { res += "  movq %rax, " + getMemory(lhs, local_ids, param_ids) + "\n"; }
+    if (lhs != "_") { res += "  movq %rax, " + getMemory(lhs, f) + "\n"; }
     if (numPushed > 0) { res += "  addq $" + to_string(numPushed*8) +", %rsp\n"; }
-    res += "  jmp " + func_name + "_" + next_bb + "\n\n";
-    blocks[next_bb]->cg(local_ids, param_ids, blocks, func_name, labels_map);
+    res += "  jmp " + f->name + "_" + next_bb + "\n\n";
+    f->body[next_bb]->cg(f, labels_map);
     return res;
 }
 
-inline string CallIndirect::cg(const vector<string>& local_ids, const vector<string>& param_ids, map<BbId, BasicBlock*>& blocks, const string& func_name, map<string, string>& labels_map) {
+inline string CallIndirect::cg(Function*& f, map<string, string>& labels_map) {
     string res;
     int numPushed = 0;
     if ( args.size() % 2 != 0 ) { res += "  subq $8, %rsp\n"; numPushed++; }
     for (int i = args.size() - 1; i >= 0; i--) {
-        res += "  pushq " + getMemoryOperand(args[i], local_ids, param_ids) + "\n";
+        res += "  pushq " + getMemoryOperand(args[i], f) + "\n";
         numPushed++;
     }
-    res += "  call *" + getMemory(callee, local_ids, param_ids) + "\n";
-    if (lhs != "_") { res += "  movq %rax, " + getMemory(lhs, local_ids, param_ids) + "\n"; }
+    res += "  call *" + getMemory(callee, f) + "\n";
+    if (lhs != "_") { res += "  movq %rax, " + getMemory(lhs, f) + "\n"; }
     if (numPushed > 0) { res += "  addq $" + to_string(numPushed*8) +", %rsp\n"; }
-    res += "  jmp " + func_name + "_" + next_bb + "\n\n";
-    blocks[next_bb]->cg(local_ids, param_ids, blocks, func_name, labels_map);
+    res += "  jmp " + f->name + "_" + next_bb + "\n\n";
+    f->body[next_bb]->cg(f, labels_map);
     return res;
 }
 
+inline string CallExt::cg(Function*& f) {
+    string res;
+    vector<string> six_args{"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"};
+    int numPushed = 0;
+    for (unsigned int i = 0; i < args.size(); i++) {
+        if (i < 6) { 
+            res += "  movq " + getMemoryOperand(args[i], f) + ", " + six_args[i] + "\n";
+        } else {
+            res += "  pushq " +  getMemoryOperand(args[args.size()-1-(i-6)], f) + "\n";
+            numPushed++;
+        }
+    }
+    if ( args.size() > 6 && args.size() % 2 != 0 ) { res += "  subq $8, %rsp\n"; numPushed++; }
+    res += "  call " + callee + "\n";
+    if (numPushed > 0) { res += "  addq $" + to_string(numPushed*8) +", %rsp\n"; }
+    if (lhs != "_") {
+        res += "  movq %rax, " + getMemory(lhs, f) + "\n";
+    }
+    return res;
+}
+
+inline string Alloc::cg(Function*& f) {
+        string res;
+        if (Const* c = dynamic_cast<Const*>(num)) {
+        res += "  movq " + to_string(c->num) + ", %r8\n  cmpq $0, %r8\n";
+        } else {
+            res += "  cmpq $0, " + getMemory(static_cast<Var*>(num)->id, f) + "\n";
+        }
+        res += "  jle .invalid_alloc_length\n";
+        
+        // cmpq $0, -24(%rbp)
+        // jle .invalid_alloc_length
+
+
+        // movq $31, %r8
+        // cmpq $0, %r8
+        // jle .invalid_alloc_length
+        // movq $1, %rdi
+        // imulq %r8, %rdi
+        // incq %rdi
+        // call _cflat_alloc
+        // movq $31, %r8
+        // movq %r8, 0(%rax)
+        // addq $8, %rax
+        // movq %rax, -16(%rbp)
+        
+        return "";
+    }

@@ -356,15 +356,5 @@
       }
     }
   },
-  "externs": {
-    "e": {
-      "Fn": {
-        "ret_ty": "Int",
-        "param_ty": [
-          "Int",
-          "Int"
-        ]
-      }
-    }
-  }
+  "externs": {}
 }

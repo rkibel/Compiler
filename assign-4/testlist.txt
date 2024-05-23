@@ -65,3 +65,191 @@ fn main() -> int {
     x = 42;
     return x;
 }
+
+#Copy:
+fn copyLocal() -> int {
+    let a:int, b:int;
+    a=b;
+    return 2;
+}
+fn copyParam(b:int) -> int {
+    let a:int;
+    a=b;
+    return 2;
+}
+fn copyGlobalNonFunc(b:int) -> int {
+    let a:int;
+    a=g;
+    return 2;
+}
+fn copyGlobalFunc() -> int {
+    let a:&(int) -> int;
+    a = k;
+    return 2;
+}
+
+#Arith
+fn arithConst(a:int) -> int {
+    return 1/2;
+}
+fn arithLocal() -> int {
+    let a:int, b:int;
+    a = a/b;
+    return 2;
+}
+fn arithParam(b:int) -> int {
+    return b/2;
+}
+fn arithGlobal(b:int) -> int {
+    return g/2;
+}
+
+#Comp
+fn compConst(a:int) -> int {
+    return 2<=1;
+}
+fn compLocal() -> int {
+    let a:int, b:int;
+    a = a<=b;
+    return 2;
+}
+fn compParam(a:int, b:int) -> int {
+    return b<=2;
+}
+fn compGlobal(b:int) -> int {
+    return 2<=g;
+}
+
+Branch
+fn main() -> int {
+    let x:int, y:int;
+    if x < y {
+        y = x;
+    }
+    return y;
+}
+
+fn main() -> int {
+    let x:int, y:int;
+    if x < y {
+        y = x;
+    }
+    if 3 {
+        x = y;
+    }
+    test();
+    if test() {
+        x = 1;
+    }
+    return y;
+}
+
+Functions:
+fn foo(p:int, q:int) -> int {
+    let x:int;
+    x = p + q;
+    return x;
+}
+fn test() -> int {
+    return 0;
+}
+fn main() -> int {
+    let x:int;
+    x = foo(40,2);
+    return x;
+}
+
+Return:
+fn returnConst() -> int {
+    return 1;
+}
+fn returnParam(x:int) -> int {
+    return x;
+}
+fn returnLocal() -> int {
+    let x:int;
+    return x;
+}
+fn returnArith() -> int {
+    return 1 + 2;
+}
+
+CallExt
+
+extern exfun:(int, int, int, int, int, int, int, int, int) -> int;
+extern exfun2:(int) -> int;
+extern exfun3:(int, int, int) -> int;
+fn main() -> int {
+    let x:int, y:int, z:int;
+    x = 11;
+    y = 12;
+    exfun(x, 2, 3, y, 5, 6, z, 8, 9);
+    x = 33;
+    x = exfun2(1);
+    x = 22;
+    y = exfun3(1, 2, 3);
+    return 1;
+}
+
+CallDirect
+fn fun(a:int, b:int, c:int, d:int, e:int, f:int, g:int) -> int {
+    return 100;
+}
+fn fun2(a:int) -> int {
+    return 101;
+}
+fn fun3(a:int, b:int, c:int) -> int {
+    return 102;
+}
+fn main() -> int {
+    let x:int, y:int, z:int;
+    x = 11;
+    y = 12;
+    fun(x, 2, 3, y, 5, 6, z);
+    x = 33;
+    x = fun2(1);
+    x = 22;
+    y = fun3(1, 2, 3);
+    return 1;
+}
+
+CallIndirect
+#1
+extern e:(int, int) -> int;
+fn f(fval:int) -> int { 
+    let x:int;
+    let y:int = 2;
+    return 3; 
+}
+fn g(gval:int, sval:int) -> int {
+    let a:int = 3;
+    return 0;
+}
+let a:int, b:int, c:int;
+fn main() -> int {
+/*let if:&(int)->int = f;
+let ih:&(int)->int;*/
+let x:int = e(2, 3);
+x = f(3);
+//h(5);
+return 0;
+}
+#2
+fn f(a:int, b:int, c:int, d:int) -> int { 
+    let x:int;
+    let y:int = 2;
+    return 3; 
+}
+let a:int;
+fn main() -> int {
+    let x:int;
+    let ind1:&(int)->int;
+    let ind2:&(int)->int;
+    let ind3:&(int, int, int, int)->int = f;
+    x = ind1(a);
+    ind2(55);
+    x = ind3(56, 57, 58, x);
+    return 0;
+}
+
+Load:
