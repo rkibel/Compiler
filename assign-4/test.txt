@@ -1,25 +1,16 @@
-let g:int;
-let pt:&int;
-let pts:&s;
-struct str{a:int, y:&(int)->int}
-let ptf:&(int)->int;
-fn fun(a:int, b:int, c:int, d:int, e:int, f:int, g:int) -> int {
-    return 100;
+extern e:(int, int) -> int;
+fn f(fval:int) -> int { 
+    let x:int;
+    let y:int = 2;
+    return 3; 
 }
-fn fun2(a:int) -> int {
-    return 101;
-}
-fn fun3(a:int, b:int, c:int) -> int {
-    return 102;
-}
+let a:int;
 fn main() -> int {
-    let x:int, y:int, z:int;
-    x = 11;
-    y = 12;
-    fun(x, 2, 3, y, 5, 6, z);
-    x = 33;
-    x = fun2(1);
-    x = 22;
-    y = fun3(1, 2, 3);
-    return 1;
+    let x:int = 0;
+    let y:int = 0;
+    let if:&(int)->int = f;
+    let ih:&(int)->int = f;
+    x = if(a);
+    h(55);
+    return 0;
 }

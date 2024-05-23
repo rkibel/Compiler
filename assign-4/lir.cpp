@@ -417,7 +417,7 @@ struct CallExt : LirInst{
                 numPushed++;
             }
         }
-        if ( (args.size() + 1 + numPushed) % 2 != 0 ) { res += "  subq $8, %rsp\n"; numPushed++; }
+        if ( args.size() > 6 && args.size() % 2 != 0 ) { res += "  subq $8, %rsp\n"; numPushed++; }
         res += "  call " + callee + "\n";
         if (numPushed > 0) { res += "  addq $" + to_string(numPushed*8) +", %rsp\n"; }
         if (lhs != "_") {
