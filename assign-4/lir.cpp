@@ -312,9 +312,7 @@ struct CallDirect : Terminal{
         os << "], " << next_bb << ")" << endl;
     }
     //TO-DO
-    string cg(const vector<string>& local_ids, const vector<string>& param_ids, map<BbId, BasicBlock*>& blocks, const string& func_name, map<string, string>& labels_map) override {
-        return "";
-    }
+    string cg(const vector<string>& local_ids, const vector<string>& param_ids, map<BbId, BasicBlock*>& blocks, const string& func_name, map<string, string>& labels_map) override;
 };
 struct CallIndirect : Terminal{
     VarId lhs;
@@ -415,7 +413,7 @@ struct CallExt : LirInst{
             if (i < 6) { 
                 res += "  movq " + getMemoryOperand(args[i], local_ids, param_ids) + ", " + six_args[i] + "\n";
             } else {
-                res += "  pushq " +  getMemoryOperand(args[i], local_ids, param_ids) + "\n";
+                res += "  pushq " +  getMemoryOperand(args[args.size()-1-(i-6)], local_ids, param_ids) + "\n";
                 numPushed++;
             }
         }
@@ -685,5 +683,21 @@ inline string Branch::cg(const vector<string>& local_ids, const vector<string>& 
     res += "  jne " + func_name + "_" + tt + "\n  jmp " + func_name + "_" + ff + "\n\n";
     blocks[tt]->cg(local_ids, param_ids, blocks, func_name, labels_map);
     blocks[ff]->cg(local_ids, param_ids, blocks, func_name, labels_map);
+    return res;
+}
+
+inline string CallDirect::cg(const vector<string>& local_ids, const vector<string>& param_ids, map<BbId, BasicBlock*>& blocks, const string& func_name, map<string, string>& labels_map) {
+    string res;
+    int numPushed = 0;
+    if ( args.size() % 2 != 0 ) { res += "  subq $8, %rsp\n"; numPushed++; }
+    for (Operand* op: args) {
+        res += "  pushq " + getMemoryOperand(op, local_ids, param_ids) + "\n";
+        numPushed++;
+    }
+    res += "  call " + callee + "\n";
+    if (lhs != "_") { res += "  movq %rax, " + getMemory(lhs, local_ids, param_ids) + "\n"; }
+    if (numPushed > 0) { res += "  addq $" + to_string(numPushed*8) +", %rsp\n"; }
+    res += "  jmp " + func_name + "_" + next_bb + "\n\n";
+    blocks[next_bb]->cg(local_ids, param_ids, blocks, func_name, labels_map);
     return res;
 }

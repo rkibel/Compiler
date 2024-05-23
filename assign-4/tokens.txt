@@ -58,6 +58,10 @@ Comma
 Int
 Comma
 Int
+Comma
+Int
+Comma
+Int
 CloseParen
 Arrow
 Int
@@ -127,6 +131,10 @@ Comma
 Num(6)
 Comma
 Id(z)
+Comma
+Num(8)
+Comma
+Num(9)
 CloseParen
 Semicolon
 Id(x)

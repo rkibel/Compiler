@@ -154,6 +154,12 @@
                       "typ": "Int",
                       "scope": "main"
                     }
+                  },
+                  {
+                    "CInt": 8
+                  },
+                  {
+                    "CInt": 9
                   }
                 ]
               }
@@ -265,6 +271,8 @@
       "Fn": {
         "ret_ty": "Int",
         "param_ty": [
+          "Int",
+          "Int",
           "Int",
           "Int",
           "Int",

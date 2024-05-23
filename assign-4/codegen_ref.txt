@@ -42,10 +42,12 @@ main_entry:
   movq -32(%rbp), %rcx
   movq $5, %r8
   movq $6, %r9
+  pushq $9
+  pushq $8
   pushq -40(%rbp)
   subq $8, %rsp
   call exfun
-  addq $16, %rsp
+  addq $32, %rsp
   movq $33, -24(%rbp)
   movq $1, %rdi
   call exfun2

@@ -3,7 +3,7 @@ Struct str
   y : Ptr(Fn([Int], Int))
 
 Externs
-  exfun : Fn([Int, Int, Int, Int, Int, Int, Int], Int)
+  exfun : Fn([Int, Int, Int, Int, Int, Int, Int, Int, Int], Int)
   exfun2 : Fn([Int], Int)
   exfun3 : Fn([Int, Int, Int], Int)
 
@@ -24,7 +24,7 @@ Function main() -> Int {
   entry:
     Copy(x, 11)
     Copy(y, 12)
-    CallExt(_, exfun, [x, 2, 3, y, 5, 6, z])
+    CallExt(_, exfun, [x, 2, 3, y, 5, 6, z, 8, 9])
     Copy(x, 33)
     CallExt(_t1, exfun2, [1])
     Copy(x, _t1)

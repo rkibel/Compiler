@@ -39,7 +39,12 @@ Terminal* get_terminal_instruction(json terminal){
     }
     else if(key == "CallDirect"){
         CallDirect* cd = new CallDirect;
-        cd->lhs = body["lhs"]["name"];
+        if(body["lhs"] == nullptr){
+            cd->lhs = "_";
+        }
+        else{
+            cd->lhs = body["lhs"]["name"];
+        }
         cd->callee = body["callee"];
         cd->next_bb = body["next_bb"];
         vector<Operand*> arguments;
@@ -63,7 +68,12 @@ Terminal* get_terminal_instruction(json terminal){
     }
     else if(key == "CallIndirect"){
         CallIndirect* cid = new CallIndirect;
-        cid->lhs = body["lhs"]["name"];
+        if(body["lhs"] == nullptr){
+            cid->lhs = "_";
+        }
+        else{
+            cid->lhs = body["lhs"]["name"];
+        }
         cid->callee = body["callee"];
         cid->next_bb = body["next_bb"];
         vector<Operand*> arguments;
