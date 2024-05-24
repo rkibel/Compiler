@@ -517,10 +517,10 @@ Program initialize_prog(json data){
 
 int main(int argc, char* argv[]) {
 
-    if (argc != 2) {
-        std::cerr << "Usage: " << argv[0] << " <filename.json>" << std::endl;
-        return 1;
-    }
+    // if (argc != 2) {
+    //     std::cerr << "Usage: " << argv[0] << " <filename.json>" << std::endl;
+    //     return 1;
+    // }
     // Open the file
     std::ifstream file(argv[1]);
     if (!file.is_open()) {

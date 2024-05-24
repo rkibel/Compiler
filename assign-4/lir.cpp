@@ -686,7 +686,10 @@ inline string CallDirect::cg(Function*& f, map<string, string>& labels_map) {
     if (lhs != "_") { res += "  movq %rax, " + getMemory(lhs, f) + "\n"; }
     if (numPushed > 0) { res += "  addq $" + to_string(numPushed*8) +", %rsp\n"; }
     res += "  jmp " + f->name + "_" + next_bb + "\n\n";
-    f->body[next_bb]->cg(f, labels_map);
+    if (find(visited_labels.begin(), visited_labels.end(), next_bb) == visited_labels.end()) {
+        visited_labels.push_back(next_bb);
+        f->body[next_bb]->cg(f, labels_map);
+    }
     return res;
 }
 
@@ -702,7 +705,10 @@ inline string CallIndirect::cg(Function*& f, map<string, string>& labels_map) {
     if (lhs != "_") { res += "  movq %rax, " + getMemory(lhs, f) + "\n"; }
     if (numPushed > 0) { res += "  addq $" + to_string(numPushed*8) +", %rsp\n"; }
     res += "  jmp " + f->name + "_" + next_bb + "\n\n";
-    f->body[next_bb]->cg(f, labels_map);
+    if (find(visited_labels.begin(), visited_labels.end(), next_bb) == visited_labels.end()) {
+        visited_labels.push_back(next_bb);
+        f->body[next_bb]->cg(f, labels_map);
+    }
     return res;
 }
 
