@@ -21,6 +21,7 @@ struct BasicBlock;
 //Globals
 inline vector<string> function_ids;
 inline map<string, string> functions_res; //map of function name to the result (res) text (to sort alphabetically)
+inline vector<string> visited_labels;
 
 struct Type {
     virtual void print(std::ostream& os) const {}
@@ -66,6 +67,10 @@ struct Any : Type {
     }
 };
 
+//Two global pointers so we don't need to pass in a pointer to the program to every function
+inline map<StructId, map<FieldId, Type*>>* global_structs; //a reference to the program's struct map
+inline map<VarId, Type*>* global_globals; //haha
+
 template<typename T>
 void getKeys(const map<string, T>& input_map, vector<string>& output_vector) {
     for (const auto& pair : input_map) {
@@ -80,9 +85,7 @@ struct ArithmeticOp{
         return os;
     }
     //TO-DO
-    virtual string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, Function*& f) {
-        return "";
-    }
+    virtual string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, Function*& f) { return ""; }
 };
 struct Add : ArithmeticOp{
     void print(std::ostream& os) const override { os << "add"; }
@@ -137,9 +140,7 @@ struct ComparisonOp{
         return os;
     }
     //TO-DO
-    virtual string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, Function*& f) {
-        return "";
-    }
+    virtual string cg(const string& lhs_mem, const string& left_mem, const string& right_mem, Function*& f) { return ""; }
 };
 struct Equal : ComparisonOp{
     void print(std::ostream& os) const override { os << "eq"; }
@@ -152,7 +153,7 @@ struct Equal : ComparisonOp{
             res += "  movq " + left_mem + ", %r8\n";
             res += "  cmpq " + right_mem + ", %r8\n";
         }
-        res += "  movq $0, %r8\n  sete %r8b\n  movq %r8, -8(%rbp)\n";
+        res += "  movq $0, %r8\n  sete %r8b\n  movq %r8, " + lhs_mem + "\n";
         return res;
     }
 };
@@ -167,7 +168,7 @@ struct NotEq : ComparisonOp{
             res += "  movq " + left_mem + ", %r8\n";
             res += "  cmpq " + right_mem + ", %r8\n";
         }
-        res += "  movq $0, %r8\n  setne %r8b\n  movq %r8, -8(%rbp)\n";
+        res += "  movq $0, %r8\n  setne %r8b\n  movq %r8, " + lhs_mem + "\n";
         return res;
     }
 };
@@ -182,7 +183,7 @@ struct Lt : ComparisonOp{
             res += "  movq " + left_mem + ", %r8\n";
             res += "  cmpq " + right_mem + ", %r8\n";
         }
-        res += "  movq $0, %r8\n  setl %r8b\n  movq %r8, -8(%rbp)\n";
+        res += "  movq $0, %r8\n  setl %r8b\n  movq %r8, " + lhs_mem + "\n";
         return res;
     }
 };
@@ -197,7 +198,7 @@ struct Lte : ComparisonOp{
             res += "  movq " + left_mem + ", %r8\n";
             res += "  cmpq " + right_mem + ", %r8\n";
         }
-        res += "  movq $0, %r8\n  setle %r8b\n  movq %r8, -8(%rbp)\n";
+        res += "  movq $0, %r8\n  setle %r8b\n  movq %r8, " + lhs_mem + "\n";
         return res;
     }
 };
@@ -212,7 +213,7 @@ struct Gt : ComparisonOp{
             res += "  movq " + left_mem + ", %r8\n";
             res += "  cmpq " + right_mem + ", %r8\n";
         }
-        res += "  movq $0, %r8\n  setg %r8b\n  movq %r8, -8(%rbp)\n";
+        res += "  movq $0, %r8\n  setg %r8b\n  movq %r8, " + lhs_mem + "\n";
         return res;
     }
 };
@@ -227,7 +228,7 @@ struct Gte : ComparisonOp{
             res += "  movq " + left_mem + ", %r8\n";
             res += "  cmpq " + right_mem + ", %r8\n";
         }
-        res += "  movq $0, %r8\n  setge %r8b\n  movq %r8, -8(%rbp)\n";
+        res += "  movq $0, %r8\n  setge %r8b\n  movq %r8, " + lhs_mem + "\n";
         return res;
     }
 };
@@ -238,26 +239,14 @@ struct Operand{
         op.print(os);
         return os;
     }
-    //TO-DO
-    virtual string cg(Function*& f) {
-        return "";
-    }
 };
 struct Const : Operand{
     int32_t num;
     void print(std::ostream& os) const override { os << num; }
-    //TO-DO
-    string cg(Function*& f) override {
-        return "";
-    }
 };
 struct Var : Operand{
     VarId id;
     void print(std::ostream& os) const override { os << id; }
-    //TO-DO
-    string cg(Function*& f) override {
-        return "";
-    }
 };
 
 struct Terminal{
@@ -267,9 +256,7 @@ struct Terminal{
         return os;
     }
     //TO-DO
-    virtual string cg(Function*& f, map<string, string>& labels_map) {
-        return "";
-    }
+    virtual string cg(Function*& f, map<string, string>& labels_map) { return ""; }
 };
 struct Branch : Terminal{
     Operand* guard;
@@ -338,9 +325,7 @@ struct LirInst{
         return os;
     }
     //TO-DO
-    virtual string cg(Function*& f) {
-        return "";
-    }
+    virtual string cg(Function*& f) { return ""; }
 };
 struct Alloc : LirInst{
     VarId lhs;
@@ -405,9 +390,7 @@ struct Gep : LirInst{
         os << "Gep(" << lhs << ", " << src << ", " << *idx << ")" << endl;
     }
     //TO-DO
-    string cg(Function*& f) override {
-        return "";
-    }
+    string cg(Function*& f);
 };
 struct Gfp : LirInst{
     VarId lhs;
@@ -417,9 +400,7 @@ struct Gfp : LirInst{
         os << "Gfp(" << lhs << ", " << src << ", " << field << ")" << endl;
     }
     //TO-DO
-    string cg(Function*& f) override {
-        return "";
-    }
+    string cg(Function*& f) override;
 };
 struct Load : LirInst{
     VarId lhs;
@@ -549,6 +530,8 @@ struct Program{
     }
 
     string cg() {
+        global_structs = &structs;
+        global_globals = &globals;
         string res;
         res += ".data\n\n";
         for (const auto& [varid, _]: globals) {
@@ -612,7 +595,6 @@ inline string Arith::cg(Function*& f) {
     }
 
 inline string Cmp::cg(Function*& f) {
-    // cout << "COMPARISON\n";
     string lhs_mem = getMemory(lhs, f);
     string left_mem = getMemoryOperand(left, f);
     string right_mem = getMemoryOperand(right, f);
@@ -623,7 +605,6 @@ inline string Copy::cg(Function*& f) {
     //Five cases for op(rhs, f): copying a const, local, param, global (non func), global function
     //Three cases for lhs: a local, param, global (non-func)
     //For non-constant, we use a helper function to tell us what string to print
-    // cout << "In copy for lhs: " << lhs << "\n";
     string op_mem = getMemoryOperand(op, f);
     string res = "  movq " + op_mem + ", ";
     res += (op_mem[0] == '$') ? getMemory(lhs, f) + "\n" : "%r8\n  movq %r8, " + getMemory(lhs, f) + "\n";
@@ -666,21 +647,30 @@ inline void BasicBlock::cg(Function*& f, map<string, string>& labels_map) {
 }
 
 inline string Jump::cg(Function*& f, map<string, string>& labels_map) {
-    string res = "  $jmp " + f->name + "_" + next_bb + "\n\n";
-    f->body[next_bb]->cg(f, labels_map);
+    string res = "  jmp " + f->name + "_" + next_bb + "\n\n";
+    if (find(visited_labels.begin(), visited_labels.end(), next_bb) == visited_labels.end()) {
+        visited_labels.push_back(next_bb);
+        f->body[next_bb]->cg(f, labels_map);
+    }
     return res;
 }
 
 inline string Branch::cg(Function*& f, map<string, string>& labels_map) {
     string res;
     if (Const* c = dynamic_cast<Const*>(guard)) {
-        res += "  movq " + to_string(c->num) + ", %r8\n  cmpq $0, %r8\n";
+        res += "  movq $" + to_string(c->num) + ", %r8\n  cmpq $0, %r8\n";
     } else {
         res += "  cmpq $0, " + getMemory(static_cast<Var*>(guard)->id, f) + "\n";
     }
     res += "  jne " + f->name + "_" + tt + "\n  jmp " + f->name + "_" + ff + "\n\n";
-    f->body[tt]->cg(f, labels_map);
-    f->body[ff]->cg(f, labels_map);
+    if (find(visited_labels.begin(), visited_labels.end(), tt) == visited_labels.end()) {
+        visited_labels.push_back(tt);
+        f->body[tt]->cg(f, labels_map);
+    }
+    if (find(visited_labels.begin(), visited_labels.end(), ff) == visited_labels.end()) {
+        visited_labels.push_back(ff);
+        f->body[ff]->cg(f, labels_map);
+    }
     return res;
 }
 
@@ -737,30 +727,85 @@ inline string CallExt::cg(Function*& f) {
     return res;
 }
 
+inline int getStructNumWords(StructId s_id, Function*& f) {
+    //returns 1 if not a struct type, otherwise returns how many words it contains (since they must at least contain one member)
+    auto local_it = f->locals.find(s_id);
+    auto param_it = std::find_if(f->params.begin(), f->params.end(),
+        [s_id](const std::pair<VarId, Type*>& element) {
+            return element.first == s_id;
+    });
+    auto global_it = global_globals->find(s_id);
+    if (local_it != f->locals.end()) { //local
+        if (Ptr* ptr = dynamic_cast<Ptr*>(local_it->second)) {
+            if (StructType* str = dynamic_cast<StructType*>(ptr->ref)) { return (*global_structs)[str->name].size(); } else { return 1; }
+        } else { return 1; } //if an integer type
+    } else if (param_it != f->params.end()) { //param
+        if (Ptr* ptr = dynamic_cast<Ptr*>(param_it->second)) {
+            if (StructType* str = dynamic_cast<StructType*>(ptr->ref)) { return (*global_structs)[str->name].size(); } else { return 1; }
+        } else { return 1; } //if an integer type
+    } else { //global
+        if (Ptr* ptr = dynamic_cast<Ptr*>(global_it->second)) {
+            if (StructType* str = dynamic_cast<StructType*>(ptr->ref)) { return (*global_structs)[str->name].size(); } else { return 1; }
+        } else { return 1; } //if an integer type
+    }
+    return -1; //error condition
+}
+
 inline string Alloc::cg(Function*& f) {
         string res;
+        bool was_const = false;
         if (Const* c = dynamic_cast<Const*>(num)) {
-        res += "  movq " + to_string(c->num) + ", %r8\n  cmpq $0, %r8\n";
+            res += "  movq $" + to_string(c->num) + ", %r8\n  cmpq $0, %r8\n";
+            was_const = true;
         } else {
             res += "  cmpq $0, " + getMemory(static_cast<Var*>(num)->id, f) + "\n";
         }
         res += "  jle .invalid_alloc_length\n";
-        
-        // cmpq $0, -24(%rbp)
-        // jle .invalid_alloc_length
-
-
-        // movq $31, %r8
-        // cmpq $0, %r8
-        // jle .invalid_alloc_length
-        // movq $1, %rdi
-        // imulq %r8, %rdi
-        // incq %rdi
-        // call _cflat_alloc
-        // movq $31, %r8
-        // movq %r8, 0(%rax)
-        // addq $8, %rax
-        // movq %rax, -16(%rbp)
-        
-        return "";
+        //update for struct
+        // if (f->)
+        res += "  movq $" + to_string(getStructNumWords(lhs, f)) + ", %rdi\n";
+        res += "  imulq " + ( (was_const) ? "%r8" : getMemoryOperand(num, f) ) + ", %rdi\n  incq %rdi\n  call _cflat_alloc\n";
+        res += "  movq " + getMemoryOperand(num, f) + ", %r8\n  movq %r8, 0(%rax)\n  addq $8, %rax\n";
+        res += "  movq %rax, " + getMemory(lhs, f) + "\n";
+        return res;
     }
+
+inline int getStructFieldIndex(StructId s_id, FieldId f_id, Function*& f) {
+    //guarenteed to point to a correct struct name
+    //returns index of field
+    Ptr* struct_ptr;
+    auto local_it = f->locals.find(s_id);
+    auto param_it = std::find_if(f->params.begin(), f->params.end(),
+        [s_id](const std::pair<VarId, Type*>& element) {
+            return element.first == s_id;
+    });
+    auto global_it = global_globals->find(s_id);
+    if (local_it != f->locals.end()) { //local
+        struct_ptr = static_cast<Ptr*>(local_it->second);
+        
+    } else if (param_it != f->params.end()) { //param
+        struct_ptr = static_cast<Ptr*>(param_it->second);
+    } else { //global
+        struct_ptr = static_cast<Ptr*>(global_it->second);
+    }
+    StructType* str = static_cast<StructType*>(struct_ptr->ref);
+    auto fields = (*global_structs)[str->name]; 
+    return distance(fields.begin(), fields.find(f_id));
+}
+
+inline string Gfp::cg(Function*& f) {
+    string res;
+    res += "  movq " + getMemory(src, f) + ", %r8\n";
+    res += "  leaq " + to_string(8 * getStructFieldIndex(src, field, f)) + "(%r8), %r9\n";
+    res += "  movq %r9, " + getMemory(lhs, f) + "\n";
+    return res;
+}
+
+inline string Gep::cg(Function*& f) {
+    string res;
+    res += "  movq " + getMemoryOperand(idx, f) + ", %r8\n  cmpq $0, %r8\n  jl .out_of_bounds\n";
+    res += "  movq " + getMemory(src, f) + ", %r9\n  movq -8(%r9), %r10\n  cmpq %r10, %r8\n  jge .out_of_bounds\n";
+    res += "  imulq $" + to_string(8 * getStructNumWords(src, f)) + ", %r8\n  addq %r9, %r8\n";
+    res += "  movq %r8, " + getMemory(lhs, f) + "\n";
+    return res;
+}
