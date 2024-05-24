@@ -726,10 +726,10 @@ inline string CallExt::cg(Function*& f) {
     }
     if ( args.size() > 6 && args.size() % 2 != 0 ) { res += "  subq $8, %rsp\n"; numPushed++; }
     res += "  call " + callee + "\n";
-    if (numPushed > 0) { res += "  addq $" + to_string(numPushed*8) +", %rsp\n"; }
     if (lhs != "_") {
         res += "  movq %rax, " + getMemory(lhs, f) + "\n";
     }
+    if (numPushed > 0) { res += "  addq $" + to_string(numPushed*8) +", %rsp\n"; }
     return res;
 }
 

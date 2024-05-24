@@ -1,869 +1,1364 @@
+Struct st1
+  f1 : Int
+  f2 : Ptr(Int)
+
+Struct st2
+  f1 : Ptr(Struct(st1))
+
 Externs
+  e1 : Fn([Int, Ptr(Int), Int, Ptr(Struct(st1)), Int, Ptr(Int), Int], Int)
+  e2 : Fn([Ptr(Struct(st2)), Int, Int, Int, Ptr(Int), Int, Int, Ptr(Int)], Ptr(Struct(st2)))
 
 Globals
+  f3 : Ptr(Fn([Int, Ptr(Struct(st1))], Int))
+  f4 : Ptr(Fn([Int, Ptr(Struct(st2)), Int], Int))
+  f5 : Ptr(Fn([Ptr(Int), Int, Int, Ptr(Int)], Int))
+  g1 : Int
+  g2 : Ptr(Struct(st2))
+  g3 : Int
+  g4 : Ptr(Struct(st1))
+  g5 : Int
+  g6 : Ptr(Int)
+  g7 : Int
+  g8 : Ptr(Int)
+
+Function f3(p:Int, q:Ptr(Struct(st1))) -> Int {
+  Locals
+    _t1 : Ptr(Ptr(Int))
+    _t2 : Ptr(Int)
+    _t3 : Int
+    _t4 : Int
+
+  entry:
+    Gfp(_t1, q, f2)
+    Load(_t2, _t1)
+    Load(_t3, _t2)
+    Arith(_t4, add, p, _t3)
+    Ret(_t4)
+}
+
+Function f4(p:Int, q:Ptr(Struct(st2)), r:Int) -> Int {
+  Locals
+    _t1 : Ptr(Ptr(Struct(st1)))
+    _t2 : Ptr(Struct(st1))
+    _t3 : Ptr(Int)
+    _t4 : Int
+    _t5 : Int
+    _t6 : Int
+
+  entry:
+    Gfp(_t1, q, f1)
+    Load(_t2, _t1)
+    Gfp(_t3, _t2, f1)
+    Load(_t4, _t3)
+    Arith(_t5, add, p, _t4)
+    Arith(_t6, add, _t5, r)
+    Ret(_t6)
+}
+
+Function f5(p:Ptr(Int), q:Int, r:Int, s:Ptr(Int)) -> Int {
+  Locals
+    _t1 : Int
+    _t2 : Int
+    _t3 : Int
+    _t4 : Int
+    _t5 : Int
+
+  entry:
+    Load(_t1, p)
+    Arith(_t2, add, _t1, q)
+    Arith(_t3, add, _t2, r)
+    Load(_t4, s)
+    Arith(_t5, add, _t3, _t4)
+    Ret(_t5)
+}
 
 Function main() -> Int {
   Locals
-    _t1 : Int
-    _t10 : Int
+    _t1 : Ptr(Struct(st1))
+    _t10 : Ptr(Int)
     _t100 : Int
-    _t101 : Int
-    _t102 : Int
-    _t103 : Int
+    _t101 : Ptr(Ptr(Ptr(Int)))
+    _t102 : Ptr(Ptr(Int))
+    _t103 : Ptr(Int)
     _t104 : Int
     _t105 : Int
-    _t106 : Int
-    _t107 : Int
-    _t108 : Int
+    _t106 : Ptr(Ptr(Ptr(Int)))
+    _t107 : Ptr(Ptr(Int))
+    _t108 : Ptr(Int)
     _t109 : Int
     _t11 : Int
-    _t110 : Int
-    _t111 : Int
-    _t112 : Int
-    _t113 : Int
-    _t114 : Int
+    _t110 : Ptr(Ptr(Int))
+    _t111 : Ptr(Int)
+    _t112 : Ptr(Ptr(Ptr(Int)))
+    _t113 : Ptr(Ptr(Int))
+    _t114 : Ptr(Int)
     _t115 : Int
-    _t116 : Int
-    _t117 : Int
+    _t116 : Ptr(Ptr(Int))
+    _t117 : Ptr(Int)
     _t118 : Int
     _t119 : Int
-    _t12 : Int
+    _t12 : Ptr(Ptr(Ptr(Ptr(Ptr(Fn([Int, Ptr(Struct(st1))], Int))))))
     _t120 : Int
-    _t121 : Int
-    _t122 : Int
+    _t121 : Ptr(Ptr(Struct(st1)))
+    _t122 : Ptr(Struct(st1))
     _t123 : Int
-    _t124 : Int
+    _t124 : Ptr(Int)
     _t125 : Int
     _t126 : Int
-    _t127 : Int
-    _t128 : Int
-    _t129 : Int
-    _t13 : Int
-    _t130 : Int
-    _t131 : Int
+    _t127 : Ptr(Ptr(Struct(st2)))
+    _t128 : Ptr(Struct(st2))
+    _t129 : Ptr(Ptr(Struct(st1)))
+    _t13 : Ptr(Ptr(Ptr(Ptr(Fn([Int, Ptr(Struct(st1))], Int)))))
+    _t130 : Ptr(Struct(st1))
+    _t131 : Ptr(Int)
     _t132 : Int
-    _t133 : Int
-    _t134 : Int
-    _t135 : Int
-    _t136 : Int
+    _t133 : Ptr(Ptr(Ptr(Int)))
+    _t134 : Ptr(Ptr(Int))
+    _t135 : Ptr(Ptr(Int))
+    _t136 : Ptr(Int)
     _t137 : Int
-    _t138 : Int
-    _t139 : Int
-    _t14 : Int
+    _t138 : Ptr(Ptr(Ptr(Int)))
+    _t139 : Ptr(Ptr(Int))
+    _t14 : Ptr(Ptr(Ptr(Ptr(Fn([Int, Ptr(Struct(st1))], Int)))))
     _t140 : Int
-    _t141 : Int
-    _t142 : Int
+    _t141 : Ptr(Ptr(Int))
+    _t142 : Ptr(Int)
     _t143 : Int
     _t144 : Int
     _t145 : Int
     _t146 : Int
-    _t147 : Int
-    _t148 : Int
-    _t149 : Int
-    _t15 : Int
-    _t150 : Int
-    _t151 : Int
+    _t147 : Ptr(Ptr(Int))
+    _t148 : Ptr(Int)
+    _t149 : Ptr(Ptr(Ptr(Fn([Ptr(Int), Int, Int, Ptr(Int)], Int))))
+    _t15 : Ptr(Ptr(Ptr(Fn([Int, Ptr(Struct(st1))], Int))))
+    _t150 : Ptr(Ptr(Fn([Ptr(Int), Int, Int, Ptr(Int)], Int)))
+    _t151 : Ptr(Int)
     _t152 : Int
-    _t153 : Int
-    _t154 : Int
+    _t153 : Ptr(Ptr(Fn([Ptr(Int), Int, Int, Ptr(Int)], Int)))
+    _t154 : Ptr(Fn([Ptr(Int), Int, Int, Ptr(Int)], Int))
     _t155 : Int
-    _t156 : Int
-    _t157 : Int
+    _t156 : Ptr(Ptr(Ptr(Ptr(Int))))
+    _t157 : Ptr(Ptr(Ptr(Int)))
     _t158 : Int
-    _t159 : Int
+    _t159 : Ptr(Ptr(Ptr(Int)))
     _t16 : Int
-    _t160 : Int
+    _t160 : Ptr(Ptr(Int))
     _t161 : Int
-    _t162 : Int
+    _t162 : Ptr(Int)
     _t163 : Int
     _t164 : Int
-    _t165 : Int
-    _t166 : Int
-    _t167 : Int
-    _t168 : Int
+    _t165 : Ptr(Ptr(Int))
+    _t166 : Ptr(Int)
+    _t167 : Ptr(Ptr(Fn([Ptr(Int), Int, Int, Ptr(Int)], Int)))
+    _t168 : Ptr(Fn([Ptr(Int), Int, Int, Ptr(Int)], Int))
     _t169 : Int
-    _t17 : Int
-    _t170 : Int
+    _t17 : Ptr(Ptr(Ptr(Fn([Int, Ptr(Struct(st1))], Int))))
+    _t170 : Ptr(Int)
     _t171 : Int
-    _t172 : Int
-    _t173 : Int
-    _t174 : Int
+    _t172 : Ptr(Ptr(Int))
+    _t173 : Ptr(Int)
+    _t174 : Ptr(Int)
     _t175 : Int
-    _t176 : Int
-    _t177 : Int
+    _t176 : Ptr(Ptr(Ptr(Struct(st1))))
+    _t177 : Ptr(Ptr(Struct(st1)))
     _t178 : Int
-    _t179 : Int
-    _t18 : Int
-    _t180 : Int
-    _t181 : Int
+    _t179 : Ptr(Ptr(Struct(st1)))
+    _t18 : Ptr(Ptr(Fn([Int, Ptr(Struct(st1))], Int)))
+    _t180 : Ptr(Struct(st1))
+    _t181 : Ptr(Int)
     _t182 : Int
-    _t183 : Int
+    _t183 : Ptr(Struct(st2))
     _t184 : Int
     _t185 : Int
     _t186 : Int
-    _t187 : Int
+    _t187 : Ptr(Int)
     _t188 : Int
     _t189 : Int
-    _t19 : Int
+    _t19 : Ptr(Fn([Int, Ptr(Struct(st1))], Int))
     _t190 : Int
-    _t191 : Int
+    _t191 : Ptr(Int)
     _t192 : Int
     _t193 : Int
-    _t194 : Int
-    _t2 : Int
-    _t20 : Int
+    _t194 : Ptr(Ptr(Struct(st1)))
+    _t195 : Ptr(Struct(st1))
+    _t196 : Int
+    _t197 : Ptr(Ptr(Int))
+    _t198 : Ptr(Int)
+    _t199 : Ptr(Ptr(Int))
+    _t2 : Ptr(Ptr(Ptr(Int)))
+    _t20 : Ptr(Int)
+    _t200 : Ptr(Int)
+    _t201 : Int
+    _t202 : Ptr(Ptr(Ptr(Int)))
+    _t203 : Ptr(Ptr(Ptr(Ptr(Int))))
+    _t204 : Ptr(Ptr(Ptr(Int)))
+    _t205 : Int
+    _t206 : Ptr(Ptr(Ptr(Int)))
+    _t207 : Ptr(Ptr(Int))
+    _t208 : Ptr(Ptr(Ptr(Int)))
+    _t209 : Ptr(Ptr(Int))
     _t21 : Int
-    _t22 : Int
-    _t23 : Int
+    _t210 : Int
+    _t211 : Ptr(Ptr(Int))
+    _t212 : Ptr(Int)
+    _t213 : Int
+    _t214 : Ptr(Int)
+    _t215 : Int
+    _t216 : Ptr(Ptr(Int))
+    _t217 : Ptr(Ptr(Int))
+    _t218 : Int
+    _t219 : Int
+    _t22 : Ptr(Ptr(Ptr(Struct(st1))))
+    _t220 : Ptr(Ptr(Ptr(Struct(st1))))
+    _t221 : Ptr(Ptr(Struct(st1)))
+    _t222 : Ptr(Int)
+    _t223 : Int
+    _t224 : Ptr(Ptr(Struct(st1)))
+    _t225 : Ptr(Struct(st1))
+    _t226 : Ptr(Int)
+    _t227 : Ptr(Int)
+    _t228 : Int
+    _t229 : Ptr(Ptr(Int))
+    _t23 : Ptr(Ptr(Struct(st1)))
+    _t230 : Ptr(Int)
+    _t231 : Int
+    _t232 : Ptr(Ptr(Ptr(Ptr(Int))))
+    _t233 : Ptr(Ptr(Ptr(Int)))
+    _t234 : Ptr(Int)
+    _t235 : Int
+    _t236 : Ptr(Ptr(Ptr(Int)))
+    _t237 : Ptr(Ptr(Int))
+    _t238 : Int
+    _t239 : Int
     _t24 : Int
-    _t25 : Int
+    _t240 : Ptr(Ptr(Ptr(Struct(st1))))
+    _t241 : Ptr(Ptr(Struct(st1)))
+    _t242 : Ptr(Struct(st1))
+    _t243 : Int
+    _t244 : Ptr(Ptr(Ptr(Ptr(Struct(st1)))))
+    _t245 : Ptr(Ptr(Ptr(Struct(st1))))
+    _t246 : Int
+    _t247 : Ptr(Ptr(Ptr(Struct(st1))))
+    _t248 : Ptr(Ptr(Struct(st1)))
+    _t249 : Int
+    _t25 : Ptr(Int)
+    _t250 : Ptr(Int)
+    _t251 : Int
+    _t252 : Ptr(Ptr(Struct(st1)))
+    _t253 : Ptr(Struct(st1))
+    _t254 : Int
+    _t255 : Int
+    _t256 : Int
+    _t257 : Ptr(Ptr(Ptr(Int)))
+    _t258 : Ptr(Ptr(Int))
+    _t259 : Int
     _t26 : Int
+    _t260 : Ptr(Ptr(Int))
+    _t261 : Ptr(Int)
+    _t262 : Ptr(Ptr(Int))
+    _t263 : Ptr(Int)
+    _t264 : Ptr(Int)
+    _t265 : Int
+    _t266 : Int
+    _t267 : Ptr(Ptr(Ptr(Ptr(Struct(st1)))))
+    _t268 : Ptr(Ptr(Ptr(Struct(st1))))
+    _t269 : Int
     _t27 : Int
-    _t28 : Int
-    _t29 : Int
-    _t3 : Int
+    _t270 : Ptr(Ptr(Ptr(Struct(st1))))
+    _t271 : Ptr(Ptr(Struct(st1)))
+    _t272 : Ptr(Ptr(Struct(st1)))
+    _t273 : Ptr(Struct(st1))
+    _t274 : Ptr(Int)
+    _t275 : Int
+    _t276 : Ptr(Int)
+    _t277 : Int
+    _t278 : Ptr(Struct(st1))
+    _t279 : Int
+    _t28 : Ptr(Ptr(Struct(st2)))
+    _t280 : Ptr(Ptr(Int))
+    _t281 : Ptr(Int)
+    _t282 : Int
+    _t283 : Int
+    _t284 : Int
+    _t285 : Ptr(Ptr(Struct(st1)))
+    _t286 : Ptr(Struct(st1))
+    _t287 : Ptr(Ptr(Int))
+    _t288 : Ptr(Int)
+    _t289 : Ptr(Int)
+    _t29 : Ptr(Struct(st2))
+    _t290 : Int
+    _t291 : Ptr(Ptr(Int))
+    _t292 : Ptr(Int)
+    _t293 : Int
+    _t294 : Int
+    _t295 : Ptr(Ptr(Struct(st1)))
+    _t296 : Ptr(Struct(st1))
+    _t297 : Ptr(Ptr(Int))
+    _t298 : Ptr(Int)
+    _t299 : Ptr(Ptr(Struct(st1)))
+    _t3 : Ptr(Int)
     _t30 : Int
+    _t300 : Ptr(Struct(st1))
+    _t301 : Int
+    _t302 : Ptr(Ptr(Ptr(Struct(st1))))
+    _t303 : Ptr(Ptr(Struct(st1)))
+    _t304 : Ptr(Struct(st1))
+    _t305 : Ptr(Ptr(Int))
+    _t306 : Ptr(Int)
+    _t307 : Int
+    _t308 : Ptr(Ptr(Struct(st1)))
+    _t309 : Ptr(Struct(st1))
     _t31 : Int
+    _t310 : Ptr(Ptr(Int))
+    _t311 : Ptr(Int)
+    _t312 : Ptr(Ptr(Int))
+    _t313 : Ptr(Int)
+    _t314 : Int
+    _t315 : Ptr(Int)
+    _t316 : Int
+    _t317 : Int
+    _t318 : Ptr(Ptr(Int))
+    _t319 : Ptr(Int)
     _t32 : Int
+    _t320 : Ptr(Int)
+    _t321 : Int
+    _t322 : Ptr(Ptr(Struct(st2)))
+    _t323 : Ptr(Struct(st2))
+    _t324 : Ptr(Ptr(Struct(st1)))
+    _t325 : Ptr(Struct(st1))
+    _t326 : Ptr(Int)
+    _t327 : Int
+    _t328 : Ptr(Ptr(Fn([Int, Ptr(Struct(st1))], Int)))
+    _t329 : Ptr(Fn([Int, Ptr(Struct(st1))], Int))
     _t33 : Int
-    _t34 : Int
-    _t35 : Int
+    _t330 : Int
+    _t331 : Int
+    _t332 : Ptr(Ptr(Ptr(Struct(st1))))
+    _t333 : Ptr(Ptr(Struct(st1)))
+    _t334 : Ptr(Ptr(Int))
+    _t335 : Ptr(Int)
+    _t336 : Int
+    _t337 : Ptr(Ptr(Struct(st1)))
+    _t338 : Ptr(Struct(st1))
+    _t339 : Ptr(Ptr(Struct(st1)))
+    _t34 : Ptr(Ptr(Ptr(Ptr(Struct(st1)))))
+    _t340 : Ptr(Struct(st1))
+    _t341 : Ptr(Ptr(Fn([Int, Ptr(Struct(st1))], Int)))
+    _t342 : Ptr(Fn([Int, Ptr(Struct(st1))], Int))
+    _t343 : Int
+    _t344 : Int
+    _t345 : Ptr(Int)
+    _t346 : Ptr(Ptr(Int))
+    _t347 : Ptr(Int)
+    _t348 : Int
+    _t349 : Ptr(Ptr(Ptr(Struct(st1))))
+    _t35 : Ptr(Ptr(Ptr(Struct(st1))))
+    _t350 : Ptr(Ptr(Struct(st1)))
+    _t351 : Ptr(Struct(st1))
+    _t352 : Ptr(Ptr(Int))
+    _t353 : Ptr(Int)
+    _t354 : Int
+    _t355 : Ptr(Int)
+    _t356 : Int
+    _t357 : Ptr(Int)
+    _t358 : Int
+    _t359 : Ptr(Ptr(Int))
     _t36 : Int
-    _t37 : Int
-    _t38 : Int
-    _t39 : Int
+    _t360 : Ptr(Int)
+    _t361 : Ptr(Int)
+    _t362 : Int
+    _t363 : Int
+    _t364 : Ptr(Ptr(Int))
+    _t365 : Ptr(Int)
+    _t366 : Int
+    _t367 : Int
+    _t368 : Int
+    _t369 : Ptr(Struct(st2))
+    _t37 : Ptr(Ptr(Ptr(Struct(st1))))
+    _t370 : Ptr(Ptr(Int))
+    _t371 : Ptr(Int)
+    _t372 : Int
+    _t373 : Int
+    _t374 : Ptr(Ptr(Int))
+    _t375 : Ptr(Int)
+    _t376 : Ptr(Ptr(Int))
+    _t377 : Ptr(Int)
+    _t378 : Int
+    _t379 : Ptr(Int)
+    _t38 : Ptr(Ptr(Struct(st1)))
+    _t380 : Int
+    _t381 : Int
+    _t382 : Int
+    _t383 : Ptr(Ptr(Struct(st1)))
+    _t384 : Ptr(Struct(st1))
+    _t385 : Ptr(Ptr(Int))
+    _t386 : Ptr(Int)
+    _t387 : Ptr(Ptr(Struct(st1)))
+    _t388 : Ptr(Struct(st1))
+    _t389 : Ptr(Int)
+    _t39 : Ptr(Ptr(Struct(st1)))
+    _t390 : Int
+    _t391 : Ptr(Int)
+    _t392 : Int
+    _t393 : Ptr(Struct(st1))
+    _t394 : Int
+    _t395 : Ptr(Ptr(Ptr(Int)))
+    _t396 : Ptr(Ptr(Int))
+    _t397 : Ptr(Int)
+    _t398 : Ptr(Ptr(Struct(st1)))
+    _t399 : Ptr(Struct(st1))
     _t4 : Int
-    _t40 : Int
-    _t41 : Int
-    _t42 : Int
-    _t43 : Int
+    _t40 : Ptr(Struct(st1))
+    _t400 : Ptr(Ptr(Fn([Int, Ptr(Struct(st1))], Int)))
+    _t401 : Ptr(Fn([Int, Ptr(Struct(st1))], Int))
+    _t402 : Int
+    _t403 : Ptr(Ptr(Struct(st1)))
+    _t404 : Ptr(Struct(st1))
+    _t405 : Ptr(Ptr(Int))
+    _t406 : Ptr(Int)
+    _t407 : Ptr(Int)
+    _t408 : Int
+    _t409 : Int
+    _t41 : Ptr(Int)
+    _t410 : Int
+    _t411 : Int
+    _t412 : Ptr(Ptr(Ptr(Ptr(Int))))
+    _t413 : Ptr(Ptr(Ptr(Int)))
+    _t414 : Int
+    _t415 : Ptr(Ptr(Ptr(Int)))
+    _t416 : Ptr(Ptr(Int))
+    _t417 : Ptr(Int)
+    _t418 : Ptr(Ptr(Int))
+    _t419 : Ptr(Int)
+    _t42 : Ptr(Ptr(Ptr(Struct(st1))))
+    _t420 : Int
+    _t421 : Ptr(Int)
+    _t422 : Int
+    _t423 : Int
+    _t424 : Int
+    _t425 : Ptr(Ptr(Ptr(Int)))
+    _t426 : Ptr(Ptr(Int))
+    _t427 : Ptr(Int)
+    _t428 : Ptr(Int)
+    _t429 : Ptr(Int)
+    _t43 : Ptr(Ptr(Struct(st1)))
+    _t430 : Int
+    _t431 : Ptr(Ptr(Struct(st1)))
+    _t432 : Ptr(Struct(st1))
+    _t433 : Ptr(Int)
+    _t434 : Int
+    _t435 : Int
+    _t436 : Ptr(Int)
+    _t437 : Int
+    _t438 : Int
+    _t439 : Ptr(Ptr(Ptr(Struct(st1))))
     _t44 : Int
-    _t45 : Int
-    _t46 : Int
-    _t47 : Int
+    _t440 : Ptr(Ptr(Struct(st1)))
+    _t441 : Ptr(Ptr(Struct(st1)))
+    _t442 : Ptr(Struct(st1))
+    _t443 : Ptr(Int)
+    _t444 : Int
+    _t445 : Ptr(Ptr(Struct(st1)))
+    _t446 : Ptr(Struct(st1))
+    _t447 : Int
+    _t448 : Ptr(Int)
+    _t449 : Ptr(Ptr(Int))
+    _t45 : Ptr(Ptr(Struct(st1)))
+    _t450 : Ptr(Int)
+    _t451 : Int
+    _t452 : Ptr(Ptr(Ptr(Int)))
+    _t453 : Ptr(Ptr(Int))
+    _t454 : Ptr(Ptr(Int))
+    _t455 : Ptr(Int)
+    _t456 : Int
+    _t457 : Ptr(Ptr(Ptr(Ptr(Int))))
+    _t458 : Ptr(Ptr(Ptr(Int)))
+    _t459 : Ptr(Ptr(Ptr(Int)))
+    _t46 : Ptr(Struct(st1))
+    _t460 : Ptr(Ptr(Int))
+    _t461 : Int
+    _t462 : Int
+    _t463 : Ptr(Ptr(Int))
+    _t464 : Ptr(Int)
+    _t465 : Ptr(Ptr(Ptr(Ptr(Struct(st1)))))
+    _t466 : Ptr(Ptr(Ptr(Struct(st1))))
+    _t467 : Int
+    _t468 : Ptr(Ptr(Ptr(Struct(st1))))
+    _t469 : Ptr(Ptr(Struct(st1)))
+    _t47 : Ptr(Int)
+    _t470 : Int
+    _t471 : Ptr(Ptr(Struct(st1)))
+    _t472 : Ptr(Struct(st1))
+    _t473 : Ptr(Ptr(Fn([Int, Ptr(Struct(st1))], Int)))
+    _t474 : Ptr(Fn([Int, Ptr(Struct(st1))], Int))
+    _t475 : Int
+    _t476 : Ptr(Ptr(Struct(st1)))
+    _t477 : Ptr(Struct(st1))
+    _t478 : Ptr(Int)
+    _t479 : Int
     _t48 : Int
-    _t49 : Int
-    _t5 : Int
-    _t50 : Int
+    _t480 : Ptr(Ptr(Int))
+    _t481 : Ptr(Int)
+    _t482 : Int
+    _t483 : Int
+    _t484 : Ptr(Ptr(Ptr(Int)))
+    _t485 : Ptr(Ptr(Int))
+    _t486 : Ptr(Int)
+    _t487 : Ptr(Ptr(Ptr(Int)))
+    _t488 : Ptr(Ptr(Int))
+    _t489 : Ptr(Int)
+    _t49 : Ptr(Ptr(Int))
+    _t490 : Int
+    _t491 : Ptr(Ptr(Int))
+    _t492 : Ptr(Int)
+    _t493 : Ptr(Int)
+    _t494 : Int
+    _t495 : Ptr(Int)
+    _t496 : Int
+    _t497 : Ptr(Struct(st2))
+    _t498 : Ptr(Ptr(Ptr(Struct(st1))))
+    _t499 : Ptr(Ptr(Struct(st1)))
+    _t5 : Ptr(Ptr(Ptr(Ptr(Int))))
+    _t50 : Ptr(Int)
+    _t500 : Int
+    _t501 : Ptr(Ptr(Struct(st1)))
+    _t502 : Ptr(Struct(st1))
+    _t503 : Ptr(Int)
+    _t504 : Int
+    _t505 : Ptr(Ptr(Ptr(Int)))
+    _t506 : Ptr(Ptr(Int))
+    _t507 : Ptr(Ptr(Ptr(Ptr(Int))))
+    _t508 : Ptr(Ptr(Ptr(Int)))
+    _t509 : Ptr(Int)
     _t51 : Int
-    _t52 : Int
-    _t53 : Int
+    _t510 : Int
+    _t511 : Ptr(Ptr(Ptr(Int)))
+    _t512 : Ptr(Ptr(Int))
+    _t513 : Int
+    _t514 : Int
+    _t515 : Ptr(Int)
+    _t516 : Int
+    _t517 : Ptr(Ptr(Int))
+    _t518 : Ptr(Int)
+    _t519 : Int
+    _t52 : Ptr(Ptr(Int))
+    _t520 : Int
+    _t521 : Int
+    _t522 : Ptr(Ptr(Struct(st2)))
+    _t523 : Ptr(Struct(st2))
+    _t524 : Int
+    _t525 : Int
+    _t526 : Int
+    _t527 : Ptr(Ptr(Ptr(Struct(st2))))
+    _t528 : Ptr(Ptr(Struct(st2)))
+    _t529 : Ptr(Struct(st2))
+    _t53 : Ptr(Int)
+    _t530 : Int
+    _t531 : Ptr(Int)
+    _t532 : Int
     _t54 : Int
     _t55 : Int
     _t56 : Int
     _t57 : Int
-    _t58 : Int
-    _t59 : Int
-    _t6 : Int
-    _t60 : Int
-    _t61 : Int
+    _t58 : Ptr(Ptr(Struct(st2)))
+    _t59 : Ptr(Struct(st2))
+    _t6 : Ptr(Ptr(Ptr(Int)))
+    _t60 : Ptr(Ptr(Ptr(Struct(st1))))
+    _t61 : Ptr(Ptr(Struct(st1)))
     _t62 : Int
-    _t63 : Int
-    _t64 : Int
-    _t65 : Int
+    _t63 : Ptr(Ptr(Struct(st1)))
+    _t64 : Ptr(Struct(st1))
+    _t65 : Ptr(Int)
     _t66 : Int
-    _t67 : Int
-    _t68 : Int
+    _t67 : Ptr(Ptr(Ptr(Int)))
+    _t68 : Ptr(Ptr(Int))
     _t69 : Int
-    _t7 : Int
-    _t70 : Int
-    _t71 : Int
+    _t7 : Ptr(Ptr(Int))
+    _t70 : Ptr(Ptr(Int))
+    _t71 : Ptr(Int)
     _t72 : Int
     _t73 : Int
-    _t74 : Int
+    _t74 : Ptr(Int)
     _t75 : Int
-    _t76 : Int
-    _t77 : Int
-    _t78 : Int
-    _t79 : Int
-    _t8 : Int
-    _t80 : Int
-    _t81 : Int
+    _t76 : Ptr(Ptr(Struct(st1)))
+    _t77 : Ptr(Int)
+    _t78 : Ptr(Ptr(Int))
+    _t79 : Ptr(Int)
+    _t8 : Ptr(Ptr(Ptr(Ptr(Ptr(Ptr(Fn([Int, Ptr(Struct(st1))], Int)))))))
+    _t80 : Ptr(Ptr(Ptr(Int)))
+    _t81 : Ptr(Ptr(Int))
     _t82 : Int
-    _t83 : Int
-    _t84 : Int
-    _t85 : Int
-    _t86 : Int
+    _t83 : Ptr(Ptr(Struct(st1)))
+    _t84 : Ptr(Struct(st1))
+    _t85 : Ptr(Ptr(Fn([Int, Ptr(Struct(st1))], Int)))
+    _t86 : Ptr(Fn([Int, Ptr(Struct(st1))], Int))
     _t87 : Int
-    _t88 : Int
-    _t89 : Int
-    _t9 : Int
-    _t90 : Int
+    _t88 : Ptr(Ptr(Int))
+    _t89 : Ptr(Ptr(Ptr(Ptr(Fn([Int, Ptr(Struct(st2)), Int], Int)))))
+    _t9 : Ptr(Ptr(Ptr(Ptr(Ptr(Fn([Int, Ptr(Struct(st1))], Int))))))
+    _t90 : Ptr(Ptr(Ptr(Fn([Int, Ptr(Struct(st2)), Int], Int))))
     _t91 : Int
-    _t92 : Int
-    _t93 : Int
-    _t94 : Int
-    _t95 : Int
-    _t96 : Int
+    _t92 : Ptr(Ptr(Ptr(Fn([Int, Ptr(Struct(st2)), Int], Int))))
+    _t93 : Ptr(Ptr(Fn([Int, Ptr(Struct(st2)), Int], Int)))
+    _t94 : Ptr(Ptr(Ptr(Ptr(Fn([Int, Ptr(Struct(st2)), Int], Int)))))
+    _t95 : Ptr(Ptr(Ptr(Fn([Int, Ptr(Struct(st2)), Int], Int))))
+    _t96 : Ptr(Ptr(Fn([Int, Ptr(Struct(st2)), Int], Int)))
     _t97 : Int
-    _t98 : Int
-    _t99 : Int
-    id0 : Int
-    id1 : Int
-    id2 : Int
-    id3 : Int
-    id4 : Int
-    id5 : Int
-    id6 : Int
-    id7 : Int
+    _t98 : Ptr(Ptr(Ptr(Ptr(Int))))
+    _t99 : Ptr(Ptr(Ptr(Int)))
+    id0 : Ptr(Fn([Int, Ptr(Struct(st2)), Int], Int))
+    id1 : Ptr(Fn([Ptr(Int), Int, Int, Ptr(Int)], Int))
+    id10 : Ptr(Ptr(Int))
+    id11 : Ptr(Ptr(Ptr(Struct(st1))))
+    id12 : Ptr(Struct(st1))
+    id13 : Ptr(Ptr(Struct(st1)))
+    id14 : Ptr(Ptr(Ptr(Int)))
+    id15 : Ptr(Ptr(Ptr(Ptr(Int))))
+    id16 : Ptr(Ptr(Ptr(Struct(st1))))
+    id17 : Ptr(Ptr(Ptr(Int)))
+    id18 : Ptr(Ptr(Ptr(Int)))
+    id19 : Ptr(Ptr(Fn([Int, Ptr(Struct(st1))], Int)))
+    id2 : Ptr(Int)
+    id20 : Ptr(Ptr(Ptr(Ptr(Fn([Int, Ptr(Struct(st2)), Int], Int)))))
+    id21 : Ptr(Ptr(Ptr(Ptr(Fn([Int, Ptr(Struct(st2)), Int], Int)))))
+    id22 : Ptr(Ptr(Ptr(Ptr(Int))))
+    id23 : Ptr(Ptr(Ptr(Int)))
+    id24 : Ptr(Ptr(Int))
+    id25 : Ptr(Ptr(Fn([Ptr(Int), Int, Int, Ptr(Int)], Int)))
+    id26 : Ptr(Ptr(Ptr(Fn([Ptr(Int), Int, Int, Ptr(Int)], Int))))
+    id27 : Ptr(Fn([Ptr(Int), Int, Int, Ptr(Int)], Int))
+    id28 : Ptr(Struct(st1))
+    id29 : Ptr(Ptr(Int))
+    id3 : Ptr(Ptr(Ptr(Struct(st2))))
+    id30 : Ptr(Struct(st2))
+    id31 : Ptr(Struct(st1))
+    id32 : Ptr(Ptr(Struct(st2)))
+    id33 : Ptr(Struct(st2))
+    id34 : Ptr(Fn([Int, Ptr(Struct(st1))], Int))
+    id35 : Ptr(Ptr(Ptr(Ptr(Int))))
+    id36 : Ptr(Ptr(Ptr(Struct(st1))))
+    id37 : Ptr(Ptr(Ptr(Ptr(Struct(st1)))))
+    id38 : Ptr(Ptr(Ptr(Ptr(Struct(st1)))))
+    id39 : Ptr(Fn([Int, Ptr(Struct(st1))], Int))
+    id4 : Ptr(Fn([Int, Ptr(Struct(st1))], Int))
+    id40 : Ptr(Ptr(Ptr(Fn([Int, Ptr(Struct(st1))], Int))))
+    id41 : Ptr(Ptr(Ptr(Ptr(Ptr(Ptr(Fn([Int, Ptr(Struct(st1))], Int)))))))
+    id42 : Ptr(Ptr(Struct(st1)))
+    id43 : Ptr(Ptr(Struct(st1)))
+    id44 : Ptr(Fn([Ptr(Int), Int, Int, Ptr(Int)], Int))
+    id45 : Ptr(Ptr(Fn([Int, Ptr(Struct(st1))], Int)))
+    id46 : Ptr(Ptr(Struct(st2)))
+    id47 : Ptr(Struct(st2))
+    id48 : Ptr(Ptr(Struct(st1)))
+    id49 : Ptr(Ptr(Ptr(Ptr(Int))))
+    id5 : Ptr(Ptr(Ptr(Ptr(Struct(st1)))))
+    id50 : Ptr(Ptr(Struct(st2)))
+    id51 : Ptr(Ptr(Ptr(Ptr(Struct(st1)))))
+    id52 : Ptr(Ptr(Fn([Int, Ptr(Struct(st1))], Int)))
+    id53 : Ptr(Fn([Int, Ptr(Struct(st2)), Int], Int))
+    id54 : Ptr(Ptr(Ptr(Struct(st2))))
+    id6 : Ptr(Ptr(Int))
+    id7 : Ptr(Ptr(Ptr(Struct(st1))))
+    id8 : Ptr(Ptr(Struct(st2)))
+    id9 : Ptr(Int)
 
   entry:
-    Copy(id0, 7)
-    Copy(id3, 3)
-    Copy(id4, 4)
-    Arith(_t1, mul, 6, id1)
-    Copy(id7, _t1)
-    Cmp(_t3, eq, 1, id0)
-    Arith(_t2, sub, 0, _t3)
-    Copy(id0, _t2)
-    Branch(7, lbl1, lbl2)
+    Load(_t1, id13)
+    Copy(id12, _t1)
+    Load(_t2, id15)
+    Copy(id14, _t2)
+    Copy(id23, id14)
+    Gfp(_t3, id12, f1)
+    Load(_t4, _t3)
+    Gep(_t5, id22, _t4)
+    Load(_t6, _t5)
+    Load(_t7, _t6)
+    Copy(id29, _t7)
+    Gep(_t8, id41, 0)
+    Load(_t9, _t8)
+    Gep(_t10, id9, 7)
+    Load(_t11, _t10)
+    Gep(_t12, _t9, _t11)
+    Load(_t13, _t12)
+    Gep(_t14, _t13, g5)
+    Load(_t15, _t14)
+    Copy(id40, _t15)
+    CallIndirect(_t16, id0, [g7, g2, 6], lbl1)
 
   lbl1:
-    Jump(lbl4)
+    Gep(_t17, id40, _t16)
+    Load(_t18, _t17)
+    Load(_t19, _t18)
+    Copy(id39, _t19)
+    Load(_t20, id6)
+    Load(_t21, _t20)
+    Gep(_t22, id7, _t21)
+    Load(_t23, _t22)
+    Copy(id48, _t23)
+    CallIndirect(_t24, id1, [g6, 0, g3, id2], lbl2)
 
   lbl10:
-    Branch(id4, lbl11, lbl12)
+    Gep(_t80, id18, g7)
+    Load(_t81, _t80)
+    Load(_t82, id2)
+    Gfp(_t83, g2, f1)
+    Load(_t84, _t83)
+    Gep(_t85, id19, 4)
+    Load(_t86, _t85)
+    CallIndirect(_t87, _t86, [_t82, _t84], lbl16)
 
   lbl11:
-    Copy(id3, 7)
-    Copy(id3, 3)
-    Arith(_t17, add, id1, id0)
-    Copy(id0, _t17)
-    Copy(id5, 7)
-    Cmp(_t18, lt, id6, 7)
-    Copy(id7, _t18)
-    Copy(id5, 5)
-    Copy(id1, id7)
-    Copy(id1, id6)
-    Jump(lbl10)
+    Gep(_t133, id17, 9)
+    Load(_t134, _t133)
+    Gep(_t135, _t134, g1)
+    Load(_t136, _t135)
+    Load(_t137, _t136)
+    Gep(_t138, id23, 5)
+    Load(_t139, _t138)
+    Load(_t140, g8)
+    Gep(_t141, _t139, _t140)
+    Load(_t142, _t141)
+    CallIndirect(_t143, id27, [g6, 6, 2, g6], lbl18)
 
   lbl12:
-    Branch(id3, lbl13, lbl14)
+    Gep(_t37, _t35, _t36)
+    Load(_t38, _t37)
+    Gep(_t39, _t38, g7)
+    Load(_t40, _t39)
+    CallDirect(_, f3, [10, _t40], lbl13)
 
   lbl13:
-    Arith(_t19, add, id0, 3)
-    Copy(id3, _t19)
-    Copy(id4, id1)
-    Arith(_t20, mul, id3, id3)
-    Arith(_t21, sub, 0, id2)
-    Cmp(_t22, neq, _t20, _t21)
-    Arith(_t23, div, _t22, 9)
-    Copy(id3, _t23)
-    Copy(id6, id1)
-    Copy(id0, id1)
-    Copy(id3, id5)
-    Copy(id6, 2)
-    Copy(id7, id1)
-    Copy(id1, id2)
-    Jump(lbl15)
+    Load(_t41, id6)
+    Gep(_t42, id7, g1)
+    Load(_t43, _t42)
+    Load(_t44, g8)
+    Gep(_t45, _t43, _t44)
+    Load(_t46, _t45)
+    Gfp(_t47, _t46, f1)
+    Load(_t48, _t47)
+    Gfp(_t49, g4, f2)
+    Load(_t50, _t49)
+    CallDirect(_, f5, [_t41, g3, _t48, _t50], lbl14)
 
   lbl14:
-    Arith(_t24, mul, id5, 8)
-    Copy(id6, _t24)
-    Copy(id1, id1)
-    Copy(id7, 4)
-    Copy(id2, id7)
-    Copy(id5, 0)
-    Cmp(_t25, lt, id3, id7)
-    Cmp(_t26, lt, id7, 0)
-    Cmp(_t27, lt, _t25, _t26)
-    Copy(id6, _t27)
-    Cmp(_t28, lt, 1, id0)
-    Cmp(_t29, lte, id3, _t28)
-    Copy(id0, _t29)
-    Jump(lbl15)
+    Load(_t51, id9)
+    Gep(_t52, id6, 8)
+    Load(_t53, _t52)
+    CallExt(_t54, e1, [9, id2, 6, g4, g1, g8, 5])
+    CallExt(_t55, e1, [6, id9, g3, g4, g1, g8, g5])
+    Cmp(_t56, eq, id10, id6)
+    CallExt(_t57, e1, [_t51, _t53, _t54, g4, _t55, id9, _t56])
+    Gep(_t58, id8, _t57)
+    Load(_t59, _t58)
+    Copy(g2, _t59)
+    Gep(_t60, id11, g7)
+    Load(_t61, _t60)
+    Load(_t62, g8)
+    Gep(_t63, _t61, _t62)
+    Load(_t64, _t63)
+    Gfp(_t65, _t64, f1)
+    Load(_t66, _t65)
+    CallDirect(_, f3, [_t66, id12], lbl15)
 
   lbl15:
-    Jump(lbl16)
+    Gep(_t67, id14, 6)
+    Load(_t68, _t67)
+    CallExt(_t69, e1, [0, id2, g3, g4, g3, id9, 9])
+    Gep(_t70, _t68, _t69)
+    Load(_t71, _t70)
+    Arith(_t72, mul, g7, g7)
+    Arith(_t73, sub, _t72, 3)
+    Gep(_t74, _t71, _t73)
+    Load(_t75, _t74)
+    Alloc(id6, _t75)
+    Alloc(_t76, 1)
+    Store(id16, _t76)
+    Load(_t78, id17)
+    Alloc(_t77, 1)
+    Store(_t78, _t77)
+    Jump(lbl11)
 
   lbl16:
-    Branch(3, lbl17, lbl18)
+    Gep(_t88, _t81, _t87)
+    Gep(_t89, id20, g3)
+    Load(_t90, _t89)
+    CallDirect(_t91, f5, [g8, g1, 2, g6], lbl17)
 
   lbl17:
-    Copy(id2, id7)
-    Copy(id7, id3)
-    Cmp(_t30, neq, id1, id6)
-    Cmp(_t31, eq, _t30, id4)
-    Copy(id7, _t31)
-    Copy(id2, 9)
-    Copy(id5, id1)
-    Copy(id6, id5)
-    Copy(id2, id2)
-    Copy(id1, 2)
-    Copy(id2, 3)
-    Copy(_t194, id0)
-    Jump(lbl70)
+    Gep(_t92, _t90, _t91)
+    Load(_t93, _t92)
+    Gep(_t94, id21, 4)
+    Load(_t95, _t94)
+    Load(_t96, _t95)
+    Cmp(_t97, neq, _t93, _t96)
+    Alloc(_t79, _t97)
+    Store(_t88, _t79)
+    Copy(g7, g5)
+    Gep(_t98, id22, 3)
+    Load(_t99, _t98)
+    Arith(_t100, sub, g5, g7)
+    Gep(_t101, _t99, _t100)
+    Load(_t102, _t101)
+    Load(_t103, _t102)
+    Arith(_t104, sub, 0, g3)
+    Cmp(_t105, eq, id2, id9)
+    Gep(_t106, id23, _t105)
+    Load(_t107, _t106)
+    Load(_t108, id10)
+    Load(_t109, _t108)
+    Gep(_t110, _t107, _t109)
+    Load(_t111, _t110)
+    Gep(_t112, id18, g3)
+    Load(_t113, _t112)
+    Load(_t114, _t113)
+    Load(_t115, _t114)
+    CallExt(_, e1, [g3, _t103, _t104, g4, 2, _t111, _t115])
+    Load(_t116, id18)
+    Load(_t117, _t116)
+    Arith(_t118, add, 4, 3)
+    Load(_t119, id2)
+    Cmp(_t120, gt, _t118, _t119)
+    Load(_t121, id7)
+    Load(_t122, _t121)
+    Cmp(_t123, neq, id24, id24)
+    Gep(_t124, g6, _t123)
+    Load(_t125, _t124)
+    CallExt(_t126, e1, [5, _t117, _t120, _t122, _t125, id9, g5])
+    Copy(g3, _t126)
+    Gep(_t127, id8, g5)
+    Load(_t128, _t127)
+    Gfp(_t129, _t128, f1)
+    Load(_t130, _t129)
+    Gfp(_t131, _t130, f1)
+    Load(_t132, _t131)
+    Alloc(g8, _t132)
+    Jump(lbl11)
 
   lbl18:
-    Jump(lbl3)
+    CallDirect(_t144, f3, [_t143, id28], lbl19)
 
   lbl19:
-    Copy(id6, id5)
-    Cmp(_t32, gt, id5, id5)
-    Copy(id1, _t32)
-    Copy(id2, id5)
-    Arith(_t33, sub, 0, 7)
-    Arith(_t34, div, id3, _t33)
-    Copy(id6, _t34)
-    Arith(_t36, div, 7, id6)
-    Arith(_t35, sub, 0, _t36)
-    Copy(id2, _t35)
-    Copy(id4, id2)
-    Copy(id6, 7)
-    Arith(_t37, sub, 0, id6)
-    Cmp(_t38, lt, _t37, 10)
-    Copy(_t194, _t38)
-    Jump(lbl70)
+    Arith(_t145, sub, 0, g1)
+    Cmp(_t146, gte, 1, 2)
+    Gep(_t147, id29, _t146)
+    Load(_t148, _t147)
+    Gep(_t149, id26, 8)
+    Load(_t150, _t149)
+    Gep(_t151, g6, 9)
+    Load(_t152, _t151)
+    Gep(_t153, _t150, _t152)
+    Load(_t154, _t153)
+    CallIndirect(_t155, _t154, [_t142, _t144, _t145, _t148], lbl20)
 
   lbl2:
-    Branch(id0, lbl19, lbl20)
+    Gfp(_t25, g4, f1)
+    Load(_t26, _t25)
+    Cmp(_t27, gte, _t24, _t26)
+    Load(_t28, id3)
+    Load(_t29, _t28)
+    CallIndirect(_t30, id4, [4, g4], lbl3)
 
   lbl20:
-    Copy(id3, id2)
-    Copy(id5, 2)
-    Copy(id1, 2)
-    Arith(_t39, sub, 0, 1)
-    Arith(_t40, div, _t39, id2)
-    Copy(id7, _t40)
-    Copy(id6, 6)
-    Cmp(_t42, neq, id1, id4)
-    Arith(_t41, sub, 0, _t42)
-    Copy(id2, _t41)
-    Copy(id7, 4)
-    Copy(id5, 6)
-    Jump(lbl21)
+    Gep(_t156, id22, g5)
+    Load(_t157, _t156)
+    CallDirect(_t158, f4, [10, g2, 7], lbl21)
 
   lbl21:
-    Arith(_t43, add, 10, id6)
-    Copy(id2, _t43)
-    Arith(_t44, sub, id6, id6)
-    Copy(id4, _t44)
-    Arith(_t45, sub, 0, 5)
-    Arith(_t46, sub, 0, id0)
-    Cmp(_t47, gte, _t45, _t46)
-    Copy(id4, _t47)
-    Arith(_t48, sub, 0, id4)
-    Copy(id3, _t48)
-    Arith(_t49, sub, 0, 3)
-    Copy(id3, _t49)
-    Jump(lbl22)
+    Gep(_t159, _t157, _t158)
+    Load(_t160, _t159)
+    Load(_t161, g6)
+    Gfp(_t162, id28, f1)
+    Load(_t163, _t162)
+    CallDirect(_t164, f4, [_t161, id30, _t163], lbl22)
 
   lbl22:
-    Branch(0, lbl23, lbl24)
+    Gep(_t165, _t160, _t164)
+    Load(_t166, _t165)
+    Gep(_t167, id25, 4)
+    Load(_t168, _t167)
+    CallIndirect(_, _t168, [id2, _t137, _t155, _t166], lbl23)
 
   lbl23:
-    Cmp(_t50, lte, 0, 9)
-    Copy(id0, _t50)
-    Copy(id7, 5)
-    Arith(_t51, sub, 0, id4)
-    Copy(id2, _t51)
-    Cmp(_t52, lte, id0, id0)
-    Cmp(_t53, gte, _t52, 2)
-    Copy(id0, _t53)
-    Copy(id7, id3)
-    Copy(id1, 2)
-    Copy(id3, 10)
-    Cmp(_t54, lt, 6, 9)
-    Copy(id6, _t54)
-    Jump(lbl22)
+    Cmp(_t169, lt, 6, 7)
+    Gep(_t170, g6, _t169)
+    Load(_t171, _t170)
+    Gfp(_t172, id28, f2)
+    Load(_t173, _t172)
+    Load(_t174, id10)
+    Cmp(_t175, neq, _t173, _t174)
+    Gep(_t176, id11, 0)
+    Load(_t177, _t176)
+    Load(_t178, g8)
+    Gep(_t179, _t177, _t178)
+    Load(_t180, _t179)
+    Gfp(_t181, id31, f1)
+    Load(_t182, _t181)
+    Load(_t183, id32)
+    Load(_t184, g8)
+    CallDirect(_t185, f4, [_t182, _t183, _t184], lbl24)
 
   lbl24:
-    Copy(id6, 5)
-    Branch(5, lbl25, lbl26)
+    CallDirect(_t186, f4, [g1, id33, g7], lbl25)
 
   lbl25:
-    Copy(id2, 2)
-    Copy(id0, 2)
-    Copy(id2, 9)
-    Copy(id6, id7)
-    Cmp(_t55, eq, 1, id3)
-    Copy(id7, _t55)
-    Copy(id6, 9)
-    Copy(id1, 7)
-    Copy(id3, id0)
-    Jump(lbl27)
+    Gep(_t187, g6, _t186)
+    Load(_t188, _t187)
+    CallExt(_t189, e1, [_t171, id2, _t175, _t180, _t185, g8, _t188])
+    Alloc(id2, _t189)
+    Branch(g7, lbl26, lbl27)
 
   lbl26:
-    Arith(_t56, div, id2, id6)
-    Arith(_t57, sub, 0, id1)
-    Cmp(_t58, lte, _t56, _t57)
-    Cmp(_t59, gt, 5, id7)
-    Cmp(_t60, gt, id6, id3)
-    Arith(_t61, div, _t59, _t60)
-    Arith(_t62, div, _t58, _t61)
-    Copy(id1, _t62)
-    Copy(id2, id1)
-    Copy(id6, 4)
-    Copy(id0, 7)
-    Jump(lbl27)
+    Cmp(_t190, eq, id2, g8)
+    Gep(_t191, g6, 9)
+    Load(_t192, _t191)
+    Cmp(_t193, gte, _t190, _t192)
+    Load(_t194, id7)
+    Load(_t195, _t194)
+    CallIndirect(_t196, id34, [_t193, _t195], lbl29)
 
   lbl27:
-    Jump(lbl3)
+    Gfp(_t295, id33, f1)
+    Load(_t296, _t295)
+    Gfp(_t297, _t296, f2)
+    Load(_t298, _t297)
+    Gep(_t299, id43, g7)
+    Load(_t300, _t299)
+    CallDirect(_t301, f3, [5, _t300], lbl36)
 
   lbl28:
-    Cmp(_t65, neq, 6, 1)
-    Arith(_t66, sub, 0, id4)
-    Cmp(_t67, eq, _t66, id6)
-    Cmp(_t68, gt, _t65, _t67)
-    Copy(id5, _t68)
-    Jump(lbl31)
+    Jump(lbl6)
 
   lbl29:
-    Copy(id5, 0)
-    Cmp(_t97, lt, id3, id7)
-    Cmp(_t98, lt, id7, 0)
-    Cmp(_t99, lt, _t97, _t98)
-    Copy(id6, _t99)
-    Cmp(_t100, lt, 1, id0)
-    Cmp(_t101, lte, id3, _t100)
-    Copy(id0, _t101)
-    Copy(id1, id5)
-    Cmp(_t102, lte, 4, 3)
-    Cmp(_t104, gt, 3, 2)
-    Arith(_t103, sub, 0, _t104)
-    Arith(_t105, add, _t102, _t103)
-    Copy(id3, _t105)
-    Arith(_t106, sub, 0, id3)
-    Copy(id0, _t106)
-    Jump(lbl40)
+    CallDirect(_, f3, [_t196, id31], lbl30)
 
   lbl3:
-    Arith(_t63, mul, id6, id4)
-    Arith(_t64, div, _t63, 3)
-    Branch(_t64, lbl28, lbl29)
+    Arith(_t31, sub, g7, _t30)
+    CallIndirect(_t32, id0, [_t27, _t29, _t31], lbl4)
 
   lbl30:
-    Cmp(_t109, lte, 6, id0)
-    Branch(_t109, lbl43, lbl44)
+    Load(_t198, id6)
+    Gep(_t199, id24, g3)
+    Load(_t200, _t199)
+    Cmp(_t201, neq, _t198, _t200)
+    Gep(_t202, id23, _t201)
+    Gep(_t203, id35, 3)
+    Load(_t204, _t203)
+    Load(_t205, g6)
+    Gep(_t206, _t204, _t205)
+    Load(_t207, _t206)
+    Load(_t208, id22)
+    Load(_t209, _t208)
+    Cmp(_t210, neq, _t207, _t209)
+    Alloc(_t197, _t210)
+    Store(_t202, _t197)
+    Gep(_t211, id29, 9)
+    Load(_t212, _t211)
+    Load(_t213, id9)
+    Gep(_t214, _t212, _t213)
+    Load(_t215, _t214)
+    Load(_t216, id17)
+    Load(_t217, id17)
+    Cmp(_t218, neq, _t216, _t217)
+    Cmp(_t219, neq, _t215, _t218)
+    Copy(g1, _t219)
+    Gep(_t220, id11, 6)
+    Load(_t221, _t220)
+    Gep(_t222, g6, 2)
+    Load(_t223, _t222)
+    Gep(_t224, _t221, _t223)
+    Load(_t225, _t224)
+    Gfp(_t226, _t225, f1)
+    Gfp(_t227, g4, f1)
+    Load(_t228, _t227)
+    Gep(_t229, id10, _t228)
+    Load(_t230, _t229)
+    Cmp(_t231, eq, _t230, id2)
+    Store(_t226, _t231)
+    Alloc(g8, 1)
+    Gep(_t232, id35, 1)
+    Load(_t233, _t232)
+    Gep(_t234, g8, g3)
+    Load(_t235, _t234)
+    Gep(_t236, _t233, _t235)
+    Load(_t237, _t236)
+    Cmp(_t238, eq, _t237, id6)
+    Arith(_t239, sub, 0, g5)
+    Gep(_t240, id36, 5)
+    Load(_t241, _t240)
+    Load(_t242, _t241)
+    CallDirect(_t243, f3, [_t239, _t242], lbl31)
 
   lbl31:
-    Branch(id1, lbl32, lbl33)
+    Gep(_t244, id37, g1)
+    Load(_t245, _t244)
+    Cmp(_t246, neq, id24, id6)
+    Gep(_t247, _t245, _t246)
+    Load(_t248, _t247)
+    Gep(_t250, g8, 1)
+    Load(_t251, _t250)
+    Arith(_t249, sub, 0, _t251)
+    Gep(_t252, _t248, _t249)
+    Load(_t253, _t252)
+    CallExt(_, e1, [_t238, 0, _t243, _t253, g7, id9, 6])
+    Arith(_t254, sub, 0, 8)
+    CallDirect(_t255, f4, [g5, id30, g1], lbl32)
 
   lbl32:
-    Copy(id5, id5)
-    Cmp(_t70, eq, id6, 3)
-    Arith(_t69, sub, 0, _t70)
-    Copy(id4, _t69)
-    Cmp(_t71, neq, 6, id2)
-    Copy(id6, _t71)
-    Arith(_t72, sub, 0, 9)
-    Copy(id5, _t72)
-    Copy(id1, 0)
-    Copy(id7, id6)
-    Cmp(_t73, eq, id0, id1)
-    Copy(id4, _t73)
-    Copy(id7, 6)
-    Jump(lbl31)
+    Cmp(_t256, eq, _t254, _t255)
+    Gep(_t257, id14, g5)
+    Load(_t258, _t257)
+    Arith(_t259, div, g7, g1)
+    Gep(_t260, _t258, _t259)
+    Load(_t261, _t260)
+    Gep(_t262, id6, g5)
+    Load(_t263, _t262)
+    Gep(_t264, _t263, g3)
+    Load(_t265, _t264)
+    CallExt(_t266, e1, [g5, id2, _t256, id31, g3, _t261, _t265])
+    Gep(_t267, id38, 8)
+    Load(_t268, _t267)
+    Cmp(_t269, neq, g8, g6)
+    Gep(_t270, _t268, _t269)
+    Load(_t271, _t270)
+    Gep(_t272, _t271, 0)
+    Load(_t273, _t272)
+    CallDirect(_, f3, [_t266, _t273], lbl33)
 
   lbl33:
-    Jump(lbl34)
+    Load(_t274, id6)
+    Load(_t275, _t274)
+    Load(_t276, id29)
+    Load(_t277, id9)
+    Load(_t278, id42)
+    Load(_t279, g8)
+    Gep(_t280, id6, 7)
+    Load(_t281, _t280)
+    CallExt(_t282, e1, [7, g6, g3, id28, g5, id2, 6])
+    CallExt(_t283, e1, [g7, _t276, _t277, _t278, _t279, _t281, _t282])
+    CallIndirect(_t284, id4, [0, g4], lbl34)
 
   lbl34:
-    Arith(_t74, sub, 0, 0)
-    Branch(_t74, lbl35, lbl36)
+    Gep(_t285, id13, _t284)
+    Load(_t286, _t285)
+    Gep(_t287, id6, g7)
+    Load(_t288, _t287)
+    Gep(_t289, _t288, 4)
+    Load(_t290, _t289)
+    Gep(_t291, id6, 2)
+    Load(_t292, _t291)
+    Load(_t293, _t292)
+    CallExt(_t294, e1, [_t275, g6, _t283, _t286, _t290, g8, _t293])
+    CallIndirect(_, id39, [_t294, id31], lbl35)
 
   lbl35:
-    Arith(_t75, mul, 4, 7)
-    Copy(id7, _t75)
-    Cmp(_t76, gte, 7, id3)
-    Cmp(_t77, gte, _t76, id3)
-    Arith(_t78, sub, _t77, 5)
-    Copy(id7, _t78)
-    Cmp(_t79, lte, id0, id0)
-    Copy(id2, _t79)
-    Arith(_t80, mul, 9, id4)
-    Cmp(_t81, lt, _t80, 7)
-    Arith(_t82, sub, 0, 7)
-    Cmp(_t83, gte, _t81, _t82)
-    Copy(id4, _t83)
-    Jump(lbl34)
+    Jump(lbl28)
 
   lbl36:
-    Jump(lbl37)
+    Gep(_t302, id36, g7)
+    Load(_t303, _t302)
+    Load(_t304, _t303)
+    Gep(_t305, id29, g5)
+    Load(_t306, _t305)
+    Load(_t307, _t306)
+    Gfp(_t308, g2, f1)
+    Load(_t309, _t308)
+    Gfp(_t310, _t309, f2)
+    Load(_t311, _t310)
+    Gfp(_t312, id28, f2)
+    Load(_t313, _t312)
+    CallIndirect(_t314, id44, [id9, g5, g1, g6], lbl37)
 
   lbl37:
-    Cmp(_t84, neq, 0, id7)
-    Arith(_t85, sub, id3, _t84)
-    Branch(_t85, lbl38, lbl39)
+    Gep(_t315, _t313, _t314)
+    Load(_t316, _t315)
+    CallExt(_t317, e1, [9, _t298, _t301, _t304, _t307, _t311, _t316])
+    Copy(g3, _t317)
+    Gep(_t318, id24, 1)
+    Load(_t319, _t318)
+    Gep(_t320, _t319, 10)
+    Load(_t321, _t320)
+    Gep(_t322, id46, 0)
+    Load(_t323, _t322)
+    Gfp(_t324, _t323, f1)
+    Load(_t325, _t324)
+    Gfp(_t326, g4, f1)
+    Load(_t327, _t326)
+    Gep(_t328, id45, _t327)
+    Load(_t329, _t328)
+    CallIndirect(_t330, _t329, [_t321, _t325], lbl38)
 
   lbl38:
-    Arith(_t86, sub, 0, 10)
-    Copy(id7, _t86)
-    Copy(id4, id0)
-    Copy(id4, id2)
-    Arith(_t87, sub, 0, id3)
-    Copy(id1, _t87)
-    Copy(id6, id3)
-    Arith(_t88, sub, 0, 9)
-    Cmp(_t89, neq, _t88, id5)
-    Copy(id2, _t89)
-    Arith(_t90, div, id6, id3)
-    Arith(_t91, sub, 0, 7)
-    Cmp(_t92, neq, _t90, _t91)
-    Copy(id1, _t92)
-    Cmp(_t93, eq, id6, 2)
-    Copy(id5, _t93)
-    Jump(lbl37)
+    Cmp(_t331, gte, g3, g3)
+    Gep(_t332, id36, _t331)
+    Load(_t333, _t332)
+    Gfp(_t334, g4, f2)
+    Load(_t335, _t334)
+    Load(_t336, _t335)
+    Gep(_t337, _t333, _t336)
+    Load(_t338, _t337)
+    CallDirect(_, f3, [_t330, _t338], lbl39)
 
   lbl39:
-    Copy(id1, id6)
-    Copy(id2, id0)
-    Copy(id3, 0)
-    Cmp(_t95, gte, 8, id6)
-    Cmp(_t96, gt, 5, _t95)
-    Arith(_t94, sub, 0, _t96)
-    Copy(id6, _t94)
-    Copy(id7, id2)
-    Jump(lbl30)
+    Load(_t339, id7)
+    Load(_t340, _t339)
+    Gep(_t341, id45, 5)
+    Load(_t342, _t341)
+    CallIndirect(_, _t342, [6, _t340], lbl40)
 
   lbl4:
-    Cmp(_t4, eq, id1, id1)
-    Arith(_t5, add, _t4, 7)
-    Arith(_t6, div, _t5, 1)
-    Branch(_t6, lbl5, lbl6)
+    CallDirect(_, f3, [_t32, 0], lbl5)
 
   lbl40:
-    Branch(id2, lbl41, lbl42)
+    Copy(g1, 4)
+    CallExt(_t343, e1, [2, g6, g1, g4, g3, g6, g3])
+    Cmp(_t344, gte, g1, _t343)
+    Load(_t345, id10)
+    Gep(_t346, id6, g7)
+    Load(_t347, _t346)
+    Cmp(_t348, eq, _t347, g8)
+    Gep(_t349, id11, 5)
+    Load(_t350, _t349)
+    Load(_t351, _t350)
+    Gep(_t352, id29, g5)
+    Load(_t353, _t352)
+    Cmp(_t354, eq, id9, g6)
+    Gep(_t355, _t353, _t354)
+    Load(_t356, _t355)
+    Gep(_t357, id9, g5)
+    Load(_t358, _t357)
+    Gep(_t359, id29, _t358)
+    Load(_t360, _t359)
+    Gep(_t361, g6, 3)
+    Load(_t362, _t361)
+    Load(_t363, g6)
+    Gep(_t364, id29, g1)
+    Load(_t365, _t364)
+    CallDirect(_t366, f4, [8, id47, 6], lbl41)
 
   lbl41:
-    Copy(id5, 10)
-    Arith(_t108, sub, 0, id5)
-    Arith(_t107, sub, 0, _t108)
-    Copy(id1, _t107)
-    Copy(id2, id2)
-    Copy(id1, 2)
-    Copy(id2, 3)
-    Copy(id0, 10)
-    Copy(id2, 7)
-    Jump(lbl40)
+    CallExt(_t367, e1, [_t362, g6, g7, id12, _t363, _t365, _t366])
+    CallExt(_t368, e1, [_t344, _t345, _t348, _t351, _t356, _t360, _t367])
+    Load(_t369, id8)
+    Gep(_t370, id24, g7)
+    Load(_t371, _t370)
+    Load(_t372, _t371)
+    CallDirect(_t373, f4, [10, id30, g3], lbl42)
 
   lbl42:
-    Copy(id1, 2)
-    Jump(lbl30)
+    Gep(_t374, id24, _t373)
+    Load(_t375, _t374)
+    Gfp(_t376, id31, f2)
+    Load(_t377, _t376)
+    Load(_t378, g8)
+    Gep(_t379, _t377, _t378)
+    Load(_t380, _t379)
+    Load(_t381, g6)
+    CallExt(_t382, e1, [_t372, _t375, _t380, id31, 4, id9, _t381])
+    CallDirect(_, f4, [_t368, _t369, _t382], lbl43)
 
   lbl43:
-    Branch(id7, lbl46, lbl47)
+    Gep(_t383, id43, 2)
+    Load(_t384, _t383)
+    Gfp(_t385, _t384, f2)
+    Load(_t386, _t385)
+    Gep(_t387, id48, 0)
+    Load(_t388, _t387)
+    Gfp(_t389, _t388, f1)
+    Load(_t390, _t389)
+    Gep(_t391, _t386, _t390)
+    Store(_t391, g5)
+    CallExt(_t392, e1, [g1, g8, 7, id31, g1, g8, 8])
+    Load(_t393, id42)
+    CallDirect(_t394, f3, [_t392, _t393], lbl44)
 
   lbl44:
-    Copy(id3, id6)
-    Arith(_t144, div, 1, id2)
-    Copy(id5, _t144)
-    Cmp(_t145, neq, 6, 1)
-    Arith(_t146, sub, 0, id4)
-    Cmp(_t147, eq, _t146, id6)
-    Cmp(_t148, gt, _t145, _t147)
-    Copy(id5, _t148)
-    Jump(lbl52)
+    Gep(_t395, id18, 6)
+    Load(_t396, _t395)
+    Load(_t397, _t396)
+    Load(_t398, id16)
+    Load(_t399, _t398)
+    Gep(_t400, id45, g7)
+    Load(_t401, _t400)
+    CallIndirect(_t402, _t401, [7, g4], lbl45)
 
   lbl45:
-    Arith(_t164, sub, 0, id7)
-    Copy(id1, _t164)
-    Copy(id1, id6)
-    Copy(id6, 8)
-    Copy(id7, 10)
-    Jump(lbl58)
+    Gfp(_t403, g2, f1)
+    Load(_t404, _t403)
+    Gfp(_t405, _t404, f2)
+    Load(_t406, _t405)
+    Gep(_t407, id2, 1)
+    Load(_t408, _t407)
+    Cmp(_t409, eq, 7, g5)
+    Cmp(_t410, neq, _t408, _t409)
+    CallExt(_t411, e1, [_t394, _t397, 5, _t399, _t402, _t406, _t410])
+    Alloc(id6, _t411)
+    Gep(_t412, id49, 3)
+    Load(_t413, _t412)
+    Arith(_t414, sub, g5, g7)
+    Gep(_t415, _t413, _t414)
+    Load(_t416, _t415)
+    Load(_t417, _t416)
+    Copy(g8, _t417)
+    Gfp(_t418, id12, f2)
+    Load(_t419, _t418)
+    CallDirect(_t420, f5, [id9, g3, g5, g6], lbl46)
 
   lbl46:
-    Arith(_t110, sub, 0, 7)
-    Arith(_t111, div, id3, _t110)
-    Copy(id6, _t111)
-    Arith(_t113, div, 7, id6)
-    Arith(_t112, sub, 0, _t113)
-    Copy(id2, _t112)
-    Copy(id4, id2)
-    Copy(id6, 7)
-    Copy(id6, 10)
-    Arith(_t114, sub, id1, 1)
-    Arith(_t115, div, id6, _t114)
-    Cmp(_t116, gt, 10, _t115)
-    Copy(id3, _t116)
-    Arith(_t117, div, id0, 1)
-    Copy(id0, _t117)
-    Copy(id1, 6)
-    Copy(id4, 8)
-    Arith(_t119, sub, 0, 7)
-    Arith(_t120, sub, _t119, id6)
-    Arith(_t118, sub, 0, _t120)
-    Copy(id1, _t118)
-    Copy(id2, 9)
-    Jump(lbl48)
+    Gep(_t421, _t419, _t420)
+    Load(_t422, _t421)
+    CallDirect(_t423, f3, [_t422, id28], lbl47)
 
   lbl47:
-    Copy(id7, 3)
-    Cmp(_t122, lt, id7, 5)
-    Arith(_t121, sub, 0, _t122)
-    Cmp(_t123, lte, _t121, id6)
-    Copy(id2, _t123)
-    Copy(id2, id4)
-    Copy(id7, id0)
-    Copy(id3, id6)
-    Arith(_t124, sub, 0, 3)
-    Cmp(_t125, neq, _t124, 7)
-    Arith(_t126, div, _t125, id4)
-    Copy(id4, _t126)
-    Copy(id0, 6)
-    Copy(id5, 1)
-    Cmp(_t127, lte, 0, 9)
-    Copy(id0, _t127)
-    Copy(id7, 5)
-    Jump(lbl48)
+    Cmp(_t424, neq, id50, id50)
+    Gep(_t425, id23, _t424)
+    Load(_t426, _t425)
+    Load(_t427, _t426)
+    Load(_t428, id29)
+    Gep(_t429, g8, 4)
+    Load(_t430, _t429)
+    Gep(_t431, id43, g5)
+    Load(_t432, _t431)
+    Load(_t433, id10)
+    CallExt(_t434, e1, [9, g6, g3, id28, 0, g6, g7])
+    CallExt(_t435, e1, [5, _t428, _t430, _t432, 4, _t433, _t434])
+    Gep(_t436, g8, _t435)
+    Load(_t437, _t436)
+    Load(_t438, g8)
+    Gep(_t439, id16, _t438)
+    Load(_t440, _t439)
+    Gep(_t441, id13, 5)
+    Load(_t442, _t441)
+    Gfp(_t443, _t442, f1)
+    Load(_t444, _t443)
+    Gep(_t445, _t440, _t444)
+    Load(_t446, _t445)
+    Load(_t447, g6)
+    Load(_t448, id24)
+    Gep(_t449, id24, 4)
+    Load(_t450, _t449)
+    Load(_t451, _t450)
+    CallExt(_, e1, [_t423, _t427, _t437, _t446, _t447, _t448, _t451])
+    Gep(_t452, id17, 9)
+    Load(_t453, _t452)
+    Gep(_t454, _t453, g1)
+    Load(_t455, _t454)
+    Load(_t456, _t455)
+    Gep(_t457, id22, g7)
+    Load(_t458, _t457)
+    Gep(_t459, _t458, 10)
+    Load(_t460, _t459)
+    Load(_t461, id2)
+    Cmp(_t462, gte, _t461, g3)
+    Gep(_t463, _t460, _t462)
+    Load(_t464, _t463)
+    Gep(_t465, id51, 10)
+    Load(_t466, _t465)
+    Arith(_t467, add, g5, g1)
+    Gep(_t468, _t466, _t467)
+    Load(_t469, _t468)
+    Arith(_t470, sub, 0, g1)
+    Gep(_t471, id48, g1)
+    Load(_t472, _t471)
+    Gep(_t473, id52, 1)
+    Load(_t474, _t473)
+    CallIndirect(_t475, _t474, [_t470, _t472], lbl48)
 
   lbl48:
-    Copy(id3, id4)
-    Cmp(_t128, lte, id0, id0)
-    Cmp(_t129, gte, _t128, 2)
-    Copy(id0, _t129)
-    Copy(id7, id3)
-    Branch(7, lbl49, lbl50)
+    Gep(_t476, _t469, _t475)
+    Load(_t477, _t476)
+    Gfp(_t478, g4, f1)
+    Load(_t479, _t478)
+    Gep(_t480, id10, _t479)
+    Load(_t481, _t480)
+    Load(_t482, _t481)
+    CallExt(_, e1, [_t456, _t464, 5, _t477, _t482, g6, g7])
+    Jump(lbl28)
 
   lbl49:
-    Copy(id6, 6)
-    Cmp(_t130, lt, id1, id6)
-    Copy(id7, _t130)
-    Copy(id0, 5)
-    Copy(id7, id3)
-    Arith(_t131, div, 2, id4)
-    Copy(id3, _t131)
-    Copy(id2, 9)
-    Arith(_t132, sub, 0, id0)
-    Copy(id7, _t132)
-    Copy(id2, 7)
-    Arith(_t134, sub, 0, id5)
-    Arith(_t133, sub, 0, _t134)
-    Copy(id4, _t133)
-    Jump(lbl51)
+    Load(_t505, id22)
+    Load(_t506, _t505)
+    Gep(_t507, id49, g1)
+    Load(_t508, _t507)
+    Gfp(_t509, id12, f1)
+    Load(_t510, _t509)
+    Gep(_t511, _t508, _t510)
+    Load(_t512, _t511)
+    Cmp(_t513, neq, _t506, _t512)
+    Alloc(id24, _t513)
+    CallDirect(_t514, f4, [g1, id30, 6], lbl50)
 
   lbl5:
-    Copy(id2, id2)
-    Arith(_t7, add, id3, id1)
-    Copy(id2, _t7)
-    Copy(id4, 6)
-    Cmp(_t8, gte, id0, id5)
-    Arith(_t9, div, _t8, id1)
-    Copy(id1, _t9)
-    Arith(_t10, div, 6, 1)
-    Copy(id1, _t10)
-    Copy(id3, id4)
-    Arith(_t11, sub, 0, 4)
-    Copy(id6, _t11)
-    Copy(id4, id7)
-    Jump(lbl4)
+    Jump(lbl6)
 
   lbl50:
-    Copy(id6, 0)
-    Arith(_t136, mul, 1, id6)
-    Arith(_t135, sub, 0, _t136)
-    Copy(id0, _t135)
-    Arith(_t137, div, id2, id6)
-    Arith(_t138, sub, 0, id1)
-    Cmp(_t139, lte, _t137, _t138)
-    Cmp(_t140, gt, 5, id7)
-    Cmp(_t141, gt, id6, id3)
-    Arith(_t142, div, _t140, _t141)
-    Arith(_t143, div, _t139, _t142)
-    Copy(id1, _t143)
-    Copy(id2, id1)
-    Copy(id6, 4)
-    Jump(lbl51)
+    Gep(_t515, g6, _t514)
+    Load(_t516, _t515)
+    Gep(_t517, id29, g3)
+    Load(_t518, _t517)
+    Load(_t519, _t518)
+    Cmp(_t520, lt, _t516, _t519)
+    CallDirect(_, f4, [3, 0, _t520], lbl51)
 
   lbl51:
-    Jump(lbl45)
+    Gep(_t522, id50, g3)
+    Load(_t523, _t522)
+    CallDirect(_t524, f5, [id9, g3, g3, id2], lbl52)
 
   lbl52:
-    Branch(id1, lbl53, lbl54)
+    CallIndirect(_t525, id53, [3, _t523, _t524], lbl53)
 
   lbl53:
-    Copy(id5, id5)
-    Cmp(_t150, eq, id6, 3)
-    Arith(_t149, sub, 0, _t150)
-    Copy(id4, _t149)
-    Cmp(_t151, neq, 6, id2)
-    Copy(id6, _t151)
-    Arith(_t152, sub, 0, 9)
-    Copy(id5, _t152)
-    Copy(id1, 0)
-    Copy(id7, id6)
-    Cmp(_t153, eq, id0, id1)
-    Copy(id4, _t153)
-    Copy(id7, 6)
-    Jump(lbl52)
+    Arith(_t521, sub, 0, _t525)
+    Load(_t526, id9)
+    Gep(_t527, id54, _t526)
+    Load(_t528, _t527)
+    Load(_t529, _t528)
+    CallDirect(_, f4, [_t521, _t529, 2], lbl54)
 
   lbl54:
-    Jump(lbl55)
-
-  lbl55:
-    Arith(_t154, sub, 0, 0)
-    Branch(_t154, lbl56, lbl57)
-
-  lbl56:
-    Arith(_t155, mul, 4, 7)
-    Copy(id7, _t155)
-    Cmp(_t156, gte, 7, id3)
-    Cmp(_t157, gte, _t156, id3)
-    Arith(_t158, sub, _t157, 5)
-    Copy(id7, _t158)
-    Cmp(_t159, lte, id0, id0)
-    Copy(id2, _t159)
-    Arith(_t160, mul, 9, id4)
-    Cmp(_t161, lt, _t160, 7)
-    Arith(_t162, sub, 0, 7)
-    Cmp(_t163, gte, _t161, _t162)
-    Copy(id4, _t163)
-    Jump(lbl55)
-
-  lbl57:
-    Jump(lbl45)
-
-  lbl58:
-    Branch(1, lbl59, lbl60)
-
-  lbl59:
-    Arith(_t165, sub, 0, id3)
-    Copy(id1, _t165)
-    Branch(id6, lbl61, lbl62)
+    Arith(_t530, sub, 0, g1)
+    Store(id9, _t530)
+    Gfp(_t531, id31, f1)
+    Load(_t532, _t531)
+    Ret(_t532)
 
   lbl6:
-    Jump(lbl7)
-
-  lbl60:
-    Copy(_t194, 2)
-    Jump(lbl70)
-
-  lbl61:
-    Arith(_t166, div, id6, id3)
-    Copy(id7, _t166)
-    Copy(id3, id5)
-    Copy(id6, 2)
-    Copy(id7, id1)
-    Copy(id1, id2)
-    Copy(id2, id3)
-    Copy(id0, id6)
-    Copy(id1, 8)
-    Copy(id5, 8)
-    Jump(lbl63)
-
-  lbl62:
-    Copy(id6, 4)
-    Copy(id2, id1)
-    Copy(id1, 9)
-    Copy(id7, 0)
-    Copy(id5, id0)
-    Copy(id2, id7)
-    Copy(id1, 3)
-    Copy(id2, id7)
-    Copy(id0, 3)
-    Copy(id2, 2)
-    Jump(lbl63)
-
-  lbl63:
-    Arith(_t167, sub, 0, 1)
-    Branch(_t167, lbl64, lbl65)
-
-  lbl64:
-    Copy(id4, 0)
-    Cmp(_t168, eq, 10, id1)
-    Copy(id6, _t168)
-    Cmp(_t169, lte, id3, 4)
-    Cmp(_t170, neq, _t169, id7)
-    Cmp(_t171, neq, 8, _t170)
-    Copy(id6, _t171)
-    Copy(id3, 2)
-    Cmp(_t172, gte, id7, id2)
-    Cmp(_t173, neq, 10, _t172)
-    Copy(id0, _t173)
-    Arith(_t174, mul, 2, id7)
-    Copy(id6, _t174)
-    Copy(id7, 8)
-    Copy(id0, 4)
-    Jump(lbl66)
-
-  lbl65:
-    Copy(id1, id7)
-    Arith(_t175, sub, 0, id6)
-    Copy(id4, _t175)
-    Copy(id5, id5)
-    Arith(_t177, div, 7, id6)
-    Arith(_t176, sub, 0, _t177)
-    Copy(id2, _t176)
-    Copy(id4, id2)
-    Copy(id6, 7)
-    Copy(id6, 10)
-    Arith(_t178, sub, id1, 1)
-    Arith(_t179, div, id6, _t178)
-    Cmp(_t180, gt, 10, _t179)
-    Copy(id3, _t180)
-    Copy(_t194, 3)
-    Jump(lbl70)
-
-  lbl66:
-    Arith(_t181, div, id0, 1)
-    Branch(_t181, lbl67, lbl68)
-
-  lbl67:
-    Copy(id5, id3)
-    Arith(_t183, sub, 0, id4)
-    Arith(_t184, div, id2, _t183)
-    Arith(_t182, sub, 0, _t184)
-    Copy(id6, _t182)
-    Copy(id5, 1)
-    Copy(id7, 9)
-    Copy(id1, 8)
-    Copy(id4, id6)
-    Arith(_t186, sub, id6, id6)
-    Arith(_t185, sub, 0, _t186)
-    Copy(id4, _t185)
-    Arith(_t187, sub, 0, 5)
-    Arith(_t188, sub, 0, id0)
-    Cmp(_t189, gte, _t187, _t188)
-    Copy(id4, _t189)
-    Arith(_t190, sub, 0, id4)
-    Copy(id3, _t190)
-    Arith(_t191, sub, 0, 3)
-    Copy(id3, _t191)
-    Jump(lbl69)
-
-  lbl68:
-    Copy(id5, 7)
-    Copy(id1, id7)
-    Cmp(_t192, gt, 5, 0)
-    Copy(id1, _t192)
-    Copy(id6, 0)
-    Copy(id0, id0)
-    Cmp(_t193, gte, 10, id1)
-    Copy(id1, _t193)
-    Copy(id1, 2)
-    Copy(id3, 10)
-    Jump(lbl69)
-
-  lbl69:
-    Copy(id5, 6)
-    Copy(id2, id2)
-    Copy(id0, 5)
-    Jump(lbl58)
+    Branch(3, lbl7, lbl8)
 
   lbl7:
-    Branch(id5, lbl8, lbl9)
-
-  lbl70:
-    Ret(_t194)
+    Load(_t33, id2)
+    Branch(_t33, lbl9, lbl10)
 
   lbl8:
-    Copy(id4, id2)
-    Cmp(_t12, neq, 6, id2)
-    Copy(id6, _t12)
-    Arith(_t13, sub, 0, 9)
-    Copy(id5, _t13)
-    Copy(id1, 0)
-    Copy(id7, id6)
-    Cmp(_t14, eq, id0, id1)
-    Copy(id4, _t14)
-    Copy(id7, 6)
-    Arith(_t15, add, 6, 3)
-    Arith(_t16, mul, _t15, 3)
-    Copy(id0, _t16)
-    Jump(lbl7)
+    Cmp(_t483, gte, 2, 10)
+    Gep(_t484, id14, _t483)
+    Load(_t485, _t484)
+    Load(_t486, _t485)
+    Gep(_t487, id23, g1)
+    Load(_t488, _t487)
+    Load(_t489, _t488)
+    Load(_t490, _t489)
+    Gfp(_t491, id28, f2)
+    Load(_t492, _t491)
+    Load(_t493, id10)
+    Load(_t494, _t493)
+    Gep(_t495, _t492, _t494)
+    Load(_t496, _t495)
+    CallExt(_, e1, [10, _t486, 0, id12, _t490, g6, _t496])
+    Load(_t497, id8)
+    Gep(_t498, id16, g7)
+    Load(_t499, _t498)
+    Load(_t500, id9)
+    Gep(_t501, _t499, _t500)
+    Load(_t502, _t501)
+    Gfp(_t503, _t502, f1)
+    Load(_t504, _t503)
+    CallDirect(_, f4, [g1, _t497, _t504], lbl49)
 
   lbl9:
-    Jump(lbl10)
+    Gep(_t34, id5, 0)
+    Load(_t35, _t34)
+    CallIndirect(_t36, id1, [id2, 1, g5, g6], lbl12)
 }
 
