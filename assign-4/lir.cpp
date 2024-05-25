@@ -20,6 +20,8 @@ struct BasicBlock;
 
 //Globals
 inline vector<string> function_ids;
+inline vector<string> param_ids; //for whichever functino you're currently on
+inline vector<string> local_ids; //''
 inline map<string, string> functions_res; //map of function name to the result (res) text (to sort alphabetically)
 inline vector<string> visited_labels;
 
@@ -472,6 +474,13 @@ struct Function{
     }
 
     void cg(Function*& f) {
+        param_ids.clear();
+        for (const auto& param : f->params) {
+        param_ids.push_back(param.first);
+        }
+        local_ids.clear();
+        getKeys(f->locals, local_ids);
+
         string res;
         res += ".globl " + name + "\n" + name + ":\n  pushq %rbp\n  movq %rsp, %rbp\n";
         int stack_space = (f->locals.size() % 2 == 0) ? f->locals.size() : f->locals.size() + 1;
@@ -558,12 +567,6 @@ struct Program{
 
 //cg functions which rely on later definitions
 inline string getMemory(const string& id, Function*& f) {
-    vector<string> param_ids;
-        for (const auto& param : f->params) {
-        param_ids.push_back(param.first);
-    }
-    vector<string> local_ids; 
-    getKeys(f->locals, local_ids);
     auto local_it = find(local_ids.begin(), local_ids.end(), id);
     auto param_it = find(param_ids.begin(), param_ids.end(), id);
     auto function_it = find(function_ids.begin(), function_ids.end(), id);
