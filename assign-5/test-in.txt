@@ -1,0 +1,10 @@
+fn main() -> int {
+
+    return 0;
+}
+
+fn test() -> int {
+    let x:int = 5, y:int;
+    y = x;
+    return y;
+}

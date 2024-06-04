@@ -1,0 +1,11 @@
+Function test() -> Int {
+  Locals
+    x : Int
+    y : Int
+
+  entry:
+    Copy(x, 5)
+    Copy(y, 5)
+    Ret(5)
+}
+

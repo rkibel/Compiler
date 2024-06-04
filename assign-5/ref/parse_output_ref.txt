@@ -1,0 +1,1 @@
+{"globals":[],"structs":[],"externs":[],"functions":[{"name":"main","params":[],"rettyp":"Int","locals":[],"stmts":[{"Return":{"Num":0}}]},{"name":"test","params":[],"rettyp":"Int","locals":[[{"name":"x","typ":"Int"},{"Num":5}],[{"name":"y","typ":"Int"},null]],"stmts":[{"Assign":{"lhs":{"Id":"y"},"rhs":{"RhsExp":{"Id":"x"}}}},{"Return":{"Id":"y"}}]}]}
