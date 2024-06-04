@@ -452,6 +452,7 @@ int main(int argc, char* argv[]) {
     file.close();
 
     Program* prog = initialize_prog(data);
+    prog->optimize();
     std::cout << *prog;
     
     return 0;

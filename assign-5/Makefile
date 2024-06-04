@@ -32,8 +32,8 @@ ref:
 	ref/lex $(filter-out $@,$(MAKECMDGOALS)) > ref/lexer_output_ref.txt;
 	ref/parse -json ref/lexer_output_ref.txt > ref/parse_output_ref.txt; 
 	ref/lower -$(FLAG) ref/parse_output_ref.txt > ref/lower_output_ref.txt;
-	ref/opt ref/lower_output_ref.txt > ref/opt_output_ref.txt;
+	ref/opt ref/lower_output_ref.txt;
 
 # Clean up
 clean:
-	rm -f $(EXEC_LIR)
+	rm -f $(EXEC_OPT)
